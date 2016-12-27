@@ -20,5 +20,11 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": "true"
+  "private": "true",
+  "dependencies": {
+    "@inexor-game/tree": "file:///Users/berger/workspace/flex/src/tree",
+    "buckets-js": "^1.98.2",
+    "glob": "^7.1.1",
+    "toml-node": "0.0.1"
+  }
 }
