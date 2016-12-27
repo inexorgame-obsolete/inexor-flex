@@ -1,0 +1,26 @@
+{
+  "name": "@inexor-game/flex",
+  "version": "0.9.0",
+  "description": "Scripting environment for Inexor.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "gaming"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  }
+}
