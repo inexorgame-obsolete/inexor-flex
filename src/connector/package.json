@@ -1,0 +1,27 @@
+{
+  "name": "@inexor-game/connector",
+  "version": "1.0.0",
+  "description": "Provides a connectivity layer with gRPC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "grpc"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {
+    "grpc": "^1.0.1"
+  }
+}

@@ -4,7 +4,7 @@
   "description": "Scripting environment for Inexor.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -17,10 +17,22 @@
   "author": "The Inexor Team",
   "license": "Zlib",
   "bugs": {
-    "url": "https://github.com/inexor-game/flex/issues"
+    "url": "https://github.com/inexor-game/code/issues"
   },
   "homepage": "https://github.com/inexor-game/flex#readme",
   "engines": {
     "node": ">=6.9.1"
+  },
+  "dependencies": {
+    "@inexor-game/configurator": "file:src/configurator",
+    "@inexor-game/connector": "file:src/connector",
+    "@inexor-game/tree": "file:src/tree",
+    "electrolyte": "^0.4.0",
+    "express": "^4.14.0",
+    "yargs": "^6.5.0"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.4.3",
+    "mocha": "^3.2.0"
   }
 }
