@@ -4,7 +4,8 @@
   "description": "Scripting environment for Inexor.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --recursive",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "repository": {
     "type": "git",
