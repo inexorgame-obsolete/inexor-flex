@@ -26,7 +26,7 @@ module.exports = function(path) {
         try {
           let data = toml.parse(file);
           for (entry in Object.entries(data)) {
-            override(entry, config_tree);
+            tree.override(entry, config_tree);
           }
         } catch (e) {
           reject(e);
