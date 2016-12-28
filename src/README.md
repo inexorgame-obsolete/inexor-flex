@@ -13,6 +13,5 @@ For instance, if you'd like to write a package that uses the `tree` package, you
 
 This has the following side-effects:
 
-- since `tree` requires `buckets-js`, it is available as a peer-dependency
 - the `link` command makes installing obselete
-- both of the above in turn reduce file overhead
+- which in turn reduces file overhead

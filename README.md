@@ -64,6 +64,7 @@ Flex necessarily can't be decoupled as a whole, therefore the core implementatio
 - `src/` containing essential modules
   - `src/tree/` contains extensive functions to work with binary trees (*"the root of evil"*)
   - `src/connector` is the gateway to Inexor-Kernel
+  - `src/manager` manages Inexor Core instances
   - `src/configurator` reads configuration files and provides them to the game
 
 Since those components tightly couple each other, and *must* work in order to start the game, components from `src` usually are *hard-loaded* via `require`. This in turn means that in order to hook into the API, code must be added manually.
