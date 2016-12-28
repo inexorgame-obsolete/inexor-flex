@@ -29,7 +29,6 @@
     "@inexor-game/configurator": "file:src/configurator",
     "@inexor-game/connector": "file:src/connector",
     "@inexor-game/tree": "file:src/tree",
-    "buckets-js": "^1.98.2",
     "electrolyte": "^0.4.0",
     "express": "^4.14.0",
     "yargs": "^6.5.0"

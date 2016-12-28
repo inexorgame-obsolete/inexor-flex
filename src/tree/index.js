@@ -4,13 +4,11 @@
  * @see buckets-js
  */
 
-module.exports = {
-  /**
-   * Overrides a member in the tree and it's chidlren recursively
-   * @param  {Object} obj
-   * @param  {buckets-js.BStree} tree
-   */
-  override (obj, tree) {
+const Node = require('./Node');
+const util = require('./util');
 
-  }
+module.exports = {
+  Node: Node,
+  Tree: Tree,
+  util: util
 }

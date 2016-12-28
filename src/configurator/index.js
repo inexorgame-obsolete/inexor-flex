@@ -5,7 +5,6 @@
  */
 
 const tree = require('@inexor-game/tree');
-const buckets = require('buckets-js');
 const glob = require('glob');
 const toml = require('toml');
 
@@ -13,7 +12,7 @@ module.exports = {
   /**
    * configurator function
    * @param  {string} path - the path to traverse
-   * @return {Promise}      returns a Promise containing a {@link buckets-js.BStree} of parsed TOML objects
+   * @return {Promise}      returns a Promise containing a {@link Tree.Root} of parsed TOML objects
    */
   configureDirectory: function(path) {
     return new Promise((resolve, reject) => {
@@ -22,7 +21,7 @@ module.exports = {
           reject(err);
         }
 
-        let config_tree = buckets.BTree();
+        let config_tree = new tree.Node();
         files.forEach((file) => {
           try {
             let data = toml.parse(file);
