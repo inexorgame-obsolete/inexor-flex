@@ -71,7 +71,7 @@ class Node extends EventEmitter {
         if (util.isValidDataType(datatype)) {
             this._datatype = datatype;
         } else {
-            throw 'Invalid data type';
+            throw new Error('Invalid data type');
         }
 
         /**

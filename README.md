@@ -51,7 +51,7 @@ The Inexor Flex has been designed to be as flexible as possible, therefore follo
 
 - everything, if possible, is a module
 - loosely-coupled components (such as plugins) are wired using [electrolyte](https://github.com/jaredhanson/electrolyte)
-- by default unit tests with mocha are done for any module that contains a `test` folder
+- by default unit tests with mocha are done for any file that matches `*_test.js`, though it is highly recommended to add a `test` folder to your module
 - by default documentation is done using JSDoc. don't break that.
 - if necessary (for important or big modules), we urge that you add a separate `README.md` to the respective module
 - we preserve to *force* the style-guide in the future
