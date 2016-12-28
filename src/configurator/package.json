@@ -20,5 +20,9 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": "true"
+  "private": "true",
+  "dependencies": {
+    "glob": "^7.1.1",
+    "toml": "^2.3.1"
+  }
 }

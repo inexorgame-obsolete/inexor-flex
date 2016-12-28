@@ -4,9 +4,9 @@
   "description": "Scripting environment for Inexor.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive",
+    "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
     "docs": "jsdoc -c .jsdoc.json",
-    "lint": "eslint .",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -34,6 +34,7 @@
     "yargs": "^6.5.0"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "^3.12.2",
     "jsdoc": "^3.4.3",
     "mocha": "^3.2.0"

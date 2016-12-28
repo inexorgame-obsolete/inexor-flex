@@ -51,7 +51,7 @@ The Inexor Flex has been designed to be as flexible as possible, therefore follo
 
 - everything, if possible, is a module
 - loosely-coupled components (such as plugins) are wired using [electrolyte](https://github.com/jaredhanson/electrolyte)
-- by default unit tests with mocha are done for any module that contains a `test` folder
+- by default unit tests with mocha are done for any file that matches `*_test.js`, though it is highly recommended to add a `test` folder to your module
 - by default documentation is done using JSDoc. don't break that.
 - if necessary (for important or big modules), we urge that you add a separate `README.md` to the respective module
 - we preserve to *force* the style-guide in the future
@@ -62,8 +62,9 @@ Flex necessarily can't be decoupled as a whole, therefore the core implementatio
 - `server/` containing the webserver and RESTfull API
   - `index.js` wires up everything and takes care of the `cli`
 - `src/` containing essential modules
-  - `src/tree/` containing the root of everything
+  - `src/tree/` contains extensive functions to work with binary trees (*"the root of evil"*)
   - `src/connector` is the gateway to Inexor-Kernel
+  - `src/manager` manages Inexor Core instances
   - `src/configurator` reads configuration files and provides them to the game
 
 Since those components tightly couple each other, and *must* work in order to start the game, components from `src` usually are *hard-loaded* via `require`. This in turn means that in order to hook into the API, code must be added manually.
