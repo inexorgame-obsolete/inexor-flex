@@ -2,7 +2,7 @@
  * @module tree
  */
 
-const EventEmitter = require('events.EventEmitter');
+const EventEmitter = require('events').EventEmitter;
 const util = require('./util')
 
 /**
@@ -21,9 +21,8 @@ class Node extends EventEmitter {
      * @param {mixed} initValue
      * @param {bool} sync
      * @param {bool} readOnly
-     * @param {string} protoKey
      */
-    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
+    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false) {
         // parent constructor
         super();
 
@@ -42,15 +41,6 @@ class Node extends EventEmitter {
          * @private
          */
         this._name = name;
-
-        /**
-         * @member
-         * @name Node._protoKey
-         * @type {string}
-         * @private
-         */
-        // The key to be used in the proto messages.
-        this._protoKey = protoKey;
 
         /**
          * @member
@@ -192,22 +182,6 @@ class Node extends EventEmitter {
             this._timestamp = Date.now();
 
             this.emit('postSet', {oldValue: oldValue, newValue: value});
-            // Does this even make sense?
-            // Why not spread the time stamp
-
-            // Do synchronization
-            if (this._sync && !preventSync) {
-                try {
-                    let message = {};
-                    message[this._protoKey] = value;
-                    // console.log(this._protoKey + ' = ' + value);
-                    this.getRoot().grpc.synchronize.write(message);
-                    this.emit('postSync', {oldValue: oldValue, newValue: value});
-                } catch(err) {
-                    // TODO: Add error handling
-                	console.log(err);
-                }
-            }
         }
     }
 
@@ -268,16 +242,15 @@ class Node extends EventEmitter {
      * @param {mixed} initialValue
      * @param {bool} sync
      * @param {bool} readOnly
-     * @param {string} protoKey
      * @return {Node}
      * @see Node.constructor
      */
-    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
+    addChild(name, datatype, initialValue = null, sync = false, readOnly = false) {
         if (this.hasChild(name)) {
             return this.getChild(name);
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
             // Create the child tree node
-            let childNode = new Node(this, name, datatype, initialValue, sync, readOnly, protoKey);
+            let childNode = new Node(this, name, datatype, initialValue, sync, readOnly);
             // Add the child tree node to the children map
             this._value.set(name, childNode);
 

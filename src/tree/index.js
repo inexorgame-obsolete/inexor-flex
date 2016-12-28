@@ -5,6 +5,7 @@
  */
 
 const Node = require('./Node');
+const Tree = require('./Tree');
 const util = require('./util');
 
 module.exports = {
