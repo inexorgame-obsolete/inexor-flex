@@ -9,15 +9,14 @@ const util = require('./util')
  * Represents a tree Node
  * @name Node
  * @todo Add a verbose logging system (shouldn't be difficult though)
- * @todo Add constructor description
  * @see module/bunyan
  */
 class Node extends EventEmitter {
     /**
      * @constructor
-     * @param parent
+     * @param parent - the parent node
      * @param {string} name - Must not contain whitespace or dots
-     * @param {datatype} type
+     * @param {tree.datatype} type - the data type to be used
      * @param {mixed} initValue
      * @param {bool} sync
      * @param {bool} readOnly
@@ -63,7 +62,7 @@ class Node extends EventEmitter {
         /**
          * @member
          * @name Node._datatype
-         * @type {datatype}
+         * @type {tree.datatype}
          * @private
          */
 
@@ -168,19 +167,17 @@ class Node extends EventEmitter {
      * @name Node.set
      * @param {mixed} value
      * @param {bool} preventSync - whether the value should be synchronized or not
+     * @fires Node.preSet
+     * @fires Node.postSet
      */
     set(value, preventSync = false) {
         if (this.isLeaf && !this._readOnly) {
             let oldValue = this._value;
-
             this.emit('preSet', {oldValue: oldValue, newValue: value});
-
             // Update the value
             this._value = value;
-
             // Set the timestamp when the value was last changed
             this._timestamp = Date.now();
-
             this.emit('postSet', {oldValue: oldValue, newValue: value});
         }
     }
@@ -238,12 +235,13 @@ class Node extends EventEmitter {
      * @function
      * @name Node.addChild
      * @param {string} name
-     * @param {datatype} datatype
+     * @param {tree.datatype} datatype
      * @param {mixed} initialValue
      * @param {bool} sync
      * @param {bool} readOnly
      * @return {Node}
      * @see Node.constructor
+     * @fires Node.add
      */
     addChild(name, datatype, initialValue = null, sync = false, readOnly = false) {
         if (this.hasChild(name)) {
@@ -264,6 +262,7 @@ class Node extends EventEmitter {
                 }
             });
 
+            this.emit('add', name); // Used for subscribing
             return childNode;
         } else {
             throw 'Failed to create child node';
@@ -272,6 +271,7 @@ class Node extends EventEmitter {
 
     /**
      * @function
+     * @property {string} name
      * @name Node.addNode
      * @alias Node.addChild
      */
@@ -295,7 +295,7 @@ class Node extends EventEmitter {
      * Returns the parent node or null if the tree node is the root node
      * @function
      * @name Node.getParent
-     * @return {Node|null}
+     * @return {tree.Node|null}
      */
     getParent() {
         return (this._path != util.separator) ? this._parent : null;

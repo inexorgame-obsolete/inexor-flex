@@ -1,18 +1,26 @@
+/*
+ * @module tree
+ */
+
+/**
+ * @property {string} separator - the tree seperator, usually "/"
+ */
 const separator = '/';
+/**
+ * @property {RegEX} validName - used for checking valid names
+ */
 const validName = /^[\w ]+$/;
 
 /**
  * Defines a possible node data type
  * Can be either: node, int64, string, float, bool or timestamp
- * @typedef {string} datatype
+ * @typedef {tree.Node|boolean|number|string|Date} datatype
  */
 
-// Why doesn't this work? {datatype}
-
 /**
- * Checks whether type has a correct {datatype}
+ * Checks whether type has a correct {@link tree.datatype}
  * @name isValidDataType
- * @param {mixed} type
+ * @param {tree.datatype} type
  * @return {bool}
  */
 function isValidDataType(datatype) {
