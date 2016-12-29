@@ -76,46 +76,30 @@ class Connector extends EventEmitter {
         let path = this.getPath(protoKey);
 
         if (protoKey != '__numargs') {
-          //TODO: Add error
+          throw new Error('${protoKey} does not have enough arguments.')
         }
         let node = this._tree.findNode(path);
 
         node.set(value, true); // Prevent sync
       } catch (err) {
-        // TODO: Add error
-      }
-    })
-
-    this.synchronize.on('data', function(message) {
-      try {
-            let protoKey = message.key;
-            let value = message[protoKey];
-            let path = this.getPath(protoKey);
-            let node = this._root.findNode(path);
-            if (protoKey != '__numargs') {
-              // TODO: Add error
-            }
-            // Use setter and prevent sync!
-            node.set(value, true);
-      } catch (err) {
-        // TODO: Add error
+        throw new Error('Synchronization of ${protoKey} has failed because of ${err}.')
       }
     });
 
     this.synchronize.on('end', function() {
         // The server has finished sending
-        // TODO Add error
+        throw new Error('Synchronization has end.')
     });
 
     this.synchronize.on('status', function(status) {
-        // TODO: Add error
+        throw new Exception('Status ${status} has been received.') // Usually we don't send status information, might change
     });
 
     this.synchronize.on('error', function(err) {
-      // TODO: Add error
+        throw new Error('${err} has occured.')
     });
 
-    // this.initializeTree();
+    // this.initializeTree(); @deprecated
     this.emit('connected');
   }
 

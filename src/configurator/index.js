@@ -21,12 +21,12 @@ module.exports = {
           reject(err);
         }
 
-        let config_tree = new tree.Node();
+        let config_tree = new tree.Root();
         files.forEach((file) => {
           try {
             let data = toml.parse(file);
             for (entry in Object.entries(data)) {
-              tree.override(entry, config_tree);
+              tree.createRecursive(entry);
             }
           } catch (e) {
             reject(e);
