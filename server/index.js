@@ -19,14 +19,14 @@ var app = express();
 // app.use(express.static(argv.webdir));
 
 // Require the router from the rest module
-var router = require('./rest/v1/');
+var router = require('@inexor-game/api').v1;
 router.use((err, req, res, next) => {
   log.error(err);
   next(err);
 })
 
 // Fire in the hole!
-app.use('/api/v1', router);
+app.use('/api/v1/', router);
 app.listen(argv.port, () => {
   log.info('Inexor Flex is listening on ' + argv.port)
 })

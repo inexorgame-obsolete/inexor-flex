@@ -1,0 +1,21 @@
+{
+  "name": "@inexor-game/api",
+  "version": "1.0.0",
+  "description": "The Flex API",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "flex",
+    "api"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/code/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme"
+}
