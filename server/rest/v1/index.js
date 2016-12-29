@@ -34,25 +34,16 @@ router.get('/instance/:id/', (req, res) => {
   }
 })
 
-/**
- * @private
- * @function
- * @param {bunayn} a log instance
- * @return {express.Router}
- */
-module.exports = (log) => {
-    // Everything that potentially fails should also post something to the logger
-    router.post('/instance/create', (req, res) => {
+router.post('/instance/create', (req, res) => {
 
-    })
+})
 
-    router.get('/instance/:id/start', (req, res)  => {
+router.get('/instance/:id/start', (req, res)  => {
 
-    })
+})
 
-    router.get('/instance/:id/stop', (req, res)  => {
+router.get('/instance/:id/stop', (req, res)  => {
 
-    })
+})
 
-    return router;
-};
+module.exports = router;
