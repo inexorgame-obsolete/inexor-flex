@@ -2,7 +2,7 @@
  * @module tree
  */
 
-const EventEmitter = require('events').EventEmitter;
+const EventEmitter = require('events');
 const util = require('./util')
 
 /**

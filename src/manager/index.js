@@ -7,7 +7,7 @@ const spawn = require('child_process').spawn;
 const portastic = require('portastic');
 
 // The default port to use
-const defaultPort = 28985;
+const defaultPort = 31415;
 
 /**
  * A Inexore Core instance
@@ -38,7 +38,7 @@ function create(args, identifier=null, port=null, tree=null) {
       _port = port;
     }
 
-    portastic.test(_port).then((isOpen) {
+    portastic.test(_port).then((isOpen) => {
       if (isOpen) {
         interface.port = _port;
         resolve(interface);
@@ -46,7 +46,7 @@ function create(args, identifier=null, port=null, tree=null) {
         reject(new Error('EADDRINUSE, Address already in use.'))
       }
     })
-  }
+  })
 }
 
 /**
@@ -57,10 +57,10 @@ function create(args, identifier=null, port=null, tree=null) {
  */
 function start(instance) {
   // Since the manager is not responsible for handling executable paths, we premise that
-  // a command string exists at global.command;
+  // a command string exists at global.binary_path;
 
   return new Promise((resolve, reject) => {
-    instance._process = spawn(global.command, interface.args);
+    instance._process = spawn(global.binary_path, interface.args);
     instance._process.on('error') = (err) => {
       reject(err); // This should be instantly fired
     }

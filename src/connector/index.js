@@ -4,7 +4,7 @@
  */
 
 const path = require('path');
-const EventEmitter = require('events').EventEmitter;
+const EventEmitter = require('events');
 const grpc = require('grpc');
 const tree = require('@inexor-game/tree');
 
