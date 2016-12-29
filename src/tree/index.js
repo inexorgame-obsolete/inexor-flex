@@ -5,11 +5,11 @@
  */
 
 const Node = require('./Node');
-const Tree = require('./Tree');
+const Root = require('./Root');
 const util = require('./util');
 
 module.exports = {
   Node: Node,
-  Tree: Tree,
+  Root: Root,
   util: util
 }

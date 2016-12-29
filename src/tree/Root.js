@@ -66,3 +66,5 @@ class Root extends Node {
         return node;
     }
 }
+
+module.exports = Root;
