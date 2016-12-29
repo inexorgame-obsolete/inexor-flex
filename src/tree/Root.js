@@ -65,6 +65,17 @@ class Root extends Node {
         }
         return node;
     }
+
+    /**
+     * Checks wether or not a given path exists in the tree
+     * @function
+     * @param {string} path
+     * @return {boolean}
+     */
+     contains(path) {
+       let node = this.findNode(path);
+       return (node != null);
+     }
 }
 
 module.exports = Root;
