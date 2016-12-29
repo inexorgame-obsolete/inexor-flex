@@ -1,5 +1,5 @@
 // Configuration for the webserver
-exports.command = 'flex <port> [host] [webdir]'
+exports.command = 'flex <port> [host] [webdir] [binary]'
 exports.describe = 'Configures the Inexor Flex server'
 
 exports.builder = {
@@ -16,5 +16,10 @@ exports.builder = {
     default: 'inexor-ui/', // will be essential in further versions
     type: 'string',
     describe: 'Where to load the UI from'
+  },
+  binary: {
+    default: null,
+    type: 'string',
+    describe: 'The path of the Inexor Core binary.'
   }
 }
