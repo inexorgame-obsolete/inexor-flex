@@ -29,7 +29,7 @@
     "@inexor-game/configurator": "file:src/configurator",
     "@inexor-game/connector": "file:src/connector",
     "@inexor-game/tree": "file:src/tree",
-    "electrolyte": "^0.4.0",
+    "bunyan": "^1.8.5",
     "express": "^4.14.0",
     "yargs": "^6.5.0"
   },

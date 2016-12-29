@@ -1,0 +1,30 @@
+{
+  "name": "@inexor-game/plugins",
+  "version": "1.0.0",
+  "description": "A plugin loader for Inexor Flex",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "plugins"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/code/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {
+    "electrolyte": "^0.4.0"
+  }
+}
