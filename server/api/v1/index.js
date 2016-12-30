@@ -47,7 +47,7 @@ router.post('/instance/create', (req, res) => {
     manager.create(body.args, body.identifier, body.port).then((instance) => {
       instance.tree = new tree.Root();
       tree.findNode('/instance').addChild(instance.id, 'node', instance);
-    }).catch((err) {
+    }).catch((err) => {
       res.status(500).send(err);
     })
   }
@@ -127,7 +127,7 @@ router.get('/instance/:id/configure', (req, res) => {
 router.get('/tree/:id/:path', (req, res) => {
   if (tree.contains('/instance/') + req.params.id) {
     let instance = tree.findNode('/instance').getChild(req.params.id);
-    if instance.tree.contains(req.params.path) {
+    if (instance.tree.contains(req.params.path)) {
       res.json(String(instance.tree.findNode(req.params.path)));
     } else {
       res.status(500).send('Key with path ' + req.params.path + ' was not found');
@@ -140,7 +140,7 @@ router.get('/tree/:id/:path', (req, res) => {
 router.post('/tree/:id/:path', (req, res) => {
   if (tree.contains('/instance/') + req.params.id) {
     let instance = tree.findNode('/instance').getChild(req.params.id);
-    if instance.tree.contains(req.params.path) {
+    if (instance.tree.contains(req.params.path)) {
       instance.tree.findNode(req.params.path).set(req.body.value);
       res.status(200);
     } else {

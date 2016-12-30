@@ -31,6 +31,7 @@
     "@inexor-game/connector": "file:src/connector",
     "@inexor-game/manager": "file:src/manager",
     "@inexor-game/tree": "file:src/tree",
+    "@inexor-game/plugins": "file:plugins",
     "bunyan": "^1.8.5",
     "express": "^4.14.0",
     "nock": "^9.0.2",
