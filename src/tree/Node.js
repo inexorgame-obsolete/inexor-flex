@@ -169,6 +169,7 @@ class Node extends EventEmitter {
      * @param {bool} preventSync - whether the value should be synchronized or not
      * @fires Node.preSet
      * @fires Node.postSet
+     * @fires Node.sync
      */
     set(value, preventSync = false) {
         if (this.isLeaf && !this._readOnly) {
@@ -176,6 +177,12 @@ class Node extends EventEmitter {
             this.emit('preSet', {oldValue: oldValue, newValue: value});
             // Update the value
             this._value = value;
+
+            // Emit sync to be synchronized by the connector.
+            if (this._sync && !preventSync) {
+                this.emit('sync', value);
+            }
+
             // Set the timestamp when the value was last changed
             this._timestamp = Date.now();
             this.emit('postSet', {oldValue: oldValue, newValue: value});
@@ -262,7 +269,7 @@ class Node extends EventEmitter {
                 }
             });
 
-            this.emit('add', name); // Used for subscribing
+            this.emit('add', childNode); // Used for subscribing
             return childNode;
         } else {
             throw 'Failed to create child node';

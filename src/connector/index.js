@@ -28,6 +28,7 @@ class Connector extends EventEmitter {
     /** @private */
     this._root = root;
     this._port = port;
+    this._tree = tree;
   }
 
   /**
@@ -38,6 +39,17 @@ class Connector extends EventEmitter {
    */
   getPath(protoKey) {
     return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(path)'];
+  }
+
+  /**
+   * Returns the proto key of a field by it's path.
+   * @function
+   * @param {string} path
+   * @return {string}
+   */
+  getProtoKey(path) {
+    // TODO: THIS IS PSEUDOCODE, LOOK IT UP!
+    return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByPath[path].options('(key)');
   }
 
   /**
@@ -99,6 +111,16 @@ class Connector extends EventEmitter {
         throw new Error('${err} has occured.')
     });
 
+    this._tree.on('add') = (node) => {
+      node.on('sync') = (value) => {
+        let message = {}
+        message[this.getProtoKey(node._path)] = node.get();
+
+        try {
+          this.synchronize.write(message);
+        } // Add handling in the server.
+      }
+    }
     // this.initializeTree(); @deprecated
     this.emit('connected');
   }

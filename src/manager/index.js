@@ -43,7 +43,7 @@ function create(args, identifier=null, port=null, tree=null) {
         interface.port = _port;
         resolve(interface);
       } else {
-        reject(new Error('EADDRINUSE, Address already in use.'))
+        throw new Error('EADDRINUSE, Address already in use.');
       }
     })
   })
@@ -62,7 +62,7 @@ function start(instance) {
   return new Promise((resolve, reject) => {
     instance._process = spawn(global.binary_path, interface.args);
     instance._process.on('error') = (err) => {
-      reject(err); // This should be instantly fired
+      throw new Error(err); // This should be instantly fired
     }
     resolve(instance);
   })
@@ -80,7 +80,7 @@ function stop(instance) {
       resolve(`Child process terminated due to receipt of signal ${signal}`)
     })
     instance._process.on('error') = (err) => {
-      reject(err);
+      throw new Error(err);
     }
 
     instance._process.kill(); // SIGTERM
