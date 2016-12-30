@@ -11,6 +11,7 @@ switch(platform) {
   // TODO: Add more platforms
   case 'linux': path = '/'; break;
   case 'win32': path = '?'; break; // TODO: @a_teammate, add windows path
+  case 'darwin': path = '?'; break; // TODO: @Fohlen, add OSX path
   default:
     throw new Error('${platform} is not currently supported')
 }
