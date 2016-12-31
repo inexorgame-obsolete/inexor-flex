@@ -21,40 +21,45 @@ router.use(bodyParser.json());
 var root = new tree.Root();
 
 // Lists all available instances
-router.get('/instance', (req, res) => {
-  if (!root.contains('/instance')) {
-    root.addChild('instance', 'node');
+router.get('/instances', (req, res) => {
+  if (!root.contains('/instances')) {
+    root.addChild('instances', 'node');
   }
-  let instances = root.findNode('/instance')
+  let instances = root.findNode('/instances')
   res.json(instances.toString());
 })
 
 // Lists information about a given instance or raises a NonFoundError
-router.get('/instance/:id/', (req, res) => {
-  if (root.contains('/instance/' + req.params.id)) {
+router.get('/instances/:id/', (req, res) => {
+  if (root.contains('/instances/' + req.params.id)) {
     res.status(500).send('Instance with id ' + req.params.id + ' was not found');
   } else {
-    let instance = root.findNode('/instance/' + req.params.id).get();
+    let instance = root.findNode('/instances/' + req.params.id).get();
     res.json(instance.toString());
   }
 })
 
 // Creates an instance and inserts it into the tree. Returns the instance object, otherwise raises an error.
-router.post('/instance/create', (req, res) => {
-  if (body.args == null) {
-    res.status(500).send('Instance can not be created without command line arguments.');
+router.post('/instances/:id/', (req, res) => {
+  if (!root.contains('/instances/' + req.params.id)) {
+    if (req.body.args == null) {
+      res.status(500).send('Instance can not be created without command line arguments.');
+    } else {
+      manager.create(req.body.args, req.body.identifier, req.body.port).then((instance) => {
+        instance.tree = new tree.Root();
+        let _i = root.findNode('/instances').addChild(instance.id, 'node', instance);
+        res.json(_i.toString);
+      }).catch((err) => {
+        res.status(500).send(err);
+      })
+    }
   } else {
-    manager.create(body.args, body.identifier, body.port).then((instance) => {
-      instance.tree = new tree.Root();
-      tree.findNode('/instance').addChild(instance.id, 'node', instance);
-    }).catch((err) => {
-      res.status(500).send(err);
-    })
+    res.status(500).send('Instance with id ' + req.params.id + ' already exists.')
   }
 })
 
 // Starts an instance with :id. Returns the started instance or raises an error.
-router.get('/instance/:id/start', (req, res)  => {
+router.get('/instances/:id/start', (req, res)  => {
   if (root.contains('/instance/' + req.params.id)) {
     let instance = root.findNode('/instance').getChild(req.params.id);
     manager.start(instance).then((i) => {
@@ -69,7 +74,7 @@ router.get('/instance/:id/start', (req, res)  => {
 })
 
 // Stops an instance with :id. Returns the stoped instance or raises an error.
-router.get('/instance/:id/stop', (req, res)  => {
+router.get('/instances/:id/stop', (req, res)  => {
   if (root.contains('/instance/' + req.params.id)) {
     let instance = root.findNode('/instance').getChild(req.params.id);
     manager.stop(instance).then((i) => {
