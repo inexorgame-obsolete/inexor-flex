@@ -13,7 +13,6 @@ const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
 const connector = require('@inexor-game/connector');
 // const configurator = require('@inexor-game/configurator');
-const plugins = require('@inexor-game/plugins');
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -23,11 +22,11 @@ var root = new tree.Root();
 
 // Lists all available instances
 router.get('/instance', (req, res) => {
-  if (!tree.contains('/instance')) {
-    tree.addChild('/instance', 'node');
+  if (!root.contains('/instance')) {
+    root.addChild('instance', 'node');
   }
   let instances = root.findNode('/instance')
-  res.json(String(instances));
+  res.json(instances.toString());
 })
 
 // Lists information about a given instance or raises a NonFoundError
@@ -36,7 +35,7 @@ router.get('/instance/:id/', (req, res) => {
     res.status(500).send('Instance with id ' + req.params.id + ' was not found');
   } else {
     let instance = root.findNode('/instance/' + req.params.id).get();
-    res.json(String(instance));
+    res.json(instance.toString());
   }
 })
 
@@ -56,11 +55,11 @@ router.post('/instance/create', (req, res) => {
 
 // Starts an instance with :id. Returns the started instance or raises an error.
 router.get('/instance/:id/start', (req, res)  => {
-  if (tree.contains('/instance/' + req.params.id)) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/' + req.params.id)) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
     manager.start(instance).then((i) => {
       instance.set(i);
-      res.json(String(i));
+      res.json(i.toString());
     }).catch((err) => {
       res.status(500).send(err);
     })
@@ -71,11 +70,11 @@ router.get('/instance/:id/start', (req, res)  => {
 
 // Stops an instance with :id. Returns the stoped instance or raises an error.
 router.get('/instance/:id/stop', (req, res)  => {
-  if (tree.contains('/instance/' + req.params.id)) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/' + req.params.id)) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
     manager.stop(instance).then((i) => {
       instance.set(i);
-      res.json(String(i));
+      res.json(i.toString());
     }).catch((err) => {
       res.status(500).send(err);
     })
@@ -86,14 +85,14 @@ router.get('/instance/:id/stop', (req, res)  => {
 
 // Connects an instance with :id to Inexor Core. Returns the connected instance or raises an error.
 router.get('/instance/:id/connect', (req, res) => {
-  if (tree.contains('/instance/' + req.params.id)) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/' + req.params.id)) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
     let connector = new Connector(instance.port, instance.tree);
 
     try {
       connector.connect();
       instance._connector = connector; // Usefull for synchronization
-      res.json(String(instance));
+      res.json(instance.toStr());
     } catch (err) {
       res.status(500).send(err);
     }
@@ -105,12 +104,12 @@ router.get('/instance/:id/connect', (req, res) => {
 
 // Synchronizes an instance with Inexor Core. Returns the synchronized instance or raises an error.
 router.get('/instance/:id/synchronize', (req, res) => {
-  if (tree.contains('/instance/' + req.params.id)) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/' + req.params.id)) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
 
     if (instance._connector) {
       instance._connector._initialize();
-      res.json(String(instance));
+      res.json(instance.toStr());
     } else {
       res.status(500).send('There is no connector for instance ' + req.params.id);
     }
@@ -126,8 +125,8 @@ router.get('/instance/:id/configure', (req, res) => {
 
 // Set and get keys from instance/id's tree.
 router.get('/tree/:id/:path', (req, res) => {
-  if (tree.contains('/instance/') + req.params.id) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/') + req.params.id) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
     if (instance.tree.contains(req.params.path)) {
       res.json(String(instance.tree.findNode(req.params.path)));
     } else {
@@ -139,8 +138,8 @@ router.get('/tree/:id/:path', (req, res) => {
 })
 
 router.post('/tree/:id/:path', (req, res) => {
-  if (tree.contains('/instance/') + req.params.id) {
-    let instance = tree.findNode('/instance').getChild(req.params.id);
+  if (root.contains('/instance/') + req.params.id) {
+    let instance = root.findNode('/instance').getChild(req.params.id);
     if (instance.tree.contains(req.params.path)) {
       instance.tree.findNode(req.params.path).set(req.body.value);
       res.status(200);
@@ -161,7 +160,7 @@ var plugins = require('@inexor-game/plugins')
 
 router.get('/plugins/:name/:method', (req, res) => {
   try {
-    let f = new Function('return function + ' req.params.method + '()');
+    let f = new Function('return function ' + req.params.method + '()');
     plugins[req.params.name].f();
     res.status(200);
   } catch (err) {
