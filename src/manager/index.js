@@ -24,10 +24,10 @@ const defaultPort = 31415;
  * @param {string} args
  * @param {number} [identifier] - the instance identifier
  * @param {number} [port] - the port to bind to
- * @param {tree.Root} [tree] - the configuration tree
+ * @param {tree.Root} [t] - the configuration tree
  * @return {Promise<manager.instance>}
  */
-function create(args, identifier=null, port=null, tree=null) {
+function create(args, identifier=null, port=null, t=null) {
   return new Promise((resolve, reject) => {
     let instance = {};
     instance.tree = tree; // Is null if no tree is specified
@@ -35,12 +35,10 @@ function create(args, identifier=null, port=null, tree=null) {
 
     if (tree == null) {
       instance.tree = new tree.Root();
-    } else {
-      instance.tree = tree;
     }
 
     if (port == null && identifier == null) {
-      // TODO: choose a random port
+      identifier = defaultPort // TODO: choose a random port
     } else if (port == null && identifier != null) {
       _port = identifier;
     } else {

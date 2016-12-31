@@ -45,8 +45,7 @@ router.post('/instances/:id/', (req, res) => {
     if (req.body.args == null) {
       res.status(500).send('Instance can not be created without command line arguments.');
     } else {
-      manager.create(req.body.args, req.body.identifier, req.body.port).then((instance) => {
-        instance.tree = new tree.Root();
+      manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
         let _i = root.findNode('/instances').addChild(instance.id, 'node', instance);
         res.json(_i.toString);
       }).catch((err) => {
