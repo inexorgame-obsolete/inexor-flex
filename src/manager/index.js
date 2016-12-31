@@ -5,6 +5,7 @@
 
 const spawn = require('child_process').spawn;
 const portastic = require('portastic');
+const tree = require('@inexor-game/tree');
 
 // The default port to use
 const defaultPort = 31415;
@@ -12,8 +13,8 @@ const defaultPort = 31415;
 /**
  * A Inexore Core instance
  * @typedef {Object} instance
+ * @property {number} id - the instance identifier
  * @property {string} args - the command line arguments to supply to Inexor Core
- * @property {number} port - either the instance identifier or a randomly choosen port
  * @property {tree.Root} tree - the tree associated with the instance
  */
 
@@ -32,14 +33,23 @@ function create(args, identifier=null, port=null, tree=null) {
     instance.tree = tree; // Is null if no tree is specified
     let _port = null;
 
-    if (port == null) {
+    if (tree == null) {
+      instance.tree = new tree.Root();
+    } else {
+      instance.tree = tree;
+    }
+
+    if (port == null && identifier == null) {
       // TODO: choose a random port
+    } else if (port == null && identifier != null) {
+      _port = identifier;
     } else {
       _port = port;
     }
 
     portastic.test(_port).then((isOpen) => {
       if (isOpen) {
+        interface.id = identifier;
         interface.port = _port;
         resolve(interface);
       } else {
