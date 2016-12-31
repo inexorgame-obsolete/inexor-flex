@@ -25,9 +25,6 @@ router.use((err, req, res, next) => {
   next(err);
 })
 
-// Handle routes for plugins
-const plugins = require('@inexor-game/plugins');
-
 // Fire in the hole!
 app.use('/api/v1/', router);
 app.listen(argv.port, () => {

@@ -13,6 +13,7 @@ const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
 const connector = require('@inexor-game/connector');
 // const configurator = require('@inexor-game/configurator');
+const plugins = require('@inexor-game/plugins');
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -154,6 +155,18 @@ router.post('/tree/:id/:path', (req, res) => {
 // Will print the TOML representation of an object.
 router.get('/tree/:id/:path/dump', (req, res) => {
 
+})
+
+var plugins = require('@inexor-game/plugins')
+
+router.get('/plugins/:name/:method', (req, res) => {
+  try {
+    let f = new Function('return function + ' req.params.method + '()');
+    plugins[req.params.name].f();
+    res.status(200);
+  } catch (err) {
+    res.status(500).send(err);
+  }
 })
 
 module.exports = router;
