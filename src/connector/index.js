@@ -118,7 +118,9 @@ class Connector extends EventEmitter {
 
         try {
           this.synchronize.write(message);
-        } // Add handling in the server.
+        } catch (err) {
+          throw new Exception('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
+        }
       }
     }
     // this.initializeTree(); @deprecated
