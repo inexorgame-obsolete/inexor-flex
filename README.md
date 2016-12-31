@@ -70,3 +70,15 @@ Flex necessarily can't be decoupled as a whole, therefore the core implementatio
 Since those components tightly couple each other, and *must* work in order to start the game, components from `src` usually are *hard-loaded* via `require`. This in turn means that in order to hook into the API, code must be added manually.
 
 ## The RESTfull API
+See [v1.json](/tree/server/api/v1/v1.json) with [swagger](http://swagger.io/).
+
+# TODO
+Following is still undone
+
+ - complete the [plugin framework](tree/plugins/)
+ - complete the [TOML configurator](tree/src/configurator)
+ - add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - test everything extensively, fix passages that are marked with TODO (and add unit tests!)
+ - fix the documentation and add [swagger](https://www.npmjs.com/package/swagger-jsdoc) to the APIdocs
+ - glue together UI, Flex and Core with submodules, see [this issue](https://github.com/inexor-game/code/issues/360)
+ - add a `snapcraft.yaml` to package flex independently
