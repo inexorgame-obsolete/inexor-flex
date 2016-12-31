@@ -19,13 +19,13 @@ const defaultPort = 31415;
  */
 
 /**
- * Creates an interface
+ * Creates an instance
  * @function
  * @param {string} args
- * @param {number} [identifier] - the interface identifier
+ * @param {number} [identifier] - the instance identifier
  * @param {number} [port] - the port to bind to
  * @param {tree.Root} [tree] - the configuration tree
- * @return {Promise<manager.interface>}
+ * @return {Promise<manager.instance>}
  */
 function create(args, identifier=null, port=null, tree=null) {
   return new Promise((resolve, reject) => {
@@ -49,9 +49,9 @@ function create(args, identifier=null, port=null, tree=null) {
 
     portastic.test(_port).then((isOpen) => {
       if (isOpen) {
-        interface.id = identifier;
-        interface.port = _port;
-        resolve(interface);
+        instance.id = identifier;
+        instance.port = _port;
+        resolve(instance);
       } else {
         throw new Error('EADDRINUSE, Address already in use.');
       }
@@ -62,15 +62,15 @@ function create(args, identifier=null, port=null, tree=null) {
 /**
  * Starts an instance and returns the instance with a child_process attached
  * @function
- * @param {manager.interface}
- * @return {Promise<interface>}
+ * @param {manager.instance}
+ * @return {Promise<instance>}
  */
 function start(instance) {
   // Since the manager is not responsible for handling executable paths, we premise that
   // a command string exists at global.binary_path;
 
   return new Promise((resolve, reject) => {
-    instance._process = spawn(global.binary_path, interface.args);
+    instance._process = spawn(global.binary_path, instance.args);
     instance._process.on('error') = (err) => {
       throw new Error(err); // This should be instantly fired
     }
