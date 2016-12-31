@@ -1,18 +1,18 @@
 {
   "opts": {
     "destination": "./docs/",
-    "recurse": true,     
-    "tutorials": "src/tutorials"
+    "recurse": true
   },
     "tags": {
         "allowUnknownTags": true,
         "dictionaries": ["jsdoc","closure"]
     },
     "source": {
+        "include": ["server/", "plugins", "src"],
+        "exclude": ["node_modules"],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
-    "plugins": ["markdown"],
     "templates": {
         "cleverLinks": false,
         "monospaceLinks": false

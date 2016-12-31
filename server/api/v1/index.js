@@ -1,6 +1,6 @@
 /**
- * @module @inexor-game/rest
- * This is a solely virtual module, for documentation purposes
+ * @module @inexor-game/api
+ * The API that drives flex.
  *
  */
 
