@@ -1,5 +1,5 @@
 /**
- * @module @inexor-game/api
+ * @module api
  * The API that drives flex.
  *
  */

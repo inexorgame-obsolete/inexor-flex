@@ -1,12 +1,8 @@
-/**
- * @module tree
- */
 const Node = require('./Node')
 const util = require('./util')
 
 /**
  * Represents the inexor root tree
- * @name Root
  */
 class Root extends Node {
     /**

@@ -1,7 +1,7 @@
 /**
  * @module configurator
- * Traverses a folder and searches for valid TOML documents
- * Builds an insertable tree object
+ * Configures Inexor
+ * @see {@link https://github.com/BinaryMuse/toml-node}
  */
 
 const tree = require('@inexor-game/tree');

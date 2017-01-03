@@ -1,7 +1,6 @@
 /**
  * @module tree
- * Provides generic methods to work with bucket-js trees
- * @see buckets-js
+ * Provides generic methods to work trees
  */
 
 const Node = require('./Node');

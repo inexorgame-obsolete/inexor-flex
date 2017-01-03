@@ -1,15 +1,9 @@
-/**
- * @module tree
- */
-
 const EventEmitter = require('events');
 const util = require('./util')
 
 /**
  * Represents a tree Node
- * @name Node
  * @todo Add a verbose logging system (shouldn't be difficult though)
- * @see module/bunyan
  */
 class Node extends EventEmitter {
     /**
