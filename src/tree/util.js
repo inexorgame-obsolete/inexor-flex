@@ -1,7 +1,3 @@
-/*
- * @module tree
- */
-
 /**
  * @property {string} separator - the tree seperator, usually "/"
  */
@@ -14,14 +10,14 @@ const validName = /^[\w ]+$/;
 /**
  * Defines a possible node data type
  * Can be either: node, int64, string, float, bool or timestamp
- * @typedef {tree.Node|boolean|number|string|Date} datatype
+ * @typedef {(Node|boolean|number|string|Date)} datatype
  */
 
 /**
- * Checks whether type has a correct {@link tree.datatype}
+ * Checks whether type has a correct {@link datatype}
  * @name isValidDataType
- * @param {tree.datatype} type
- * @return {bool}
+ * @param {datatype} type
+ * @return {boolean}
  */
 function isValidDataType(datatype) {
     return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
