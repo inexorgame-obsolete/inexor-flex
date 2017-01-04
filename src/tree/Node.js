@@ -20,26 +20,20 @@ class Node extends EventEmitter {
         super();
 
         /**
-         * @member
-         * @name Node._parent
-         * @type {Node}
          * @private
+         * @property {Node} parent
          */
         this._parent = parent;
 
         /**
-         * @member
-         * @name Node._name
-         * @type {string}
          * @private
+         * @property {string} _name
          */
         this._name = name;
 
         /**
-         * @member
-         * @name Node._path
-         * @type {string}
          * @private
+         * @property {string} _path
          */
 
         // The path of the tree (unique)
@@ -54,10 +48,8 @@ class Node extends EventEmitter {
         }
 
         /**
-         * @member
-         * @name Node._datatype
-         * @type {tree.datatype}
          * @private
+         * @property {datatype} _datatype
          */
 
         // The data type of the Node
@@ -68,10 +60,8 @@ class Node extends EventEmitter {
         }
 
         /**
-         * @member
-         * @name Node._readOnly
-         * @type {bool}
          * @private
+         * @property {boolean} _readOnly
          *
          * @todo this could be done using prototype defines
          */
@@ -79,37 +69,27 @@ class Node extends EventEmitter {
 
         /**
          * Is a node a container (does it contain children)?
-         * @member
-         * @name Node.isContainer
-         * @type {bool}
+         * @property {bool} isContainer
          */
 
         /**
          * Is the node a data leaf?
-         * @member
-         * @name Node.isLeaf
-         * @type {bool}
+         * @property {bool} isLeaf - is the node a data leaf?
          */
 
         /**
-         * @member
-         * @name Node._value
-         * @type {Mixed}
          * @private
+         * @property {mixed} _value
          */
 
         /**
-         * @member
-         * @name Node._timestamp
-         * @type {Date}
          * @private
+         * @property {Date} _timespamp
          */
 
         /**
-         * @member
-         * @name Node._sync
-         * @type {bool}
          * @private
+         * @property {bool} _sync
          */
 
         // Check the node type (either node or a data item)
@@ -317,9 +297,9 @@ class Node extends EventEmitter {
             for (var [name, childNode] of this._value.entries()) {
                 entries[name] = childNode.toString();
             }
-            return entries;
+            return JSON.stringify(entries);
         } else {
-            return this._value;
+            return JSON.stringify(this._value);
         }
     }
 }

@@ -18,4 +18,11 @@ describe('Node', function() {
       expect(createNode).to.throw('Child nodes shall not be prefixed with /');
     })
   })
+
+  describe('toStr', function() {
+    it('should serialize a string object', function() {
+      let n = new Node(null, 'setting', 'string', 'someimportantsetting')
+      expect(n.toString()).to.be.equal(JSON.stringify('someimportantsetting'))
+    })
+  })
 })
