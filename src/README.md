@@ -15,3 +15,34 @@ This has the following side-effects:
 
 - the `link` command makes installing obselete
 - which in turn reduces file overhead
+
+# Package.json example
+Following is an example configuration to be used for your `package.json`
+
+`
+{
+  "name": "@inexor-game/someawesomemodule",
+  "version": "1.0.0",
+  "description": "Some awesome module.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "someawesomemodule"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {}
+}
+`
