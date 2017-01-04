@@ -107,11 +107,15 @@ class Node extends EventEmitter {
             if (initialValue != null) {
                 this._value = initialValue;
             } else {
-                throw 'No initial value provided';
+                throw new Error('No initial value provided');
             }
 
-            // Sets if the tree node should be synchronized.
-            this._sync = sync;
+            if (datatype == 'flex') {
+              this._sync = false; // Never enable sync for flex types
+            } else {
+              // Sets if the tree node should be synchronized.
+              this._sync = sync;
+            }
         }
     }
 

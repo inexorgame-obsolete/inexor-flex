@@ -19,6 +19,15 @@ describe('Node', function() {
     })
   })
 
+  describe('addChild', function() {
+    it('should return a node with value xy, when added as a flex', function() {
+      let n = new Node('/', '', 'node');
+      let obj = { x: 1 };
+      let child = n.addChild('test', 'flex', obj)
+      expect(child.get()).to.be.equal(obj);
+    })
+  })
+
   describe('toStr', function() {
     it('should serialize a string object', function() {
       let n = new Node(null, 'setting', 'string', 'someimportantsetting')

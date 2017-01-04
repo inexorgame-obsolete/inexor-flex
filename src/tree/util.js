@@ -9,7 +9,7 @@ const validName = /^[\w ]+$/;
 
 /**
  * Defines a possible node data type
- * Can be either: node, int64, string, float, bool or timestamp
+ * Can be either: flex, node, int64, string, float, bool or timestamp
  * @typedef {(Node|boolean|number|string|Date)} datatype
  */
 
@@ -20,7 +20,7 @@ const validName = /^[\w ]+$/;
  * @return {boolean}
  */
 function isValidDataType(datatype) {
-    return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
+    return datatype == 'flex' || datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
 }
 
 module.exports = {

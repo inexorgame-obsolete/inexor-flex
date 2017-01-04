@@ -3,6 +3,10 @@ const util = require('../util');
 
 describe('util', function() {
   describe('isValidDataType', function() {
+    it('flex should be valid', function() {
+      expect(util.isValidDataType('flex')).to.be.true;
+    })
+
     it('node should be valid', function() {
       expect(util.isValidDataType('node')).to.be.true;
     })
