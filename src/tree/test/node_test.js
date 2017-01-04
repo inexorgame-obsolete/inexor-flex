@@ -9,5 +9,13 @@ describe('Node', function() {
       }
       expect(createNode).to.throw('Invalid data type');
     })
+
+    it('should not allow prefixed child insertions', function() {
+      function createNode() {
+        let r = new Node('/', '', 'node');
+        return r.addChild('/test', 'node');
+      }
+      expect(createNode).to.throw('Child nodes shall not be prefixed with /');
+    })
   })
 })

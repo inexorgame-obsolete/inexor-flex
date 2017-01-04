@@ -247,6 +247,9 @@ class Node extends EventEmitter {
     addChild(name, datatype, initialValue = null, sync = false, readOnly = false) {
         if (this.hasChild(name)) {
             return this.getChild(name);
+        } else if (name.indexOf('/') == 0) {
+            // This is NOT the root leave, don't insert it like this
+            throw new Error('Child nodes shall not be prefixed with /');
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
             // Create the child tree node
             let childNode = new Node(this, name, datatype, initialValue, sync, readOnly);
@@ -266,7 +269,7 @@ class Node extends EventEmitter {
             this.emit('add', childNode); // Used for subscribing
             return childNode;
         } else {
-            throw 'Failed to create child node';
+            throw new Error('Failed to create child node');
         }
     }
 

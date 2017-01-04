@@ -104,7 +104,7 @@ class Connector extends EventEmitter {
     });
 
     this.synchronize.on('status', function(status) {
-        throw new Exception('Status ${status} has been received.') // Usually we don't send status information, might change
+        throw new Error('Status ${status} has been received.') // Usually we don't send status information, might change
     });
 
     this.synchronize.on('error', function(err) {
@@ -119,7 +119,7 @@ class Connector extends EventEmitter {
         try {
           this.synchronize.write(message);
         } catch (err) {
-          throw new Exception('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
+          throw new Error('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
         }
       }
     }
