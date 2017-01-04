@@ -30,10 +30,10 @@ const defaultPort = 31415;
 function create(args, identifier=null, port=null, t=null) {
   return new Promise((resolve, reject) => {
     let instance = {};
-    instance.tree = tree; // Is null if no tree is specified
+    instance.tree = t; // Is null if no tree is specified
     let _port = null;
 
-    if (tree == null) {
+    if (t == null) {
       instance.tree = new tree.Root();
     }
 

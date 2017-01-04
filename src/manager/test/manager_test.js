@@ -11,8 +11,7 @@ describe('Manager', function() {
     it('should contain a valid tree instance after creation', function() {
       manager.create('gabbagecli').then((instance) => {
         expect(instance.tree).to.be.an.instanceof(tree.Root);
-        done();
-      }, (err) => done(err))
+      })
     })
   })
 })
