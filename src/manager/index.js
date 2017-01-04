@@ -38,7 +38,18 @@ function create(args, identifier=null, port=null, t=null) {
     }
 
     if (port == null && identifier == null) {
-      identifier = defaultPort // TODO: choose a random port
+      try {
+        portastic.find({min: defaultPort, max: defaultPort + 1000}).then((ports) => {
+          if (array.length < 0) {
+            throw new Error('No open port found'); // This should never happen, honestly.
+          } else {
+            identifier = ports[0]
+            _port = identifier
+          }
+        })
+      } catch (e) {
+        throw new Error('Something went wrong while finding an open port.')
+      }
     } else if (port == null && identifier != null) {
       _port = identifier;
     } else {
