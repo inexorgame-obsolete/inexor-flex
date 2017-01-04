@@ -70,15 +70,18 @@ Flex necessarily can't be decoupled as a whole, therefore the core implementatio
 Since those components tightly couple each other, and *must* work in order to start the game, components from `src` usually are *hard-loaded* via `require`. This in turn means that in order to hook into the API, code must be added manually.
 
 ## The RESTfull API
-See [v1.json](/tree/server/api/v1/v1.json) with [swagger](http://swagger.io/).
+Documentation shall be done via swagger as soon as the `v3 spec` is released, which brings `AnyOf` support.
+In the meantime please have a look at [api/v1](https://github.com/OAI/OpenAPI-Specification/pull/741).The comments should be sufficient.
+
+## Writing plugins
+Have a look at the [plugin documentation](/plugins/README.md).
 
 # TODO
-Following is still undone
+Following is still undone:
 
- - complete the [plugin framework](tree/plugins/)
- - complete the [TOML configurator](tree/src/configurator)
- - add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
- - test everything extensively, fix passages that are marked with TODO (and add unit tests!)
- - fix the documentation and add [swagger](https://www.npmjs.com/package/swagger-jsdoc) to the APIdocs
- - glue together UI, Flex and Core with submodules, see [this issue](https://github.com/inexor-game/code/issues/360)
- - add a `snapcraft.yaml` to package flex independently
+ - [ ] complete the [plugin framework](/plugins/index.js)
+ - [ ] complete the [TOML configurator](/src/configurator/index.js)
+ - [ ] add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
+ - [ ] glue together UI, Flex and Core with submodules, see [this issue](https://github.com/inexor-game/code/issues/360)
+ - [ ] add a `snapcraft.yaml` to package flex independently
