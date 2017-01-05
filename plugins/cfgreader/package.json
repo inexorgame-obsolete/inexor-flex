@@ -1,0 +1,21 @@
+{
+  "name": "@inexor-plugins/cfgreader",
+  "version": "1.0.0",
+  "description": "Reads old-school .cfg files",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "plugins",
+    "cfg"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme"
+}
