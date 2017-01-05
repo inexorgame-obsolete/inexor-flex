@@ -175,16 +175,4 @@ router.get('/tree/:id/:path/dump', (req, res) => {
 
 })
 
-var plugins = require('@inexor-game/plugins')
-
-router.get('/plugins/:name/:method', (req, res) => {
-  try {
-    let f = new Function('return function ' + req.params.method + '()');
-    plugins[req.params.name].f();
-    res.status(200);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-})
-
 module.exports = router;
