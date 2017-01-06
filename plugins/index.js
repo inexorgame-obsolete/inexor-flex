@@ -4,22 +4,28 @@ const bodyParser = require('body-parser');
 
 // Plugin dependencies
 const pack = require('./package.json');
-var IoC = require('electrolyte');
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-plugins = {};
-IoC.use(IoC.node_modules()); // Require components from the same directory
-//Ioc.use(Ioc.)
+/**
+ * @private
+ * @param {string} key - the plugin key prefixed with @inexor-plugins/
+ * @return {string} - the name of the plugin
+ */
+function getPluginName(key) {
+  let name = key.split('/')[1]; // Everything after @inexor-plugins/
+}
 
 Object.keys(pack.dependencies).forEach((key) => {
   if (String(key).includes('@inexor-plugins/')) {
-    let name = key.split('/')[1]; // Everything after @inexor-plugins/
-    let component = IoC.create(name); // Should require the folder
-    plugins[name] = component;
+    if (require(key)['@routable']) {
+      require(key)(router); // NOTE: This calls the exported function
+    }
   }
 })
+
+console.log(router);
 
 module.exports = router;

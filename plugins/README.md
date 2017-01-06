@@ -1,4 +1,4 @@
-@inexor-game/plugins
+plugins
 ======================
 
 The indefenite guide for writing Inexor Plugins
@@ -13,9 +13,10 @@ Typing `./flex plugins` will prompt you the available commands.
 For writing a plugin, muliple steps are necessary to succeed:
 
 - Bootstraping a `npm` module
-- Writing an appropriate electrolyte module
+- Writing an appropriate module
 - Installing it via `npm`
   - from the `npm` registry
+  - linking dependencies from other plugins
 - Adding routes to be exposed via the API
 - ~~Linking to instance tree's~~
 
@@ -25,9 +26,22 @@ Refer to the npm documentation on how to do this. An example `package.json` can 
 For convenience, adding your module to the `plugins` folder will reduce your hassle of installing and testing the plugin.
 To be loaded by the `flex plugin` framework, your module *must* be [scoped](https://docs.npmjs.com/misc/scope) with `@inexor-plugins`
 
-## Writing an appropriate electrolyte module
-Follow down the [electrolyte documentation](https://github.com/jaredhanson/electrolyte) to write a plugin in your [main entry file](https://docs.npmjs.com/files/package.json#main), e.g: `index.js`
-Since the framework by default loads all plugins scopes with `@inexor-plugins` you can as well reference other plugins as dependencies with the `[@require]` keyword.
+## Writing an appropriate module
+Our approach is similliar to [electrolyte](https://www.npmjs.com/package/electrolyte). Add a file [as below](#plugin-code-bootstrap) in your [main entry file](https://docs.npmjs.com/files/package.json#main), e.g: `index.js`
+Since the framework by default loads all plugins scopes with `@inexor-plugins` you can as well include other plugins as dependencies with `require('@inexor-plugins/nameoftheplugin')`
+
+### Plugin code bootstrap
+```js
+exports = module.exports = function() {
+  return {
+    x: 'settingone',
+    y: 'settingtwo',
+    f: function() {
+      // Do something here
+    }
+  }
+}
+```
 
 ## Installing it via npm
 Bear in mind that the commands discussed below must be executed in the `plugins` folder.
@@ -39,19 +53,23 @@ If you've bootstrapped your plugin in the `plugins/` folder, simply `npm install
 To use your plugin you will first have to publish it to the `npm` registry. See the [documentation](https://docs.npmjs.com/getting-started/publishing-npm-packages).
 After publishing your plugin, you can install it as easily as `npm install @inexor-plugins/yourpluginname`
 
+### Linking dependencies from other plugins
+If you'd like to use other `@inexor-plugins` objects (e.g to extend their functionality), you can do this by using `npm link`. Refer to the [src documentation](src/README.md#linking) for an example.
+
 ## Adding routes
-To make your plugin functionality accessable from the `flex` API, you can add a `routes` attribute to your module.
-The convention is provided by the express router functionality, allowing you full flexibility.
-A routes object usually looks like this:
+To make your plugin functionality accessable from the `flex` API, you must use the `[@routable]` attribute.
+The plugins main [router object](http://expressjs.com/en/4x/api.html#router) will be provided to your entry function as the first parameter.
+
 ```
-exports[@routes]: {
-  get: {
-    '/plugin/:arg': function(req, res) {
-      // do something with the request and result objects here
-      res.json(plugin.doSomeThing(req.params.arg));
-    }
-  }
+exports = module.exports = function(router) {
+  router.get('xy', function(req, res) {
+    res.status(200);
+  })
+
+  return router;
 }
+
+exports['@routable'] = true;
 ```
 
 # Testing considerations
@@ -59,4 +77,6 @@ When you bootstrapped your module in `plugins` the full `flex` [testing toolchai
 
 # TODO
 
+- [ ] prefix routes with their plugin name
+- [ ] prefixing will add a namespace security, that prevents overriding
 - [ ] add a possibility to interact with instance trees

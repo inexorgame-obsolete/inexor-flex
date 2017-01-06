@@ -22,8 +22,8 @@
   },
   "private": true,
   "dependencies": {
+    "@inexor-plugins/cfgreader": "file:cfgreader",
     "body-parser": "^1.15.2",
-    "electrolyte": "^0.4.0",
     "express": "^4.14.0"
   }
 }

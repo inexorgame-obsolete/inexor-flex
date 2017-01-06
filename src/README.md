@@ -3,7 +3,7 @@ src
 
 The `src` directory contains essentially important modules for `@inexor-game/flex`
 
-# Installation
+# Linking
 Since `npm` is incapable of linking relative paths without pain, in order to bootstrap packages propperly
 (e.g for development, testing ..) you must use `link` to install the packages.
 For instance, if you'd like to write a package that uses the `tree` package, you would to the following:
