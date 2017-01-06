@@ -19,7 +19,7 @@ This has the following side-effects:
 # Package.json example
 Following is an example configuration to be used for your `package.json`
 
-`
+```json
 {
   "name": "@inexor-game/someawesomemodule",
   "version": "1.0.0",
@@ -45,4 +45,4 @@ Following is an example configuration to be used for your `package.json`
   "private": true,
   "dependencies": {}
 }
-`
+```
