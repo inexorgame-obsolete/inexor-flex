@@ -82,6 +82,8 @@ Following is still undone:
  - [ ] complete the [plugin framework](/plugins/index.js)
  - [ ] complete the [TOML configurator](/src/configurator/index.js)
  - [ ] add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - [x] fix the documentation
+ - [ ] add a task to automagically reinstall modules once they are changed (for development)
  - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
  - [ ] glue together UI, Flex and Core with submodules, see [this issue](https://github.com/inexor-game/code/issues/360)
  - [ ] add a `snapcraft.yaml` to package flex independently
