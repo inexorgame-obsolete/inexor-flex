@@ -79,7 +79,7 @@ Have a look at the [plugin documentation](/plugins/README.md).
 # TODO
 Following is still undone:
 
- - [ ] complete the [plugin framework](/plugins/index.js)
+ - [x] complete the [plugin framework](/plugins/index.js)
  - [ ] complete the [TOML configurator](/src/configurator/index.js)
  - [ ] add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
  - [x] fix the documentation

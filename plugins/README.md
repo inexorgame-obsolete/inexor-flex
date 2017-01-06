@@ -58,7 +58,7 @@ If you'd like to use other `@inexor-plugins` objects (e.g to extend their functi
 
 ## Adding routes
 To make your plugin functionality accessable from the `flex` API, you must use the `[@routable]` attribute.
-The plugins main [router object](http://expressjs.com/en/4x/api.html#router) will be provided to your entry function as the first parameter.
+The plugins main [router object](http://expressjs.com/en/4x/api.html#router) will be prepared (to be usable as a REST API, `JSON body parsing` is automatically injected) and provided to your entry function as the first parameter.
 
 ```
 exports = module.exports = function(router) {
@@ -72,11 +72,13 @@ exports = module.exports = function(router) {
 exports['@routable'] = true;
 ```
 
+Your routes will be made available at `flex:flexport/api/plugins/yourpluginname/(...)` in which case `(...)` is an isolated router object that you prepared.
+
 # Testing considerations
-When you bootstrapped your module in `plugins` the full `flex` [testing toolchain](README.md#testing) is available for your module as well.
+When you bootstrapped your module in `plugins` the full `flex` [testing toolchain](/README.md#testing) is available for your module as well.
 
 # TODO
 
-- [ ] prefix routes with their plugin name
-- [ ] prefixing will add a namespace security, that prevents overriding
+- [x] prefix routes with their plugin name
+- [x] prefixing will add a namespace security, that prevents overriding
 - [ ] add a possibility to interact with instance trees

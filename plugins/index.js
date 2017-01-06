@@ -18,14 +18,25 @@ function getPluginName(key) {
   let name = key.split('/')[1]; // Everything after @inexor-plugins/
 }
 
+/**
+ * @private
+ * @return {Object} - a router object
+ */
+function freshRouter() {
+  let router = express.Router();
+  router.use(bodyParser.urlencoded({ extended: true }));
+  router.use(bodyParser.json());
+  return router;
+}
+
+// THIS is quiet a performance bummer, but it works
 Object.keys(pack.dependencies).forEach((key) => {
   if (String(key).includes('@inexor-plugins/')) {
     if (require(key)['@routable']) {
-      require(key)(router); // NOTE: This calls the exported function
+      let r = require(key)(freshRouter()); // NOTE: This calls the exported function
+      router.use('/' + getPluginName(key), r);
     }
   }
 })
-
-console.log(router);
 
 module.exports = router;
