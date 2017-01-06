@@ -8,12 +8,12 @@ const util = require('./util')
 class Node extends EventEmitter {
     /**
      * @constructor
-     * @param parent - the parent node
+     * @param {(Node|null)} - the parent node
      * @param {string} name - Must not contain whitespace or dots
-     * @param {tree.datatype} type - the data type to be used
+     * @param {datatype} type - the data type to be used
      * @param {mixed} initValue
-     * @param {bool} sync
-     * @param {bool} readOnly
+     * @param {boolean} sync
+     * @param {boolean} readOnly
      */
     constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false) {
         // parent constructor
@@ -69,12 +69,12 @@ class Node extends EventEmitter {
 
         /**
          * Is a node a container (does it contain children)?
-         * @property {bool} isContainer
+         * @property {boolean} isContainer
          */
 
         /**
          * Is the node a data leaf?
-         * @property {bool} isLeaf - is the node a data leaf?
+         * @property {boolean} isLeaf - is the node a data leaf?
          */
 
         /**
@@ -89,7 +89,7 @@ class Node extends EventEmitter {
 
         /**
          * @private
-         * @property {bool} _sync
+         * @property {boolean} _sync
          */
 
         // Check the node type (either node or a data item)
@@ -144,7 +144,7 @@ class Node extends EventEmitter {
      * @function
      * @name Node.set
      * @param {mixed} value
-     * @param {bool} preventSync - whether the value should be synchronized or not
+     * @param {boolean} preventSync - whether the value should be synchronized or not
      * @fires Node.preSet
      * @fires Node.postSet
      * @fires Node.sync
@@ -172,7 +172,7 @@ class Node extends EventEmitter {
      * @function
      * @name Node.hasChild
      * @param {string} name
-     * @return {bool}
+     * @return {boolean}
      */
     hasChild(name) {
         return this.isContainer && this._value.has(name);
@@ -208,7 +208,7 @@ class Node extends EventEmitter {
      * Returns the child names
      * @function
      * @name Node.getChildNames
-     * @return {string[]}
+     * @return {Array<string>}
      */
     getChildNames() {
         let keys = (this.isContainer) ? new Array().from(this._value.keys()) : [];
@@ -222,8 +222,8 @@ class Node extends EventEmitter {
      * @param {string} name
      * @param {tree.datatype} datatype
      * @param {mixed} initialValue
-     * @param {bool} sync
-     * @param {bool} readOnly
+     * @param {boolean} sync
+     * @param {boolean} readOnly
      * @return {Node}
      * @see Node.constructor
      * @fires Node.add
@@ -283,7 +283,7 @@ class Node extends EventEmitter {
      * Returns the parent node or null if the tree node is the root node
      * @function
      * @name Node.getParent
-     * @return {tree.Node|null}
+     * @return {Node|null}
      */
     getParent() {
         return (this._path != util.separator) ? this._parent : null;

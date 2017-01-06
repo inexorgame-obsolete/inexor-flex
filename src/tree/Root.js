@@ -40,8 +40,8 @@ class Root extends Node {
      * @param {string} path
      * @param {datatype} datatype
      * @param {mixed} initialValue
-     * @param {bool} sync
-     * @param {bool} readOnly
+     * @param {boolean} sync
+     * @param {boolean} readOnly
      * @param {string} protoKey
      */
     createRecursive(path, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {

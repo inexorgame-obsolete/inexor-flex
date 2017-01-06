@@ -80,9 +80,9 @@ function start(instance) {
 
   return new Promise((resolve, reject) => {
     instance._process = spawn(global.binary_path, instance.args);
-    instance._process.on('error') = (err) => {
+    instance._process.on('error', (err) => {
       throw new Error(err); // This should be instantly fired
-    }
+    })
     resolve(instance);
   })
 }
@@ -98,9 +98,9 @@ function stop(instance) {
     instance._process.on('close', (code, signal) => {
       resolve(`Child process terminated due to receipt of signal ${signal}`)
     })
-    instance._process.on('error') = (err) => {
+    instance._process.on('error', (err) => {
       throw new Error(err);
-    }
+    })
 
     instance._process.kill(); // SIGTERM
   })

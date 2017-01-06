@@ -6,12 +6,13 @@ const bodyParser = require('body-parser');
 const pack = require('./package.json');
 var IoC = require('electrolyte');
 
+var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 plugins = {};
 IoC.use(IoC.node_modules()); // Require components from the same directory
-Ioc.use(Ioc.)
+//Ioc.use(Ioc.)
 
 Object.keys(pack.dependencies).forEach((key) => {
   if (String(key).includes('@inexor-plugins/')) {

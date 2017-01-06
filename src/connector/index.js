@@ -12,13 +12,13 @@ const tree = require('@inexor-game/tree');
 const protoPath = path.dirname(require.main.filename) + '/core/bin/inexor.proto'
 
 /**
- * Connects a {@link tree.Root} with a Inexor Core instance
+ * Connects a {@link Root} with a Inexor Core instance
  */
 class Connector extends EventEmitter {
   /**
    * @constructor
    * @param {number} port - the port of Inexor Core
-   * @param {tree.Root} root - the tree to synchronize with
+   * @param {Root} root - the tree to synchronize with
    */
   constructor(port, root) {
     /**
@@ -56,7 +56,7 @@ class Connector extends EventEmitter {
    * Returns the datatype of the field by proto key.
    * @function
    * @param {string} protoKey
-   * @return {tree.datatype}
+   * @return {datatype}
    */
   getDataType(protoKey) {
     return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].type.name;
@@ -111,8 +111,8 @@ class Connector extends EventEmitter {
         throw new Error('${err} has occured.')
     });
 
-    this._tree.on('add') = (node) => {
-      node.on('sync') = (value) => {
+    this._tree.on('add', function(node) {
+      node.on('sync', function(value) {
         let message = {}
         message[this.getProtoKey(node._path)] = node.get();
 
@@ -121,8 +121,9 @@ class Connector extends EventEmitter {
         } catch (err) {
           throw new Error('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
         }
-      }
-    }
+      })
+    })
+
     // this.initializeTree(); @deprecated
     this.emit('connected');
   }

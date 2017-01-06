@@ -8,9 +8,14 @@ const separator = '/';
 const validName = /^[\w ]+$/;
 
 /**
+ * Defines the Flex data type: a virtual object that is not synchronized to the tree.
+ * @typedef {mixed} Flex
+ */
+
+/**
  * Defines a possible node data type
- * Can be either: flex, node, int64, string, float, bool or timestamp
- * @typedef {(Node|boolean|number|string|Date)} datatype
+ * Can be either: Flex, Node, int64, string, float, bool or timestamp
+ * @typedef {(Flex|Node|boolean|number|string|Date)} datatype
  */
 
 /**
