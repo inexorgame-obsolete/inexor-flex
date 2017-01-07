@@ -201,7 +201,11 @@ class Node extends EventEmitter {
      * @return {Node}
      */
     getChild(name) {
-        if (this.hasChild(name)) return this._value.get(name);
+        if (this.hasChild(name)) {
+        	  return this._value.get(name);
+        } else {
+        	  return null;
+        }
     }
 
     /**
@@ -253,7 +257,17 @@ class Node extends EventEmitter {
             this.emit('add', childNode); // Used for subscribing
             return childNode;
         } else {
-            throw new Error('Failed to create child node');
+        	  var reason = "";
+        	  if (this.hasChild(name)) {
+        	  	reason = "Child " + name + "already exists";
+        	  } else if (!this.isContainer) {
+        	  	reason = "Parent node must be a container node: isContainer=" + String(this.isContainter);
+        	  } else if (!util.validName.test.bind(name)) {
+        	  	reason = "Not a valid name:" + name;
+        	  } else if (!util.isValidDataType(datatype)) {
+        	  	reason = "Not a valid data type: " + datatype;
+        	  }
+            throw new Error('Failed to create child node: ' + reason);
         }
     }
 
