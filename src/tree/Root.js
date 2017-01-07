@@ -26,6 +26,7 @@ class Root extends Node {
         let node = this;
         for (let i = 1; i < splittedPath.length; i++) {
             node = node.getChild(splittedPath[i]);
+            if (node == null) return null;
         }
 
         return node;
