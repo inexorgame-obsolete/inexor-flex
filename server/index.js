@@ -10,6 +10,7 @@ const express = require('express');
 
 // Set's the executable path for all instances
 global.binary_path = (argv.binary == null) ? require('./util/core_path') : argv.binary;
+global.flex_path = process.env.PWD;
 
 // Returns a logger instance
 var log = require('./util/logger')(argv.console, argv.file, argv.level)
