@@ -3,7 +3,7 @@ const bunyan = require('bunyan');
 /**
  * @private
  * Returns a bunyan logger
- * @param {boolean} console - wether or not to use the console
+ * @param {boolean} console - whether or not to use the console
  * @param {string} path - a file path
  * @param {string} level - the log level to display
  */
