@@ -38,7 +38,7 @@ var plugins = require('@inexor-game/plugins');
 
 // Fire in the hole!
 app.use('/api/v1/', api);
-app.use('/api/plugins', plugins); // There is no fixed api version for plugins
+// app.use('/api/plugins', plugins); // There is no fixed api version for plugins
 
 app.listen(argv.port, () => {
   log.info('Inexor Flex is listening on ' + argv.port)
