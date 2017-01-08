@@ -7,26 +7,14 @@
 const process = require('process');
 const express = require('express');
 const bodyParser = require('body-parser');
-const bunyan = require('bunyan');
-const bunyanDebugStream = require('bunyan-debug-stream');
+const util = require('util');
+const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
 const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
 const connector = require('@inexor-game/connector');
 // const configurator = require('@inexor-game/configurator');
-
-var log = bunyan.createLogger({
-	name: '@inexor-game/api_v1',
-	streams: [{
- 		level: 'debug',
- 		type: 'raw',
- 		stream: bunyanDebugStream({
- 			forceColor: true
- 		})
-	}],
-	serializers: bunyanDebugStream.serializers
-});
 
 var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -62,7 +50,7 @@ router.post('/instances/:id', (req, res) => {
     } else {
       manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
       	let node = instances.addChild(String(instance.id), 'flex', instance);
-      	log.info("Successfully created instance: " + node.getPath());
+      	debuglog("Successfully created instance: " + node.getPath());
         res.json(node.get());
       }).catch((err) => {
         res.status(500).send(err);

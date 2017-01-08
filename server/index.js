@@ -5,6 +5,7 @@ const argv = require('yargs')
   .help()
   .argv
 
+
 // Pull the dependencies
 const express = require('express');
 
@@ -21,7 +22,6 @@ var app = express();
 
 // Handle logging
 app.use((req, res, next) => {
-  // TODO: enhance logging logic
   log.info('Called route ' + req.path);
   next();
 })

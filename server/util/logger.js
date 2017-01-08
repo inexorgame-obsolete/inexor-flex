@@ -1,4 +1,7 @@
 const bunyan = require('bunyan');
+const bunyanDebugStream = require('bunyan-debug-stream');
+
+// NOTE: This could be converted to be used as a global debug module
 
 /**
  * @private
@@ -9,9 +12,11 @@ const bunyan = require('bunyan');
  */
 module.exports = (console, file, level) => {
   streams = [];
+
   if (console) {
    streams.push({
-     stream: process.stdout
+     type: 'raw',
+     stream: bunyanDebugStream({ forceColor: true })
    })
   }
 
@@ -21,5 +26,5 @@ module.exports = (console, file, level) => {
    })
   }
 
-  return bunyan.createLogger({name: '@inexor-game/flex', level: level, streams: streams});
+  return bunyan.createLogger({name: '@inexor-game/flex', level: level, streams: streams, serializers: bunyanDebugStream.serializers });
 }

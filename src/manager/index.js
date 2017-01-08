@@ -7,21 +7,9 @@ const path = require('path');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const portastic = require('portastic');
-const bunyan = require('bunyan');
-const bunyanDebugStream = require('bunyan-debug-stream');
+const util = require('util');
+const debuglog = util.debuglog('manager');
 const tree = require('@inexor-game/tree');
-
-var log = bunyan.createLogger({
-	name: '@inexor-game/manager',
-	streams: [{
- 		level: 'debug',
- 		type: 'raw',
- 		stream: bunyanDebugStream({
- 			forceColor: true
- 		})
-	}],
-	serializers: bunyanDebugStream.serializers
-});
 
 // The default port to use
 const defaultPort = 31415;
@@ -44,7 +32,7 @@ const defaultPort = 31415;
  * @return {Promise<manager.instance>}
  */
 function create(args, identifier = null, port = null, t = null) {
-	log.debug('Creating instance ' + identifier + ' on port ' + port);
+	debuglog('Creating instance ' + identifier + ' on port ' + port);
   return new Promise((resolve, reject) => {
     let instance = {};
     instance.args = args;
@@ -62,7 +50,7 @@ function create(args, identifier = null, port = null, t = null) {
       try {
         portastic.find({min: defaultPort, max: defaultPort + 1000}).then((ports) => {
           if (array.length < 0) {
-          	log.warn('No open port found');
+          	debuglog('No open port found');
             throw new Error('No open port found'); // This should never happen, honestly.
           } else {
             identifier = ports[0];
@@ -103,7 +91,7 @@ function get_sub_directories(_path) {
  * @return {Promise<instance>}
  */
 function start(instance) {
-	log.debug('Starting instance ' + instance.id);
+	debuglog('Starting instance ' + instance.id);
 
   // Since the manager is not responsible for handling executable paths, we premise that
   // a command string exists at global.binary_path;
@@ -114,16 +102,16 @@ function start(instance) {
       // let flex_dir = path.join(__dirname, '../../..');
 //      let flex_dir = path.resolve('.');
 //      log.info('flex_dir = ' + path.resolve(flex_dir));
-      log.info('flex_path = ' + flex_path);
+      debuglog('flex_path = ' + flex_path);
   	  let base_path = path.join(global.flex_path, '..');
-  	  log.info('base_path = ' + path.resolve(base_path));
+  	  debuglog('base_path = ' + path.resolve(base_path));
       let binary_path = path.join(base_path, 'bin');
-      log.info('binary_path = ' + path.resolve(binary_path));
+      debuglog('binary_path = ' + path.resolve(binary_path));
       // TODO: platform specific binary path
       let binary_exe = path.join(binary_path, 'inexor');
-      log.info('binary_exe = ' + path.resolve(binary_exe));
+      debuglog('binary_exe = ' + path.resolve(binary_exe));
       let media_path = path.join(base_path, 'media');
-      log.info('media_path = ' + path.resolve(media_path));
+      debuglog('media_path = ' + path.resolve(media_path));
       let media_repositories = get_sub_directories(media_path);
       let args = [];
       args.push('-q~/.inexor');
@@ -135,28 +123,28 @@ function start(instance) {
         var media_dir = path.join(media_path, media_repository);
         // args.push('-k' + path.resolve(media_dir));
         args.push('-k./media/' + media_repository);
-      }); 
+      });
       let options = {
         cwd: path.resolve(base_path)
       };
-      log.info(args);
-      log.info('Starting ' + binary_exe + ' ' + args.join(' '));
+      debuglog(args);
+      debuglog('Starting ' + binary_exe + ' ' + args.join(' '));
       instance._process = spawn(binary_exe, args, options);
       instance._process.on('error', (err) => {
-      	log.error('Error on instance ' + instance.id + ': ' + err.message);
+      	debuglog('Error on instance ' + instance.id + ': ' + err.message);
         throw new Error(err); // This should be instantly fired
       });
       instance._process.stdout.on('data', function(data) {
-        log.debug(String(data));
+        debuglog(String(data));
       });
       instance._process.stderr.on('data', function(data) {
-        log.debug(String(data));
+        debuglog(String(data));
       });
       instance._process.on('exit', function(code) {
-        log.debug('child process exited with code ' + String(code));
+        debuglog('child process exited with code ' + String(code));
       });
   	} catch (err) {
-  		log.error(err.message);
+  		debuglog(err.message);
   		throw new Error(err);
   	}
     resolve(instance);
@@ -170,7 +158,7 @@ function start(instance) {
  * @return {Promise<bool>}
  */
 function stop(instance) {
-	log.debug('Stopping instance ' + instance.id);
+	debuglog('Stopping instance ' + instance.id);
   return new Promise((resolve, reject) => {
     instance._process.on('close', (code, signal) => {
       resolve(`Child process terminated due to receipt of signal ${signal}`)
