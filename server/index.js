@@ -31,11 +31,14 @@ app.use((err, req, res, next) => {
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;
 // Require the router from the plugins module
-var plugins = require('@inexor-game/plugins');
+require('@inexor-game/plugins').then((router) => {
+  app.use('/api/plugins/', router);
+}).catch((err) => {
+  log.error(err);
+});
 
 // Fire in the hole!
-app.use('/api/v1/', api);
-// app.use('/api/plugins', plugins); // There is no fixed api version for plugins
+app.use('/api/v1/', api); // This is assembled before runtime
 
 app.listen(argv.port, () => {
   log.info('Inexor Flex is listening on ' + argv.port)

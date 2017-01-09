@@ -1,5 +1,5 @@
 {
-  "name": "@inexor-game/configurator",
+  "name": "@inexor-plugins/configurator",
   "version": "1.0.0",
   "description": "Provides functionality to read game configurations.",
   "main": "index.js",

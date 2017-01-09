@@ -76,6 +76,14 @@ In the meantime please have a look at [api/v1](https://github.com/OAI/OpenAPI-Sp
 ## Writing plugins
 Have a look at the [plugin documentation](/plugins/README.md).
 
+## Flex won't start, resolving conflicts with the module manager
+If Flex won't start for strange reasons the most likely reason is that you've worked with a earlier revision in which the dependencies weren't at all ready.
+By that case you'll most likely get the `master` branch running again following down these steps:
+
+- `unlink` any globally `linked` module with `sudo npm unlink @inexor-game/modulename`
+- delete *all* `node_modules` folders using e,g: `rm -r */node_modules && rm -r */*/node_modules`
+- install the app again after all with `npm install`, which can take some time (the modules are small, but in a central dependency root they're quiet a bummer)
+
 # TODO
 Following is still undone:
 
