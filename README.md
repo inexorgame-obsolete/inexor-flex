@@ -11,8 +11,14 @@ Inexor Flex provides a scripting environment for the server and client and provi
 ## Webserver
 
 * Exposes the Inexor Tree API via REST/JSON
-* Provides Inexor-User-Interface (HTML5/JS/CSS web application)
-* Provides Inexor-Game-HUD (HTML5/JS/CSS web application)
+* Provides multiple web applications (HTML5/JS/CSS)
+
+## Web Applications (HTML5/JS/CSS)
+
+* Inexor Flex User Interface
+* Inexor Core (Client) Menu & Application
+* Inexor Core (Client) HUD
+* Inexor Core (Server) User Interface
 
 ## Business Logic
 
