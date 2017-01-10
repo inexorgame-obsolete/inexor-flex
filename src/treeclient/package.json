@@ -1,7 +1,7 @@
 {
-  "name": "@inexor-game/tree-client",
+  "name": "@inexor-game/treeclient",
   "version": "1.0.0",
-  "description": "The tree-client allows access to a local or remote Inexor Tree.",
+  "description": "The tree client allows access to a local or remote Inexor Tree.",
   "main": "index.js",
   "repository": {
     "type": "git",
