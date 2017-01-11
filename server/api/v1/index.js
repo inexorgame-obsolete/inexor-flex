@@ -198,7 +198,7 @@ router.get('/tree/:id/:path/dump', (req, res) => {
 
 // Will print the TOML representation of an object.
 router.get('/flex/shutdown', (req, res) => {
-
+  process.exit();
 })
 
 module.exports = router;

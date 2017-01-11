@@ -33,7 +33,7 @@ class TreeClient {
           }
         }
       },
-      shutdown: this.createEndpoint('/shutdown', 'shutdownFlex')
+      shutdown: this.createEndpoint('/flex/shutdown', 'shutdownFlex')
     }
   }
 
@@ -57,12 +57,13 @@ class TreeClient {
       path: path,
       data: data
     }
-    console.log(args);
     this.client.methods[methodName](args, function(data, response) {
       console.log(response.statusCode + ' ' + String(response.statusMessage));
       console.log(String(data));
       console.log(JSON.stringify(data));
       if (callback && typeof callback === 'function') callback(data, response);
+    }).on('error', function(e) {
+      console.error('Error: ' + e.code);
     });
   }
 
