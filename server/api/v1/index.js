@@ -29,7 +29,8 @@ if (!root.hasChild('instances')) {
 
 // Lists all available instances
 router.get('/instances', (req, res) => {
-  res.type('json').send(instances.get());
+  // res.type('json').send(instances.get());
+  res.json(instances.get());
 })
 
 // Lists information about a given instance or raises a NonFoundError
@@ -77,6 +78,15 @@ router.get('/instances/:id/start', (req, res)  => {
   }
 })
 
+// Starts all existing instances.
+router.get('/instances/start', (req, res)  => {
+  manager.startAll().then(() => {
+    res.json(instances.get());
+  }).catch((err) => {
+    res.status(500).send(err);
+  })
+})
+
 // Stops an instance with :id. Returns the stoped instance or raises an error.
 router.get('/instances/:id/stop', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
@@ -90,6 +100,15 @@ router.get('/instances/:id/stop', (req, res)  => {
   } else {
     res.status(404).send('Cannot stop instance ' + req.params.id + '! Instance does not exist.');
   }
+})
+
+// Stops all existing instances.
+router.get('/instances/stop', (req, res)  => {
+  manager.stopAll().then(() => {
+    res.json(instances.get());
+  }).catch((err) => {
+    res.status(500).send(err);
+  })
 })
 
 // Connects an instance with :id to Inexor Core. Returns the connected instance or raises an error.
@@ -174,6 +193,11 @@ router.post('/tree/:id/:path', (req, res) => {
 
 // Will print the TOML representation of an object.
 router.get('/tree/:id/:path/dump', (req, res) => {
+
+})
+
+// Will print the TOML representation of an object.
+router.get('/flex/shutdown', (req, res) => {
 
 })
 
