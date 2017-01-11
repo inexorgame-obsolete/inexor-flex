@@ -29,7 +29,7 @@ if (!root.hasChild('instances')) {
 
 // Lists all available instances
 router.get('/instances', (req, res) => {
-  debuglog(instances.toString());
+  debuglog('Showing instances [:%o]', instances.toString());
   res.type('json').send(instances.toString());
 })
 
@@ -193,7 +193,7 @@ router.post('/tree/:id/:path', (req, res) => {
 
 // Will print the TOML representation of an object.
 router.get('/flex/shutdown', (req, res) => {
-  res.json('The server is order to halt. Beep bup. No more killing ogro,')
+  res.json({absence_message:'The server is ordered to halt. Beep bup. No more killing ogro.'})
   process.exit();
 })
 
