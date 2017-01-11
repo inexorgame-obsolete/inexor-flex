@@ -1,9 +1,9 @@
-const debuglog = require('util').debuglog('cmd-server-stop');
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
+const log = require('@inexor-game/logger')();
 
 // Configuration for starting a server instance of Inexor Core
 exports.command = 'stop <instance>'
-exports.describe = 'Stops an server instance'
+exports.describe = 'Stops a server'
 
 exports.builder = {
   instance: {
@@ -13,7 +13,15 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  debuglog('Stopping the server with id ' + argv.instance);
+  log.info('Stopping the server with id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.stop(argv.instance);
+  client.flex.instances.stop(argv.instance, function(data, response) {
+    if (response.statusCode == 200) {
+      log.info('Server with instance id ' + argv.instance + ' stopped');
+    } else if (response.statusCode == 404) {
+      log.info('Server with instance id ' + argv.instance + ' does not exist');
+    } else {
+      log.info('Response: ' + response.statusCode + ' ' + response.statusMessage);
+    }
+  });
 }

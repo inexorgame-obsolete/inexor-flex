@@ -1,5 +1,5 @@
-const debuglog = require('util').debuglog('cmd-shutdown');
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
+const log = require('@inexor-game/logger')();
 
 // Configuration for listing all client instances
 exports.command = 'shutdown'

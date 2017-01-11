@@ -1,5 +1,5 @@
 const Client = require('node-rest-client').Client;
-const debuglog = require('util').debuglog('treeclient');
+const log = require('@inexor-game/logger')();
 
 /**
  * The client for the local or remote Inexor Tree instances via a REST API.
@@ -78,19 +78,19 @@ class TreeClient {
    * @param {mixed} data - the data to supply to the endpoint
    */
   callEndpoint(methodName, callback, path, data) {
-    debuglog('Calling endpoint: ' + methodName);
+    log.info('Calling endpoint: ' + methodName);
     var args = {
       headers: { 'Content-Type': 'application/json' },
       path: path,
       data: data
     }
     this.client.methods[methodName](args, function(data, response) {
-      debuglog(response.statusCode + ' ' + String(response.statusMessage));
-      debuglog(String(data));
-      debuglog(JSON.stringify(data));
+      log.info(response.statusCode + ' ' + String(response.statusMessage));
+      log.info(String(data));
+      log.info(JSON.stringify(data));
       if (callback && typeof callback === 'function') callback(data, response);
     }).on('error', function(e) {
-      debuglog('Error: ' + e.code);
+      log.info('Error: ' + e.code);
     });
   }
 

@@ -1,9 +1,9 @@
-const debuglog = require('util').debuglog('cmd-client-create');
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
+const log = require('@inexor-game/logger')();
 
 // Configuration for starting a client instance of Inexor Core
 exports.command = 'create <instance> [port]'
-exports.describe = 'Creates an client instance'
+exports.describe = 'Creates a client'
 
 exports.builder = {
   instance: {
@@ -18,7 +18,15 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  debuglog('Starting an Inexor Core client with instance id ' + argv.instance);
+  log.info('Creating a client with instance id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.create(argv.instance);
+  client.flex.instances.create(argv.instance, function(data, response) {
+    if (response.statusCode == 201) {
+      log.info('Client with instance id ' + argv.instance + ' created');
+    } else if (response.statusCode == 409) {
+      log.info('Client with instance id ' + argv.instance + ' already exists');
+    } else {
+      log.info('Response: ' + response.statusCode + ' ' + response.statusMessage);
+    }
+  });
 }
