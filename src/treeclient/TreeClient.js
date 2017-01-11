@@ -39,7 +39,7 @@ class TreeClient {
   }
 
   callEndpoint(methodName, callback, path, data) {
-    console.log('Endpoint: ' + methodName);
+    console.log('Calling endpoint: ' + methodName);
     var args = {
       headers: { 'Content-Type': 'application/json' },
       path: path,
@@ -55,35 +55,35 @@ class TreeClient {
   }
 
   getAllInstances(callback) {
-    this.callEndpoint('getAllInstances', callback);
+    this.callEndpoint(this.getAllInstances.name, callback);
   }
 
   getInstance(id, callback) {
-    this.callEndpoint('getInstance', callback, { id: id });
+    this.callEndpoint(this.getInstance.name, callback, { id: id });
   }
 
   createInstance(id, callback) {
-    this.callEndpoint('createInstance', callback, { id: id }, { args: '', port: null });
+    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', port: null });
   }
 
   removeInstance(id, callback) {
-    this.callEndpoint('removeInstance', callback, { id: id });
+    this.callEndpoint(this.removeInstance.name, callback, { id: id });
   }
 
   startInstance(id, callback) {
-    this.callEndpoint('startInstance', callback, { id: id });
+    this.callEndpoint(this.startInstance.name, callback, { id: id });
   }
 
   stopInstance(id, callback) {
-    this.callEndpoint('stopInstance', callback, { id: id });
+    this.callEndpoint(this.stopInstance.name, callback, { id: id });
   }
 
   connectInstance(id, callback) {
-    this.callEndpoint('connectInstance', callback, { id: id });
+    this.callEndpoint(this.connectInstance.name, callback, { id: id });
   }
 
   synchronizeInstance(id, callback) {
-    this.callEndpoint('synchronizeInstance', callback, { id: id });
+    this.callEndpoint(this.synchronizeInstance.name, callback, { id: id });
   }
 
 }
