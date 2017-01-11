@@ -1,9 +1,9 @@
-const debuglog = require('util').debuglog('cmd-client-start');
+const debuglog = require('util').debuglog('cmd-client-remove');
 const tree_client = require('@inexor-game/treeclient');
 
 // Configuration for starting a client instance of Inexor Core
-exports.command = 'start <instance>'
-exports.describe = 'Starts an client instance'
+exports.command = 'remove <instance>'
+exports.describe = 'Removes an client instance'
 
 exports.builder = {
   instance: {
@@ -13,7 +13,7 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  debuglog('Starting an client with id ' + argv.instance);
+  debuglog('Removes the client with instance id ' + argv.instance);
   var client = new tree_client.TreeClient('localhost', 31416);
-  client.flex.instances.start(argv.instance);
+  client.flex.instances.remove(argv.instance);
 }
