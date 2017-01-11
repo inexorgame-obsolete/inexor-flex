@@ -33,7 +33,6 @@ const defaultPort = 31415;
  * @return {Promise<manager.instance>}
  */
 function create(args, identifier = null, port = null, t = null) {
-	debuglog('Creating instance ' + identifier + ' on port ' + port);
   return new Promise((resolve, reject) => {
     let instance = {};
     instance.args = args;
@@ -71,6 +70,7 @@ function create(args, identifier = null, port = null, t = null) {
       if (isOpen) {
         instance.id = identifier;
         instance.port = _port;
+				debuglog('Creating instance ' + identifier + ' on port ' + _port);
         resolve(instance);
       } else {
         throw new Error('EADDRINUSE, Address already in use.');
@@ -101,14 +101,11 @@ function start(instance) {
 			// let flex_dir = path.resolve('.');
 			// log.info('flex_dir = ' + path.resolve(flex_dir));
 
-      debuglog('flex_path = ' + flex_path);
+      debuglog('flex_path = ' + inexor_path.flex_path);
   	  let base_path = path.join(inexor_path.flex_path, '..');
   	  debuglog('base_path = ' + path.resolve(base_path));
-      let binary_path = path.join(base_path, 'bin');
+      let binary_path = path.join(base_path, inexor_path.binary_path);
       debuglog('binary_path = ' + path.resolve(binary_path));
-      // TODO: platform specific binary path
-      let binary_exe = path.join(binary_path, 'inexor');
-      debuglog('binary_exe = ' + path.resolve(binary_exe));
       let media_path = path.join(base_path, 'media');
       debuglog('media_path = ' + path.resolve(media_path));
       let media_repositories = get_sub_directories(media_path);
@@ -127,8 +124,8 @@ function start(instance) {
         cwd: path.resolve(base_path)
       };
       debuglog(args);
-      debuglog('Starting ' + binary_exe + ' ' + args.join(' '));
-      instance._process = spawn(binary_exe, args, options);
+      debuglog('Starting ' + binary_path + ' ' + args.join(' '));
+      instance._process = spawn(binary_path, args, options);
       instance._process.on('error', (err) => {
       	debuglog('Error on instance ' + instance.id + ': ' + err.message);
         throw new Error(err); // This should be instantly fired
