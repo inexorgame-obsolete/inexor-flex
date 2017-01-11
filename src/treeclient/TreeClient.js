@@ -1,5 +1,5 @@
 const Client = require('node-rest-client').Client;
-const debuglog = require('util').debuglog('cmd-client-list');
+const debuglog = require('util').debuglog('treeclient');
 
 /**
  * The client for the local or remote Inexor Tree instances via a REST API.
@@ -51,19 +51,19 @@ class TreeClient {
   }
 
   callEndpoint(methodName, callback, path, data) {
-    console.log('Calling endpoint: ' + methodName);
+    debuglog('Calling endpoint: ' + methodName);
     var args = {
       headers: { 'Content-Type': 'application/json' },
       path: path,
       data: data
     }
     this.client.methods[methodName](args, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      console.log(JSON.stringify(data));
+      debuglog(response.statusCode + ' ' + String(response.statusMessage));
+      debuglog(String(data));
+      debuglog(JSON.stringify(data));
       if (callback && typeof callback === 'function') callback(data, response);
     }).on('error', function(e) {
-      console.error('Error: ' + e.code);
+      debuglog('Error: ' + e.code);
     });
   }
 
