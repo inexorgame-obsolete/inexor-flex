@@ -81,4 +81,4 @@ When you bootstrapped your module in `plugins` the full `flex` [testing toolchai
 
 - [x] prefix routes with their plugin name
 - [x] prefixing will add a namespace security, that prevents overriding
-- [ ] add a possibility to interact with instance trees
+- [x] add a possibility to interact with instance trees

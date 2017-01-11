@@ -36,7 +36,7 @@ app.use((err, req, res, next) => {
 var api = require('@inexor-game/api').v1;
 // Require the router from the plugins module
 require('@inexor-game/plugins').then((router) => {
-  app.use('/api/plugins/', router);
+  app.use('/plugins/', router);
 }).catch((err) => {
   log.error(err);
 });
