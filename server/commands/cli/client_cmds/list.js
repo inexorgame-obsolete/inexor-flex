@@ -11,7 +11,7 @@ exports.builder = {
 exports.handler = function(argv) {
   debuglog('Starting an Inexor Core client with instance id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.getAll(argv.instance, function(data, response) {
+  client.flex.instances.getAll(function(data, response) {
     debuglog(String(data));
     debuglog(String(response));
   });
