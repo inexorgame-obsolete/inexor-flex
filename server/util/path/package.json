@@ -1,7 +1,7 @@
 {
-  "name": "@inexor-game/plugins",
+  "name": "@inexor-game/path",
   "version": "1.0.0",
-  "description": "A plugin loader for Inexor Flex",
+  "description": "Common Inexor Paths",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -9,22 +9,17 @@
   },
   "keywords": [
     "inexor",
-    "plugins"
+    "path"
   ],
   "author": "The Inexor Team",
   "license": "Zlib",
   "bugs": {
-    "url": "https://github.com/inexor-game/code/issues"
+    "url": "https://github.com/inexor-game/flex/issues"
   },
   "homepage": "https://github.com/inexor-game/flex#readme",
   "engines": {
     "node": ">=6.9.1"
   },
   "private": true,
-  "dependencies": {
-    "@inexor-plugins/cfgreader": "file:cfgreader",
-    "@inexor-plugins/configurator": "file:configurator",
-    "body-parser": "^1.15.2",
-    "express": "^4.14.0"
-  }
+  "dependencies": {}
 }

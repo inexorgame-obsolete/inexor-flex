@@ -10,6 +10,7 @@ const portastic = require('portastic');
 const util = require('util');
 const debuglog = util.debuglog('manager');
 const tree = require('@inexor-game/tree');
+const inexor_path = require('@inexor-game/path');
 
 // The default port to use
 const defaultPort = 31415;
@@ -93,17 +94,15 @@ function get_sub_directories(_path) {
 function start(instance) {
 	debuglog('Starting instance ' + instance.id);
 
-  // Since the manager is not responsible for handling executable paths, we premise that
-  // a command string exists at global.binary_path;
-
   return new Promise((resolve, reject) => {
   	try {
   	  // let flex_dir = process.cwd();
       // let flex_dir = path.join(__dirname, '../../..');
-//      let flex_dir = path.resolve('.');
-//      log.info('flex_dir = ' + path.resolve(flex_dir));
+			// let flex_dir = path.resolve('.');
+			// log.info('flex_dir = ' + path.resolve(flex_dir));
+
       debuglog('flex_path = ' + flex_path);
-  	  let base_path = path.join(global.flex_path, '..');
+  	  let base_path = path.join(inexor_path.flex_path, '..');
   	  debuglog('base_path = ' + path.resolve(base_path));
       let binary_path = path.join(base_path, 'bin');
       debuglog('binary_path = ' + path.resolve(binary_path));

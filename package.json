@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "start": "node server/index.js log --port 31416 --webdir assets/",
+    "start": "node server/index.js log --port 31416 --webdir assets/ && ./flex client start 31415",
     "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ."
@@ -27,15 +27,16 @@
   },
   "dependencies": {
     "@inexor-game/api": "file:server/api",
-    "@inexor-game/configurator": "file:src/configurator",
     "@inexor-game/connector": "file:src/connector",
+    "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/manager": "file:src/manager",
+    "@inexor-game/path": "file:server/util/path",
     "@inexor-game/plugins": "file:plugins",
     "@inexor-game/tree": "file:src/tree",
-    "bunyan": "^1.8.5",
-    "bunyan-debug-stream": "^1.0.7",
+    "@inexor-game/treeclient": "file:src/treeclient",
     "express": "^4.14.0",
     "nock": "^9.0.2",
+    "node-rest-client": "^2.0.1",
     "yargs": "^6.5.0"
   },
   "devDependencies": {

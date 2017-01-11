@@ -8,7 +8,7 @@ exports.builder = {
   },
   console: {
     default: true,
-    describe: 'Wether or not to use the command line.'
+    describe: 'Whether or not to use the command line.'
   },
   level: {
     default: 'debug',

@@ -1,13 +1,13 @@
+// Debugging
+const util = require('util');
+const debuglog = util.debuglog('plugins');
+
 // API dependencies
 const express = require('express');
 const bodyParser = require('body-parser');
 
 // Plugin dependencies
 const pack = require('./package.json');
-
-var router = express.Router();
-router.use(bodyParser.urlencoded({ extended: true }));
-router.use(bodyParser.json());
 
 /**
  * @private
@@ -16,27 +16,47 @@ router.use(bodyParser.json());
  */
 function getPluginName(key) {
   let name = key.split('/')[1]; // Everything after @inexor-plugins/
+  return name;
 }
 
 /**
+ * Prepares a new router object for every plugin
  * @private
  * @return {Object} - a router object
  */
-function freshRouter() {
+function newRouter() {
   let router = express.Router();
   router.use(bodyParser.urlencoded({ extended: true }));
   router.use(bodyParser.json());
   return router;
 }
 
-// THIS is quiet a performance bummer, but it works
-Object.keys(pack.dependencies).forEach((key) => {
-  if (String(key).includes('@inexor-plugins/')) {
-    if (require(key)['@routable']) {
-      let r = require(key)(freshRouter()); // NOTE: This calls the exported function
-      router.use('/' + getPluginName(key), r);
-    }
-  }
-})
+// Return a promise since this could take quiet a while
+module.exports = new Promise((resolve, reject) => {
+  var router = express.Router();
+  router.use(bodyParser.urlencoded({ extended: true }));
+  router.use(bodyParser.json());
 
-module.exports = router;
+  // List all the plugins
+  router.get('/', (req, res) => {
+    res.json(router.stack)
+  })
+
+  // NOTE: whyever cloning the express.Router() object won't work.
+  // Slows down performance quiet a bit
+  Object.keys(pack.dependencies).forEach((key) => {
+    if (String(key).includes('@inexor-plugins/')) {
+      if (require(key)['@routable']) {
+        try {
+          let r = require(key)(newRouter()); // NOTE: This calls the exported function
+          debuglog('Setting up [%o] on namespace [%s]', getPluginName(key), r)
+          router.use('/' + getPluginName(key), r);
+        } catch(err) {
+          reject(err);
+        }
+      }
+    }
+  });
+
+  resolve(router);
+});

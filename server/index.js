@@ -3,6 +3,7 @@ const process = require('process');
 const path = require('path');
 const argv = require('yargs')
   .commandDir('commands')
+  .demandCommand(1)
   .help()
   .argv
 
@@ -10,12 +11,8 @@ const argv = require('yargs')
 // Pull the dependencies
 const express = require('express');
 
-// Set's the executable path for all instances
-global.binary_path = (argv.binary == null) ? require('./util/core_path') : argv.binary;
-global.flex_path = process.env.PWD;
-
 // Returns a logger instance
-var log = require('./util/logger')(argv.console, argv.file, argv.level)
+var log = require('@inexor-game/logger')(argv.console, argv.file, argv.level)
 
 // Configures the server to be use-able as a RESTfull API
 var app = express();
@@ -38,11 +35,14 @@ app.use((err, req, res, next) => {
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;
 // Require the router from the plugins module
-var plugins = require('@inexor-game/plugins');
+require('@inexor-game/plugins').then((router) => {
+  app.use('/api/plugins/', router);
+}).catch((err) => {
+  log.error(err);
+});
 
 // Fire in the hole!
-app.use('/api/v1/', api);
-// app.use('/api/plugins', plugins); // There is no fixed api version for plugins
+app.use('/api/v1/', api); // This is assembled before runtime
 
 app.listen(argv.port, () => {
   log.info('Inexor Flex is listening on ' + argv.port)

@@ -1,6 +1,6 @@
 # Inexor Flex
 
-Inexor Flex provides a scripting environment for the server and client and provides the Inexor-User-Interface.
+Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
 ## Architecture
 
@@ -11,8 +11,18 @@ Inexor Flex provides a scripting environment for the server and client and provi
 ## Webserver
 
 * Exposes the Inexor Tree API via REST/JSON
-* Provides Inexor-User-Interface (HTML5/JS/CSS web application)
-* Provides Inexor-Game-HUD (HTML5/JS/CSS web application)
+* Provides multiple web applications (HTML5/JS/CSS)
+
+## Web Applications (HTML5/JS/CSS)
+
+* Inexor Flex User Interface
+* Inexor Core (Client) Menu & Application
+* Inexor Core (Client) HUD
+* Inexor Core (Server) User Interface
+
+## Inexor Tree Client
+
+* Communication to an local or remote instance of Inexor Flex using the Inexor Tree API via REST
 
 ## Business Logic
 
@@ -28,9 +38,9 @@ Inexor Flex provides a scripting environment for the server and client and provi
 * Reads configuration from command line parameters
 * Populates the Inexor Tree
 
-## Manages Inexor Kernel instances
+## Manages Inexor Core instances
 
-* Starts instances of Inexor Kernel
+* Creates, starts, stops and destroys instances of `Inexor Core`
 
 ## Operating System Bindings
 
@@ -63,7 +73,7 @@ Flex necessarily can't be decoupled as a whole, therefore the core implementatio
   - `index.js` wires up everything and takes care of the `cli`
 - `src/` containing essential modules
   - `src/tree/` contains extensive functions to work with binary trees (*"the root of evil"*)
-  - `src/connector` is the gateway to Inexor-Kernel
+  - `src/connector` is the gateway to an instance of Inexor Core
   - `src/manager` manages Inexor Core instances
   - `src/configurator` reads configuration files and provides them to the game
 
@@ -75,6 +85,14 @@ In the meantime please have a look at [api/v1](https://github.com/OAI/OpenAPI-Sp
 
 ## Writing plugins
 Have a look at the [plugin documentation](/plugins/README.md).
+
+## Flex won't start, resolving conflicts with the module manager
+If Inexor Flex won't start for strange reasons the most likely reason is that you've worked with a earlier revision in which the dependencies weren't at all ready.
+By that case you'll most likely get the `master` branch running again following down these steps:
+
+- `unlink` any globally `linked` module with `sudo npm unlink @inexor-game/modulename`
+- delete *all* `node_modules` folders using e,g: `rm -r */node_modules && rm -r */*/node_modules`
+- install the app again after all with `npm install`, which can take some time (the modules are small, but in a central dependency root they're quiet a bummer)
 
 # TODO
 Following is still undone:
