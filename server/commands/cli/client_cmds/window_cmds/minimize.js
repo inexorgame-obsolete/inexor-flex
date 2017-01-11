@@ -13,6 +13,5 @@ exports.builder = {
 
 exports.handler = function(argv) {
   var client = new TreeClient('localhost', 31416);
-  // TODO: implement tree client -> window -> minimize
   client.flex.instances.client.window.minimize(argv.instance);
 }

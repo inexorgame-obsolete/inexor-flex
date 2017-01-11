@@ -18,6 +18,5 @@ exports.builder = {
 
 exports.handler = function(argv) {
   var client = new TreeClient('localhost', 31416);
-  // TODO: implement tree client -> window -> fullscreen
   client.flex.instances.client.window.fullscreen(argv.instance, argv.mode);
 }
