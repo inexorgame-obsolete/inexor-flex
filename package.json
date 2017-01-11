@@ -4,6 +4,7 @@
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "start": "node server/index.js log --port 31416 --webdir assets/",
+    "stop": "./inexor flex shutdown",
     "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ."
