@@ -1,5 +1,5 @@
 // Configuration for the webserver
-exports.command = 'flex <port> [host] [webdir] [binary]'
+exports.command = 'flex <port> [host] <webdir> [binary]'
 exports.describe = 'Configures the Inexor Flex server'
 
 exports.builder = {
@@ -13,7 +13,7 @@ exports.builder = {
     describe: 'The host to listen on.'
   },
   webdir: {
-    default: 'inexor-ui/', // will be essential in further versions
+    default: 'interface/', // will be essential in further versions
     type: 'string',
     describe: 'Where to load the UI from'
   },

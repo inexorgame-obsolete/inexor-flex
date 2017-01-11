@@ -1,5 +1,6 @@
 // Configures yargs to use the command directory
 const process = require('process');
+const path = require('path');
 const argv = require('yargs')
   .commandDir('commands')
   .help()
@@ -18,7 +19,9 @@ var log = require('./util/logger')(argv.console, argv.file, argv.level)
 
 // Configures the server to be use-able as a RESTfull API
 var app = express();
-// app.use(express.static(argv.webdir));
+
+// Use the webdir via the --webdir flag
+app.use(express.static(path.resolve(argv.webdir)));
 
 // Handle logging
 app.use((req, res, next) => {

@@ -1,0 +1,3 @@
+[submodule "interface"]
+	path = interface
+	url = https://github.com/Fohlen/interface.git
