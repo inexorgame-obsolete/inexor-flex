@@ -38,7 +38,7 @@ router.get('/instances/:id', (req, res) => {
 		let node = instances.getChild(req.params.id);
 		res.json(node.get());
 	} else {
-		res.status(500).send('Instance with id ' + req.params.id + ' was not found');
+		res.status(404).send('Instance with id ' + req.params.id + ' was not found');
 	}
 })
 
@@ -51,13 +51,13 @@ router.post('/instances/:id', (req, res) => {
       manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
       	let node = instances.addChild(String(instance.id), 'flex', instance);
       	debuglog("Successfully created instance: " + node.getPath());
-        res.json(node.get());
+        res.status(201).json(node.get());
       }).catch((err) => {
         res.status(500).send(err);
       })
     }
   } else {
-    res.status(500).send('Instance with id ' + req.params.id + ' already exists.')
+    res.status(409).send('Instance with id ' + req.params.id + ' already exists.')
   }
 })
 
@@ -73,7 +73,7 @@ router.get('/instances/:id/start', (req, res)  => {
       res.status(500).send(err);
     })
   } else {
-    res.status(500).send('Cannot start instance ' + req.params.id + '! Instance does not exist. You have to create an instance first.');
+    res.status(404).send('Cannot start instance ' + req.params.id + '! Instance does not exist. You have to create an instance first.');
   }
 })
 
@@ -88,7 +88,7 @@ router.get('/instances/:id/stop', (req, res)  => {
       res.status(500).send(err);
     })
   } else {
-    res.status(500).send('Cannot stop instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send('Cannot stop instance ' + req.params.id + '! Instance does not exist.');
   }
 })
 
@@ -108,7 +108,7 @@ router.get('/instances/:id/connect', (req, res) => {
     }
 
   } else {
-    res.status(500).send('Cannot connect with instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send('Cannot connect with instance ' + req.params.id + '! Instance does not exist.');
   }
 })
 
@@ -125,7 +125,7 @@ router.get('/instances/:id/synchronize', (req, res) => {
       res.status(500).send('There is no connector for instance ' + req.params.id);
     }
   } else {
-    res.status(500).send('Cannot synchronize with instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send('Cannot synchronize with instance ' + req.params.id + '! Instance does not exist.');
   }
 })
 
@@ -143,13 +143,13 @@ router.get('/tree/:id/:path', (req, res) => {
       if (instance.tree.findNode(req.params.path) == 'node') {
         res.type('json').send(instance.tree.findNode(req.params.path).toString());
       } else {
-        res.json(instance.tree.findNode(req.params.path).get())
+        res.json(instance.tree.findNode(req.params.path).get());
       }
     } else {
-      res.status(500).send('Key with path ' + req.params.path + ' was not found');
+      res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
   } else {
-    res.status(500).send('Instance ' + req.params.id + ' was not found.');
+    res.status(404).send('Instance ' + req.params.id + ' was not found.');
   }
 })
 
@@ -159,16 +159,16 @@ router.post('/tree/:id/:path', (req, res) => {
     let instance = node.get();
     if (instance.tree.contains(req.params.path)) {
       if (instance.tree.findNode(req.params.path)._datatype == 'node') {
-        res.status(500).send('Synchronizing nodes is not possible.')
+        res.status(500).send('Synchronizing nodes is not possible.');
       } else {
         instance.tree.findNode(req.params.path).set(req.body.value);
         res.status(200);
       }
     } else {
-      res.status(500).send('Key with path ' + req.params.path + ' was not found');
+      res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
   } else {
-    res.status(500).send('Instance ' + req.params.id + ' was not found.');
+    res.status(404).send('Instance ' + req.params.id + ' was not found.');
   }
 })
 
