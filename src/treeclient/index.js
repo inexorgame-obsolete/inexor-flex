@@ -1,6 +1,6 @@
 /**
- * @module tree
- * Provides generic methods to work trees
+ * @module treeclient
+ * Provides a client for accessing a local or remote Inexor Tree via REST API.
  */
 
 const TreeClient = require('./TreeClient');
