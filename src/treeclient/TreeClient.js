@@ -1,91 +1,89 @@
 const Client = require('node-rest-client').Client;
 
-var client = new Client();
-
 /**
- * The client to local or remote Inexor Trees via a REST API.
+ * The client for the local or remote Inexor Tree instances via a REST API.
  */
 class TreeClient {
 
   constructor(hostname = 'localhost', port = 31416, api_version = 1) {
-    let base_url = 'http://' + hostname + ':' + port + '/api/v' + api_version;
-    console.log(base_url);
-    client.registerMethod('getAllInstances', base_url + '/instances', 'GET');
-    client.registerMethod('getInstance', base_url + '/instances/${id}', 'GET');
-    client.registerMethod('createInstance', base_url + '/instances/${id}', 'POST');
-    client.registerMethod('removeInstance', base_url + '/instances/${id}', 'DELETE');
-    client.registerMethod('startInstance', base_url + '/instances/${id}/start', 'GET');
-    client.registerMethod('stopInstance', base_url + '/instances/${id}/stop', 'GET');
-    client.registerMethod('connectInstance', base_url + '/instances/${id}/connect', 'GET');
-    client.registerMethod('synchronizeInstance', base_url + '/instances/${id}/synchronize', 'GET');
+    this.client = new Client();
+    this.hostname = hostname;
+    this.port = port;
+    this.api_version = api_version;
+    this.base_url = 'http://' + hostname + ':' + port + '/api/v' + api_version;
     this.flex = {
       instances: {
-        getAll: this.getAllInstances,
-        get: this.getInstance,
-        create: this.createInstance,
-        remove: this.removeInstance,
-        start: this.startInstance,
-        stop: this.stopInstance,
-        connect: this.connectInstance,
-        synchronize: this.synchronizeInstance
+        getAll: this.createEndpoint('/instances', 'getAllInstances'),
+        get: this.createEndpoint('/instances/${id}', 'getInstance'),
+        create: this.createEndpoint('/instances/${id}', 'createInstance', 'POST'),
+        remove: this.createEndpoint('/instances/${id}', 'removeInstance', 'DELETE'),
+        start: this.createEndpoint('/instances/${id}/start', 'startInstance'),
+        stop: this.createEndpoint('/instances/${id}/stop', 'stopInstance'),
+        connect: this.createEndpoint('/instances/${id}/connect', 'connectInstance'),
+        synchronize: this.createEndpoint('/instances/${id}/synchronize', 'synchronizeInstance')
       }
     }
   }
-  getAllInstances(f) {
-    client.methods.getAllInstances(function(data, response) {
+
+  createEndpoint(url, methodName, httpMethod = 'GET') {
+    this.client.registerMethod(methodName, this.getEndpointUrl(url), httpMethod);
+    var self = this;
+    var fwrapper = function() {
+      self[methodName](arguments);
+    }
+    return fwrapper;
+  }
+
+  getEndpointUrl(relPath) {
+    return this.base_url + relPath;
+  }
+
+  callEndpoint(methodName, callback, path, data) {
+    console.log('Endpoint: ' + methodName);
+    var args = {
+      headers: { 'Content-Type': 'application/json' },
+      path: path,
+      data: data
+    }
+    console.log(args);
+    this.client.methods[methodName](args, function(data, response) {
       console.log(response.statusCode + ' ' + String(response.statusMessage));
+      console.log(String(data));
       console.log(JSON.stringify(data));
-      if (f) f(data, response);
+      if (callback && typeof callback === 'function') callback(data, response);
     });
   }
-  getInstance(id, f) {
-    client.methods.getInstance({ path: { id: id }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(JSON.stringify(data));
-      if (f) f(data, response);
-    });
+
+  getAllInstances(callback) {
+    this.callEndpoint('getAllInstances', callback);
   }
-  createInstance(id, f) {
-    client.methods.createInstance({ data: { args: '', port: null }, path: { id: id }, headers: { 'Content-Type': 'application/json' }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      if (f) f(data, response);
-    });
+
+  getInstance(id, callback) {
+    this.callEndpoint('getInstance', callback, { id: id });
   }
-  removeInstance(id, f) {
-    client.methods.removeInstance({ path: { id: id }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      if (f) f(data, response);
-    });
+
+  createInstance(id, callback) {
+    this.callEndpoint('createInstance', callback, { id: id }, { args: '', port: null });
   }
-  startInstance(id, f) {
-    client.methods.startInstance({ path: { id: id }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(JSON.stringify(data));
-      if (f) f(data, response);
-    });
+
+  removeInstance(id, callback) {
+    this.callEndpoint('removeInstance', callback, { id: id });
   }
-  stopInstance(id, f) {
-    client.methods.stopInstance({ path: { id: id }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      if (f) f(data, response);
-    });
+
+  startInstance(id, callback) {
+    this.callEndpoint('startInstance', callback, { id: id });
   }
-  stopInstance(id, f) {
-    client.methods.stopInstance({ path: { id: id }}, function(data, response) {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      if (f) f(data, response);
-    });
+
+  stopInstance(id, callback) {
+    this.callEndpoint('stopInstance', callback, { id: id });
   }
-  synchronizeInstance(id, f) {
-    client.methods.synchronizeInstance({ path: { id: id }}, function() {
-      console.log(response.statusCode + ' ' + String(response.statusMessage));
-      console.log(String(data));
-      if (f) f(data, response);
-    });
+
+  connectInstance(id, callback) {
+    this.callEndpoint('connectInstance', callback, { id: id });
+  }
+
+  synchronizeInstance(id, callback) {
+    this.callEndpoint('synchronizeInstance', callback, { id: id });
   }
 
 }

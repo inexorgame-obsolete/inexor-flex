@@ -1,5 +1,5 @@
 const debuglog = require('util').debuglog('cmd-client-stop');
-const tree_client = require('@inexor-game/treeclient');
+const TreeClient = require('@inexor-game/treeclient').TreeClient;
 
 // Configuration for starting a client instance of Inexor Core
 exports.command = 'stop <instance>'
@@ -14,6 +14,6 @@ exports.builder = {
 
 exports.handler = function(argv) {
   debuglog('Stopping the client with id ' + argv.instance);
-  var client = new tree_client.TreeClient('localhost', 31416);
+  var client = new TreeClient('localhost', 31416);
   client.flex.instances.stop(argv.instance);
 }

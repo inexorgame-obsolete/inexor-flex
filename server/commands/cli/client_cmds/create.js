@@ -1,5 +1,5 @@
 const debuglog = require('util').debuglog('cmd-client-create');
-const tree_client = require('@inexor-game/treeclient');
+const TreeClient = require('@inexor-game/treeclient').TreeClient;
 
 // Configuration for starting a client instance of Inexor Core
 exports.command = 'create <instance> [port]'
@@ -19,6 +19,8 @@ exports.builder = {
 
 exports.handler = function(argv) {
   debuglog('Starting an Inexor Core client with instance id ' + argv.instance);
-  var client = new tree_client.TreeClient('localhost', 31416);
+  console.log('create cmd');
+  var client = new TreeClient('localhost', 31416);
+  console.log(client);
   client.flex.instances.create(argv.instance);
 }
