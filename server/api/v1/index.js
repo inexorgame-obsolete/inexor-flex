@@ -39,7 +39,8 @@ router.get('/instances', (req, res) => {
 router.get('/instances/:id', (req, res) => {
 	if (instances.hasChild(req.params.id)) {
 		let node = instances.getChild(req.params.id);
-		res.json(node.get());
+		let instance_node = node.getChild('instance');
+		res.json(instance_node.get());
 	} else {
 		res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
 	}
@@ -54,9 +55,13 @@ router.post('/instances/:id', (req, res) => {
   if (!instances.hasChild(req.params.id)) {
     if (req.body.args != null) {
       manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
-      	let node = instances.addChild(String(instance.id), 'flex', instance);
+      	let node = instances.addChild(String(instance.id), 'node');
+      	node.addChild('name', 'string', req.params.name);
+      	node.addChild('type', 'string', req.params.type);
+      	node.addChild('state', 'string', 'stopped');
+      	let instance_node = node.addChild('instance', 'flex', instance);
       	debuglog("Successfully created instance: " + node.getPath());
-        res.status(201).json(node.get());
+        res.status(201).json(instance_node.get());
       }).catch((err) => {
         // Failed to create the instance
         res.status(500).send(err);
@@ -91,10 +96,11 @@ router.delete('/instances/:id', (req, res) => {
 router.get('/instances/:id/start', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    manager.start(node.get()).then((instance) => {
-      node.set(instance);
+    let instance_node = node.getChild('instance');
+    manager.start(instance_node.get()).then((instance) => {
+      instance_node.set(instance);
+      instance_node.getParent().getChild('state').set('started');
       res.json(instance);
-      // TODO: res.json(node.get());
     }).catch((err) => {
       // Failed to start the instance
       res.status(500).send(err);
@@ -120,8 +126,10 @@ router.get('/instances/start', (req, res)  => {
 router.get('/instances/:id/stop', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    manager.stop(node.get()).then((instance) => {
-      node.set(instance);
+    let instance_node = node.getChild('instance');
+    manager.stop(instance_node.get()).then((instance) => {
+      instance_node.set(instance);
+      instance_node.getParent().getChild('state').set('stopped');
       res.json(instance);
     }).catch((err) => {
       res.status(500).send(err);
@@ -147,7 +155,8 @@ router.get('/instances/stop', (req, res)  => {
 router.get('/instances/:id/connect', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    let instance = node.get();
+    let instance_node = node.getChild('instance');
+    let instance = instance_node.get();
     let connector = new Connector(instance.port, instance.tree);
 
     try {
@@ -171,7 +180,8 @@ router.get('/instances/:id/connect', (req, res) => {
 router.get('/instances/:id/synchronize', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    let instance = node.get();
+    let instance_node = node.getChild('instance');
+    let instance = instance_node.get();
 
     if (instance._connector) {
       instance._connector._initialize();
@@ -193,7 +203,8 @@ router.get('/instance/:id/configure', (req, res) => {
 router.get('/tree/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    let instance = node.get();
+    let instance_node = node.getChild('instance');
+    let instance = instance_node.get();
     if (instance.tree.contains(req.params.path)) {
       if (instance.tree.findNode(req.params.path) == 'node') {
         res.type('json').send(instance.tree.findNode(req.params.path).toString());
@@ -211,7 +222,8 @@ router.get('/tree/:id/:path', (req, res) => {
 router.post('/tree/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    let instance = node.get();
+    let instance_node = node.getChild('instance');
+    let instance = instance_node.get();
     if (instance.tree.contains(req.params.path)) {
       if (instance.tree.findNode(req.params.path)._datatype == 'node') {
         res.status(500).send('Synchronizing nodes is not possible.');

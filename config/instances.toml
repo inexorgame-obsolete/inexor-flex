@@ -1,0 +1,11 @@
+
+[instances]
+
+[instances.31415]
+type = "server"
+name = "Default Inexor Server"
+
+[instances.31417]
+type = "client"
+name = "Default Inexor Client"
+
