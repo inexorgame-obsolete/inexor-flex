@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+require('process');
+if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
+  // Convert the URL starting with 'inexor:' to command line arguments
+  process.argv = process.argv.slice(0, 2).concat(process.argv[2].substr(7).split(' '));
+}
 const argv = require('yargs')
   .commandDir('server/commands/cli/')
   .demandCommand(1)
