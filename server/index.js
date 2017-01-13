@@ -59,6 +59,8 @@ app.use('/api/v1/', api); // This is assembled before runtime
 var server = app.listen(argv.port, (err) => {
   if (err) {
     log.error(err);
+    pid.remove();
+    process.exit();
   } else {
     log.info('Inexor Flex is listening on ' + argv.port);
   }
