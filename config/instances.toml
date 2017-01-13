@@ -1,11 +1,15 @@
+# Please configure your servers and clients here
 
 [instances]
 
 [instances.31415]
 type = "server"
 name = "Default Inexor Server"
+description = "Badly Configurated Server Inc. proudly presents your first Inexor Server"
+autostart = false
 
 [instances.31417]
 type = "client"
 name = "Default Inexor Client"
-
+description = "The default Inexor Client"
+autostart = false
