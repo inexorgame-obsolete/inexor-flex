@@ -1,7 +1,8 @@
 /**
  * @module api
- * The API that drives flex.
- *
+ * The RESTful API that drives flex.
+ * 
+ * TODO: swagger documentation, see https://www.npmjs.com/package/swagger-jsdoc
  */
 
 const process = require('process');
@@ -34,35 +35,59 @@ router.get('/instances', (req, res) => {
 })
 
 // Lists information about a given instance or raises a NonFoundError
+// Returns HTTP status code 404 if there is no instance with the given id.
 router.get('/instances/:id', (req, res) => {
 	if (instances.hasChild(req.params.id)) {
 		let node = instances.getChild(req.params.id);
 		res.json(node.get());
 	} else {
-		res.status(404).send('Instance with id ' + req.params.id + ' was not found');
+		res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
 	}
 })
 
-// Creates an instance and inserts it into the tree. Returns the instance object, otherwise raises an error.
+// Creates an instance with the given :id and inserts it into the tree.
+// Returns HTTP status code 201 and the instance object if the instance was created.
+// Returns HTTP status code 409 if the instance already exists
+// Returns HTTP status code 400 if the request has wrong parameters
+// Returns HTTP status code 500 if the instance couldn't be created
 router.post('/instances/:id', (req, res) => {
   if (!instances.hasChild(req.params.id)) {
-    if (req.body.args == null) {
-      res.status(500).send('Instance can not be created without command line arguments.');
-    } else {
+    if (req.body.args != null) {
       manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
       	let node = instances.addChild(String(instance.id), 'flex', instance);
       	debuglog("Successfully created instance: " + node.getPath());
         res.status(201).json(node.get());
       }).catch((err) => {
+        // Failed to create the instance
         res.status(500).send(err);
       })
+    } else {
+      // Bad request: wrong parameters
+      res.status(400).send('Instance can not be created without command line arguments.');
     }
   } else {
-    res.status(409).send('Instance with id ' + req.params.id + ' already exists.')
+    // The instance id already exist!
+    res.status(409).send(util.format('Instance with id %s already exists.', req.params.id));
   }
 })
 
-// Starts an instance with :id. Returns the started instance or raises an error.
+// Removes the instance with :id
+// Returns HTTP status code 204 if the instance was successfully removed
+// Returns HTTP status code 404 if there is no instance with the given id.
+router.delete('/instances/:id', (req, res) => {
+  if (instances.hasChild(req.params.id)) {
+    instaces.removeChild(req.params.id);
+    // Successfully removed
+    res.status(204).send({});
+  } else {
+    res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
+  }
+})
+
+// Starts the instance with :id.
+// Returns the instance object.
+// Returns HTTP status code 404 if there is no instance with the given id.
+// Returns HTTP status code 500 if the instance couldn't be started.
 router.get('/instances/:id/start', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
@@ -71,10 +96,11 @@ router.get('/instances/:id/start', (req, res)  => {
       res.json(instance);
       // TODO: res.json(node.get());
     }).catch((err) => {
+      // Failed to start the instance
       res.status(500).send(err);
     })
   } else {
-    res.status(404).send('Cannot start instance ' + req.params.id + '! Instance does not exist. You have to create an instance first.');
+    res.status(404).send(util.format('Cannot start instance. Instance with id %s was not found', req.params.id));
   }
 })
 
@@ -87,7 +113,10 @@ router.get('/instances/start', (req, res)  => {
   })
 })
 
-// Stops an instance with :id. Returns the stoped instance or raises an error.
+// Stops the instance with :id.
+// Returns the instance object.
+// Returns HTTP status code 404 if there is no instance with the given id.
+// Returns HTTP status code 500 if the instance couldn't be started.
 router.get('/instances/:id/stop', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
@@ -98,7 +127,7 @@ router.get('/instances/:id/stop', (req, res)  => {
       res.status(500).send(err);
     })
   } else {
-    res.status(404).send('Cannot stop instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send(util.format('Cannot stop instance. Instance with id %s was not found', req.params.id));
   }
 })
 
@@ -111,7 +140,10 @@ router.get('/instances/stop', (req, res)  => {
   })
 })
 
-// Connects an instance with :id to Inexor Core. Returns the connected instance or raises an error.
+// Connects to the instance with :id.
+// Returns HTTP status code 200 and the instance object if the connection was established successfully.
+// Returns HTTP status code 404 if there is no instance with the given id.
+// Returns HTTP status code 500 if the connection failed.
 router.get('/instances/:id/connect', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
@@ -120,18 +152,22 @@ router.get('/instances/:id/connect', (req, res) => {
 
     try {
       connector.connect();
-      instance._connector = connector; // Usefull for synchronization
+      // Useful for synchronization
+      instance._connector = connector;
       res.json(instance.toStr());
     } catch (err) {
       res.status(500).send(err);
     }
 
   } else {
-    res.status(404).send('Cannot connect with instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
   }
 })
 
-// Synchronizes an instance with Inexor Core. Returns the synchronized instance or raises an error.
+// Synchronizes an instance with Inexor Core.
+// Returns HTTP status code 200 and the instance object if the synchronization was performed successfully.
+// Returns HTTP status code 404 if there is no instance with the given id.
+// Returns HTTP status code 500 if the synchronization failed.
 router.get('/instances/:id/synchronize', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
@@ -141,10 +177,10 @@ router.get('/instances/:id/synchronize', (req, res) => {
       instance._connector._initialize();
       res.json(instance.toStr());
     } else {
-      res.status(500).send('There is no connector for instance ' + req.params.id);
+      res.status(500).send(util.format('Cannot synchronize with instance. There is no connector for instance with id %s!', req.params.id));
     }
   } else {
-    res.status(404).send('Cannot synchronize with instance ' + req.params.id + '! Instance does not exist.');
+    res.status(404).send(util.format('Cannot synchronize with instance. Instance with id %s was not found', req.params.id));
   }
 })
 
@@ -168,7 +204,7 @@ router.get('/tree/:id/:path', (req, res) => {
       res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
   } else {
-    res.status(404).send('Instance ' + req.params.id + ' was not found.');
+    res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
   }
 })
 
@@ -187,13 +223,13 @@ router.post('/tree/:id/:path', (req, res) => {
       res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
   } else {
-    res.status(404).send('Instance ' + req.params.id + ' was not found.');
+    res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
   }
 })
 
 // Will print the TOML representation of an object.
 router.get('/flex/shutdown', (req, res) => {
-  res.json({absence_message:'The server is ordered to halt. Beep bup. No more killing ogro.'})
+  res.json({absence_message: 'The server is ordered to halt. Beep bup. No more killing ogro.'});
   process.exit();
 })
 
