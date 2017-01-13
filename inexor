@@ -1,11 +1,55 @@
 #!/usr/bin/env node
-require('process');
+
+const process = require('process');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const child_process = require('child_process');
+const wait_on = require('wait-on');
+const log = require('@inexor-game/logger')();
+
+// Convert URL to command line parameters if necessary
 if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
   // Convert the URL starting with 'inexor:' to command line arguments
   process.argv = process.argv.slice(0, 2).concat(process.argv[2].substr(7).split(' '));
 }
-const argv = require('yargs')
-  .commandDir('server/commands/cli/')
-  .demandCommand(1)
-  .help()
-  .argv
+
+// Ensure that Inexor Flex is running
+var pid_path = path.resolve(os.tmpdir() + '/inexor.pid');
+if (!fs.existsSync(pid_path)) {
+  log.warn('Inexor Flex is not running! Starting Inexor Flex...');
+  // Starting Inexor Flex detached without stdio
+  const child = child_process.spawn(process.argv[0], [
+    'server/index.js',
+    'log',
+    '--port',
+    '31416',
+    '--webdir',
+    'assets/'
+  ], {
+    detached: true,
+    stdio: 'ignore'
+  });
+  child.unref();
+}
+
+// Wait until PID is 
+wait_on({
+  resources: [
+    pid_path
+  ],
+  delay: 0,
+  interval: 25,
+  window: 50,
+  timeout: 10000
+}, function (err) {
+  if (err) {
+    log.error('Inexor Flex didn\'t came up');
+  } else {
+    const argv = require('yargs')
+      .commandDir('server/commands/cli/')
+      .demandCommand(1)
+      .help()
+      .argv;
+  }
+});
