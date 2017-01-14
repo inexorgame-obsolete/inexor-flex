@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const Iterator = require('./Iterator');
 const util = require('./util')
 
 /**
@@ -319,6 +320,11 @@ class Node extends EventEmitter {
         } else {
             return JSON.stringify(this._value);
         }
+    }
+
+    *[Symbol.Iterator]() {
+      let it = Iterator(this);
+      yield(it.next());
     }
 }
 
