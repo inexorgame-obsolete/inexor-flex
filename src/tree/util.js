@@ -14,8 +14,8 @@ const validName = /^[\w ]+$/;
 
 /**
  * Defines a possible node data type
- * Can be either: Flex, Node, int64, string, float, bool or timestamp
- * @typedef {(Flex|Node|boolean|number|string|Date)} datatype
+ * Can be either: Node, int64, string, float, bool or timestamp
+ * @typedef {(Node|boolean|int64|float|string|Date)} datatype
  */
 
 /**
@@ -25,11 +25,21 @@ const validName = /^[\w ]+$/;
  * @return {boolean}
  */
 function isValidDataType(datatype) {
-    return datatype == 'flex' || datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
+    return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
+}
+
+/**
+ * Checks wether or not a number is an integer
+ * @param  {number}  n
+ * @return {boolean}
+ */
+function isInt(n) {
+  return parseInt(n) === n;
 }
 
 module.exports = {
     separator: separator,
     validName: validName,
-    isValidDataType: isValidDataType
+    isValidDataType: isValidDataType,
+    isInt: isInt
 }
