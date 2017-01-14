@@ -44,6 +44,23 @@ function create(args, identifier = null, port = null, t = null) {
       instance.tree = new tree.Node(null, '/', 'node');
     }
 
+    /**
+     * @private
+     * Reduce DRY code
+     */
+    let resolvePort = function(port) {
+      portastic.test(_port).then((isOpen) => {
+        if (isOpen) {
+          instance.id = identifier;
+          instance.port = _port;
+          debuglog('Creating instance ' + identifier + ' on port ' + _port);
+          resolve(instance);
+        } else {
+          throw new Error('EADDRINUSE, Address already in use.');
+        }
+      })
+    }
+
     // Resolve the port
     let _port = null;
     // TODO: might need moarr asynchronisation
@@ -56,6 +73,7 @@ function create(args, identifier = null, port = null, t = null) {
           } else {
             identifier = ports[0];
             _port = identifier;
+            resolvePort(_port);
           }
         })
       } catch (e) {
@@ -67,16 +85,7 @@ function create(args, identifier = null, port = null, t = null) {
       _port = port;
     }
 
-    portastic.test(_port).then((isOpen) => {
-      if (isOpen) {
-        instance.id = identifier;
-        instance.port = _port;
-				debuglog('Creating instance ' + identifier + ' on port ' + _port);
-        resolve(instance);
-      } else {
-        throw new Error('EADDRINUSE, Address already in use.');
-      }
-    })
+    resolvePort(_port);
   })
 }
 
