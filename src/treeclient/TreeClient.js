@@ -39,7 +39,7 @@ class TreeClient {
           }
         }
       },
-      shutdown: this.createEndpoint('/flex/shutdown', 'shutdownFlex')
+      shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
     }
   }
 
@@ -114,13 +114,17 @@ class TreeClient {
   }
 
   /**
-   * Created an instance
+   * Creates an instance
    * @function
-   * @param {number} id
+   * @param {number} id - the instance id
+   * @param {string} type - the type of the instance: either 'server' or 'client'
+   * @param {number} port - the grpc port for synchronization - by default instance id and port are the same  
+   * @param {string} name - the name of the instance
+   * @param {string} description - the description of the instance
    * @param {function} callback
    */
-  createInstance(id, callback) {
-    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', port: null });
+  createInstance(id, type, port, name, description, callback) {
+    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, port: port, name: name, description: description });
   }
 
   /**

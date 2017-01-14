@@ -54,15 +54,19 @@ router.get('/instances/:id', (req, res) => {
 router.post('/instances/:id', (req, res) => {
   if (!instances.hasChild(req.params.id)) {
     if (req.body.args != null) {
+      debuglog("Creating instance: " + req.params.id);
       manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
       	let node = instances.addChild(String(instance.id), 'node');
-      	node.addChild('name', 'string', req.params.name);
-      	node.addChild('type', 'string', req.params.type);
+      	node.addChild('type', 'string', req.body.type);
+        node.addChild('port', 'int64', instance.port);
+        node.addChild('name', 'string', req.body.name);
+        node.addChild('description', 'string', req.body.description);
       	node.addChild('state', 'string', 'stopped');
       	let instance_node = node.addChild('instance', 'flex', instance);
       	debuglog("Successfully created instance: " + node.getPath());
         res.status(201).json(instance_node.get());
       }).catch((err) => {
+        debuglog(err);
         // Failed to create the instance
         res.status(500).send(err);
       })
