@@ -12,17 +12,6 @@ const argv = require('yargs')
 //Returns a logger instance
 var log = require('@inexor-game/logger')(argv.console, argv.file, argv.level);
 
-// Prevent starting multiple instances of Inexor Flex
-var pid = null;
-try {
-  var pid_path = os.tmpdir() + '/inexor.pid';
-  pid = npid.create(pid_path);
-  pid.removeOnExit();
-} catch (err) {
-  log.error(err.message);
-  process.exit(1);
-}
-
 // Pull the dependencies
 const express = require('express');
 
@@ -42,6 +31,35 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   log.error(err);
   next(err);
+});
+
+// Manages startup Inexor Flex
+// - only a single instance is allowed
+// - on SIGINT a reload should be triggerd
+// - on SIGTERM process is killed
+
+var pid = null;
+
+try {
+  pid = npid.create(require('@inexor-game/path').pid_path);
+  pid.removeOnExit();
+} catch (err) {
+  log.error(err.message);
+  process.exit(1);
+}
+
+// TODO: enhance reloading
+process.on('SIGINT', () => {
+  log.info('Got SIGINT. Graceful reloading the server', new Date().toISOString())
+  require('@inexor-game/plugins').then((router) => {
+    app.use('/plugins', router);
+  })
+});
+
+process.on('SIGTERM', () => {
+  log.info('Got SIGTERM. Graceful shutdown start', new Date().toISOString())
+  pid.remove();
+  process.exit();
 });
 
 // Require the router from the rest module
@@ -64,16 +82,4 @@ var server = app.listen(argv.port, (err) => {
   } else {
     log.info('Inexor Flex is listening on ' + argv.port);
   }
-});
-
-process.on('SIGINT', () => {
-  log.info('Got SIGINT. Graceful shutdown start', new Date().toISOString())
-  pid.remove();
-  process.exit();
-});
-
-process.on('SIGTERM', () => {
-  log.info('Got SIGTERM. Graceful shutdown start', new Date().toISOString())
-  pid.remove();
-  process.exit();
 });

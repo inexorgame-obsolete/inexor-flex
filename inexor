@@ -2,8 +2,7 @@
 
 const process = require('process');
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
+
 const child_process = require('child_process');
 const wait_on = require('wait-on');
 const log = require('@inexor-game/logger')();
@@ -15,7 +14,8 @@ if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
 }
 
 // Ensure that Inexor Flex is running
-var pid_path = path.resolve(os.tmpdir() + '/inexor.pid');
+const pid_path = require('@inexor-game/path').pid_path;
+
 if (!fs.existsSync(pid_path)) {
   log.warn('Inexor Flex is not running! Starting Inexor Flex...');
   // Starting Inexor Flex detached without stdio
@@ -33,7 +33,7 @@ if (!fs.existsSync(pid_path)) {
   child.unref();
 }
 
-// Wait until PID is 
+// Wait until PID is
 wait_on({
   resources: [
     pid_path

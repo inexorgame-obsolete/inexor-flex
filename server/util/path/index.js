@@ -4,6 +4,7 @@
 
 const os = require('os');
 const process = require('process');
+const path = require('path');
 
 /**
  * The path of the flex folder
@@ -34,7 +35,29 @@ if (process.env.BINARY) {
   }
 }
 
+/**
+ * The pid file that Inexor Flex uses
+ * NOTE: Might be prefixed with /inexor in the future
+ */
+const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(os.tmpdir() + '/flex.pid');
+
+/**
+ * The config folder of flex
+ * Is either an absolute path or a relative path to the flex directory
+ * @property {string} config_path
+ */
+const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : 'config';
+
+/**
+ * The media directory of inexor
+ * Is either an absolute path or a relative path to the flex directory
+ */
+const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: 'media';
+
 module.exports = {
   flex_path: flex_path,
-  binary_path: binary_path
+  binary_path: binary_path,
+  pid_path: pid_path,
+  config_path: config_path,
+  media_path: media_path
 };
