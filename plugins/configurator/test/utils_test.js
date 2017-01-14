@@ -44,16 +44,4 @@ describe('Configurator utils', function() {
       expect(utils.isInMediaOrConfigDirectory(os.tmpdir())).to.be.false;
     })
   })
-
-  describe('objectToTree', function() {
-    it.only('should contain a node with the item title', function() {
-      let _path = path.resolve(path.join(__dirname) + '/example.toml')
-
-      utils.readConfigFile(_path).then((example) => {
-        let node = utils.objectToTree(example);
-        let val = node.getChild('title');
-        expect(val.get()).to.equal('TOML Example')
-      })
-    })
-  })
 })

@@ -35,6 +35,7 @@
     "@inexor-game/plugins": "file:plugins",
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
+    "@inexor-game/types": "file:src/types",
     "express": "^4.14.0",
     "nock": "^9.0.2",
     "node-rest-client": "^2.0.1",

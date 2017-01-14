@@ -1,0 +1,24 @@
+{
+  "name": "@inexor-game/types",
+  "version": "1.0.0",
+  "description": "Converts types from Inexor Core to JavaScript",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "types"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/code/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true
+}

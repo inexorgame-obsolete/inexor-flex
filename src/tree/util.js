@@ -28,18 +28,8 @@ function isValidDataType(datatype) {
     return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
 }
 
-/**
- * Checks wether or not a number is an integer
- * @param  {number}  n
- * @return {boolean}
- */
-function isInt(n) {
-  return parseInt(n) === n;
-}
-
 module.exports = {
     separator: separator,
     validName: validName,
-    isValidDataType: isValidDataType,
-    isInt: isInt
+    isValidDataType: isValidDataType
 }

@@ -3,8 +3,8 @@ const util = require('../util');
 
 describe('util', function() {
   describe('isValidDataType', function() {
-    it('flex should be valid', function() {
-      expect(util.isValidDataType('flex')).to.be.true;
+    it('flex should not longer be valid', function() {
+      expect(util.isValidDataType('flex')).to.be.false;
     })
 
     it('node should be valid', function() {

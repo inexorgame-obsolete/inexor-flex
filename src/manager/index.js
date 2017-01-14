@@ -41,11 +41,12 @@ function create(args, identifier = null, port = null, t = null) {
     // instance of Inexor Core.
     instance.tree = t; // Is null if no tree is specified
     if (t == null) {
-      instance.tree = new tree.Root();
+      instance.tree = new tree.Node(null, '/', 'node');
     }
 
     // Resolve the port
     let _port = null;
+    // TODO: might need moarr asynchronisation
     if (port == null && identifier == null) {
       try {
         portastic.find({min: defaultPort, max: defaultPort + 1000}).then((ports) => {

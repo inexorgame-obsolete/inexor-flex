@@ -8,9 +8,9 @@ describe('Manager', function() {
       expect(manager.create('gabbagecli')).to.be.fulfilled;
     })
 
-    it('should contain a valid tree instance after creation', function() {
+    it('should contain a valid Node instance after creation', function() {
       manager.create('gabbagecli').then((instance) => {
-        expect(instance.tree).to.be.an.instanceof(tree.Root);
+        expect(instance.tree).to.be.an.instanceof(tree.Node);
       })
     })
   })

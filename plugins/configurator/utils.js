@@ -47,17 +47,6 @@ function isInMediaOrConfigDirectory(_path) {
 }
 
 /**
- * Returns a UNIX timestamp string for a given {Date}
- * @private
- * @function
- * @param {Date}
- * @return {string}
- */
-function getUnixTime(date) {
-  return date.getTime()/1000|0; // Taken from https://coderwall.com/p/rbfl6g/how-to-get-the-correct-unix-timestamp-from-any-date-in-javascript
-}
-
-/**
  * @private
  * Reads a TOML file
  * @param  {string} path
@@ -77,74 +66,8 @@ function readConfigFile(_path) {
   })
 }
 
-/**
- * Returns a {@link Node} for the given {Object}
- * @private
- * @function
- * @param {Object} obj
- * @param {Node} node [null] - used for recursion
- * @return {Node}
- */
-function objectToTree(obj, node=null) {
-  debuglog('Converting [%o]', obj);
-  // Works quiet well since an Array is also in the property chain of an Object
-  if (node != null) {
-    debuglog('Received node [%o]', node)
-    Object.entries(obj).forEach(([key, value]) => {
-      debuglog('Processing [%o] with key [%s]', value, key)
-      if (value instanceof Object && !(value instanceof Date)) {
-        let _node = node.addNode(key);
-        objectToTree(value, _node);
-      } else {
-        let type = (value instanceof Date) ? 'timestamp': typeof(value);
-        if (type == 'number') {
-          type = (tree.util.isInt(value)) ? 'int64': 'float';
-        } else if (type == 'timestamp') {
-          value = getUnixTime(value);
-        } else if (type == 'boolean') {
-          type = 'bool';
-        }
-        
-        debuglog('Trying to add [%s] with type [%s]', value, type);
-        node.addChild(key, type, value);
-      }
-    })
-  } else {
-    let root = new tree.Node(null, '/', 'node');
-
-    debuglog('Added a new root node');
-    Object.entries(obj).forEach(([key, value]) => {
-      debuglog('Processing key %s', key)
-      if (value instanceof Object && !(value instanceof Date)) {
-        let _node = root.addNode(key);
-        debuglog('Adding node with key [%s]', key);
-        objectToTree(value, _node);
-      } else {
-        let type = (value instanceof Date) ? 'timestamp': typeof(value);
-        if (type == 'number') {
-          type = (tree.util.isInt(value)) ? 'int64': 'float';
-        } else if (type == 'timestamp') {
-          value = getUnixTime(value);
-        } else if (type == 'boolean') {
-          type = 'bool';
-        }
-
-        debuglog('Trying to add %s with type %s', value, type);
-        root.addChild(key, type, value)
-      }
-    })
-
-    return root;
-  }
-}
-
-/*function treeToObject(tree) {
-
-}*/
-
 module.exports = {
   withinDirectory: withinDirectory,
   isInMediaOrConfigDirectory: isInMediaOrConfigDirectory,
-  readConfigFile: readConfigFile,
-  objectToTree: objectToTree
+  readConfigFile: readConfigFile
 }

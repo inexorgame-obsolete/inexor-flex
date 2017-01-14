@@ -20,11 +20,14 @@ describe('Node', function() {
   })
 
   describe('addChild', function() {
-    it('should return a node with value xy, when added as a flex', function() {
-      let n = new Node('/', '', 'node');
-      let obj = { x: 1 };
-      let child = n.addChild('test', 'flex', obj)
-      expect(child.get()).to.be.equal(obj);
+    it('should no longer return a node with value xy, when added as a flex', function() {
+      function getFlexChild() {
+        let n = new Node('/', '', 'node');
+        let obj = { x: 1 };
+        let child = n.addChild('test', 'flex', obj)
+        child.get()
+      }
+      expect(getFlexChild).to.throw('Not a valid data type: flex');
     })
   })
 
