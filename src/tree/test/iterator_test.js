@@ -6,13 +6,18 @@ const expect = chai.expect;
 const Node = require('../Node');
 
 describe('Iterator', function() {
-  it('should iterate over a given tree', function() {
-    let node = new Node(null, '/', 'node');
-    node.addChild('test', 'string', 'testValue');
-    node.addChild('toast', 'string', 'toastBread');
-    node.addChild('num', 'int64', 1234);
-
-    expect(node).to.be.iterable;
-    expect(node).should.iterate.over('testValue', 'toastBread', 1234);
+  describe('Node', function() {
+    it('should contain a valid iterator', function() {
+      let node = new Node(null, '/', 'node');
+      expect(node).to.be.iterable;
+    })
+    it('should return a single element for a fresh node', function() {
+      let node = new Node(null, '/', 'node');
+      expect(node).to.iterate.for.lengthOf(1);
+    })
+    it.only('should always return the root element as last element', function() {
+      let node = new Node(null, '/', 'node');
+      expect(node).to.iterate.until(node);
+    })
   })
 })

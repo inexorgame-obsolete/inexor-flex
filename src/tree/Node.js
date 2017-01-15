@@ -1,5 +1,4 @@
 const EventEmitter = require('events');
-const Iterator = require('./Iterator');
 const util = require('./util')
 
 /**
@@ -322,9 +321,33 @@ class Node extends EventEmitter {
         }
     }
 
-    *[Symbol.Iterator]() {
-      let it = Iterator(this);
-      yield(it.next());
+    /**
+     * Iterates over the node and child nodes
+     * @function
+     * @return {Node}
+     */
+    [Symbol.iterator]() {
+      let done = false;
+      let root = this;
+      let previous = null;
+      let current = root;
+
+      return {
+        next: function() {
+          if (current.hasChild()) {
+            /*previous = current;
+            let childName = previous.getChildNames([0]);
+            current = previous.getChild(childName);
+            previous.removeChild(childName);
+            return {value: current, done: done};*/
+          } else if (current == root && !done) {
+            done = true; // After this iteration the root is reached
+            return {value: current, done: false}
+          } else {
+            return {done: done};
+          }
+        }
+      }
     }
 }
 
