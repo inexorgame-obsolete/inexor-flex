@@ -251,7 +251,9 @@ class Node extends EventEmitter {
                 },
                 set(value) {
                     childNode.set(value);
-                }
+                },
+                configurable: true,
+                writeable: !readOnly
             });
 
             this.emit('add', childNode); // Used for subscribing
@@ -290,6 +292,8 @@ class Node extends EventEmitter {
     removeChild(name) {
         if (this.hasChild(name) && !this.getChild(name)._readOnly) {
             this._value.delete(name);
+            let self = this;
+            delete self[name];
         }
     }
 
