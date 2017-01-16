@@ -10,7 +10,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.stopAll(function() {
+  client.flex.instances.stopAll(function(data, response) {
     client.flex.shutdown();
   })
 }

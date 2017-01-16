@@ -15,7 +15,7 @@ exports.builder = {
 exports.handler = function(argv) {
   log.info('Removing the client with instance id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.remove(argv.instance, function() {
+  client.flex.instances.remove(argv.instance, function(data, response) {
     log.info('Client with instance id ' + argv.instance + ' removed.');
   });
 }

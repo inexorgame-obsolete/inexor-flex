@@ -112,11 +112,11 @@ function start(instance) {
 			// log.info('flex_dir = ' + path.resolve(flex_dir));
 
       debuglog('flex_path = ' + inexor_path.flex_path);
-  	  let base_path = path.join(inexor_path.flex_path, '..');
+      let base_path = inexor_path.get_base_path();
   	  debuglog('base_path = ' + path.resolve(base_path));
       let binary_path = path.join(base_path, inexor_path.binary_path);
       debuglog('binary_path = ' + path.resolve(binary_path));
-      let media_path = path.join(base_path, 'media');
+      let media_path = path.join(base_path, inexor_path.media_path);
       debuglog('media_path = ' + path.resolve(media_path));
       let media_repositories = get_sub_directories(media_path);
       let args = [];

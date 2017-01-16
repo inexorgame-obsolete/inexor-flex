@@ -39,6 +39,13 @@ class TreeClient {
           }
         }
       },
+      media: {
+        repositories: {
+          scan: this.createEndpoint('/media/repositories/', this.scanMediaRepositories.name, 'POST'),
+          create: this.createEndpoint('/media/repositories/${name}', this.createMediaRepository.name, 'POST'),
+          remove: this.createEndpoint('/media/repositories/${name}', this.removeMediaRepository.name, 'DELETE')
+        }
+      },
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
     }
   }
@@ -243,6 +250,44 @@ class TreeClient {
    */
   clientWindowRestore(id, callback) {
     this.callEndpoint(this.clientWindowRestore.name, callback, { id: id });
+  }
+
+  /**
+   * Scans for media repositories.
+   * @function
+   * @param {function} callback
+   */
+  scanMediaRepositories(callback) {
+    this.callEndpoint(this.scanMediaRepositories.name, callback, {});
+  }
+
+  /**
+   * Creates a file system repository with the given name and url.
+   * @function
+   * @param {string} name - The name of the media repository.
+   * @param {string} path - The path to the media repository.
+   * @param {string} url - The url of the media repository.
+   * @param {function} callback
+   */
+  createMediaRepository(name, url, callback) {
+    if (url != null) {
+      // With URL: creates a git repository.
+      this.callEndpoint(this.createMediaRepository.name, callback, { name: name }, { type: 'git', url: url });
+    } else {
+      // Without URL: creates a fs repository.
+      this.callEndpoint(this.createMediaRepository.name, callback, { name: name }, { type: 'fs' });
+    }
+  }
+
+  /**
+   * Removes a media repository from the Inexor Tree.
+   * @function
+   * @param {string} name - The name of the media repository.
+   * @param {string} path - The path to the media repository.
+   * @param {function} callback
+   */
+  removeMediaRepository(name, callback) {
+    this.callEndpoint(this.removeMediaRepository.name, callback, { name: name });
   }
 
 }

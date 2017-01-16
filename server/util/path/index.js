@@ -54,10 +54,15 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : 'confi
  */
 const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: 'media';
 
+function getBasePath() {
+  return path.resolve(path.join(flex_path, '..'));
+}
+
 module.exports = {
   flex_path: flex_path,
   binary_path: binary_path,
   pid_path: pid_path,
   config_path: config_path,
-  media_path: media_path
+  media_path: media_path,
+  getBasePath: getBasePath
 };

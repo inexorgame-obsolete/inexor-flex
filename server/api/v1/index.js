@@ -8,13 +8,16 @@
 const process = require('process');
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const util = require('util');
 const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
 const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
+const media_repository = require('@inexor-game/media').MediaRepository;
 const connector = require('@inexor-game/connector');
+const inexor_path = require('@inexor-game/path');
 // const configurator = require('@inexor-game/configurator');
 
 var router = express.Router();
@@ -22,6 +25,8 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 var root = new tree.Root();
+let media_repository_manager = new media_repository.MediaRepositoryManager(root);
+
 // NOTE: This might be changed in the future where trees can be im/exported
 var instances = null;
 if (!root.hasChild('instances')) {
@@ -240,6 +245,47 @@ router.post('/tree/:id/:path', (req, res) => {
     }
   } else {
     res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
+  }
+})
+
+// Scans a new media repository.
+router.post('/media/repositories', (req, res)  => {
+  media_repository_manager.scan();
+  //TODO: improve result
+  res.status(200).send({});
+})
+
+// Creates a new media repository.
+router.post('/media/repositories/:name', (req, res)  => {
+  if (req.body.type != null) {
+    let repository_path = path.resolve(path.join(path.join(inexor_path.getBasePath(), inexor_path.media_path), req.params.name));
+    switch (req.body.type) {
+      case 'fs':
+        let repository_node = media_repository_manager.fs.createRepository(req.params.name, repository_path);
+        res.status(201).json(repository_node.get());
+        break;
+      case 'git':
+        if (req.body.url != null) {
+          let repository_node = media_repository_manager.git.createRepository(req.params.name, repository_path, req.body.url);
+          res.status(201).json(repository_node.get());
+        } else {
+          res.status(500).send(util.format('Missing parameter: url'));
+        }
+        break;
+    }
+  } else {
+    res.status(500).send(util.format('Missing parameter: type'));
+  }
+})
+
+// Removes a repository from the Inexor Tree.
+router.delete('/media/repositories/:name', (req, res)  => {
+  if (media_repository_manager.exists(req.params.name)) {
+    media_repository_manager.remove(req.params.name);
+    // Successfully removed
+    res.status(204).send({});
+  } else {
+    res.status(404).send(util.format('Media repository %s was not found', req.params.name));
   }
 })
 

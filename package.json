@@ -31,6 +31,7 @@
     "@inexor-game/connector": "file:src/connector",
     "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/manager": "file:src/manager",
+    "@inexor-game/media": "file:src/media",
     "@inexor-game/path": "file:server/util/path",
     "@inexor-game/plugins": "file:plugins",
     "@inexor-game/tree": "file:src/tree",

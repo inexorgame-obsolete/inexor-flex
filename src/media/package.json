@@ -1,0 +1,32 @@
+{
+  "name": "@inexor-game/media",
+  "version": "1.0.0",
+  "description": "Manages media content for the Inexor Tree technology.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "tree",
+    "media",
+    "map",
+    "texture",
+    "model",
+    "sound",
+    "audio",
+    "video"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {}
+}
