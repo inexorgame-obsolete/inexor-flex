@@ -15,7 +15,7 @@ const debuglog = util.debuglog('api/v1');
 // Pull the inexor dependencies
 const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
-const media_repository = require('@inexor-game/media').MediaRepository;
+const media = require('@inexor-game/media');
 const connector = require('@inexor-game/connector');
 const inexor_path = require('@inexor-game/path');
 // const configurator = require('@inexor-game/configurator');
@@ -25,7 +25,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 var root = new tree.Root();
-let media_repository_manager = new media_repository.MediaRepositoryManager(root);
+let media_repository_manager = new media.Repository.MediaRepositoryManager(root);
 
 // NOTE: This might be changed in the future where trees can be im/exported
 var instances = null;
@@ -275,6 +275,16 @@ router.post('/media/repositories/:name', (req, res)  => {
     }
   } else {
     res.status(500).send(util.format('Missing parameter: type'));
+  }
+})
+
+// Updates a media repository.
+router.put('/media/repositories/:name', (req, res)  => {
+  if (media_repository_manager.exists(req.params.name)) {
+    media_repository_manager.update(req.params.name);
+    res.status(200).send({});
+  } else {
+    res.status(404).send(util.format('Media repository %s was not found', req.params.name));
   }
 })
 

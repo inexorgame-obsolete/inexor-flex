@@ -43,6 +43,7 @@ class TreeClient {
         repositories: {
           scan: this.createEndpoint('/media/repositories/', this.scanMediaRepositories.name, 'POST'),
           create: this.createEndpoint('/media/repositories/${name}', this.createMediaRepository.name, 'POST'),
+          update: this.createEndpoint('/media/repositories/${name}', this.updateMediaRepository.name, 'PUT'),
           remove: this.createEndpoint('/media/repositories/${name}', this.removeMediaRepository.name, 'DELETE')
         }
       },
@@ -262,10 +263,9 @@ class TreeClient {
   }
 
   /**
-   * Creates a file system repository with the given name and url.
+   * Creates a media repository with the given name and url.
    * @function
    * @param {string} name - The name of the media repository.
-   * @param {string} path - The path to the media repository.
    * @param {string} url - The url of the media repository.
    * @param {function} callback
    */
@@ -277,6 +277,17 @@ class TreeClient {
       // Without URL: creates a fs repository.
       this.callEndpoint(this.createMediaRepository.name, callback, { name: name }, { type: 'fs' });
     }
+  }
+
+  /**
+   * Updates a media repository with the given name. If the media repository is
+   * a git repository a 'git pull' is performed.
+   * @function
+   * @param {string} name - The name of the media repository.
+   * @param {function} callback
+   */
+  updateMediaRepository(name, callback) {
+    this.callEndpoint(this.updateMediaRepository.name, callback, { name: name });
   }
 
   /**
