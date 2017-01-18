@@ -44,16 +44,20 @@ const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : 
 
 /**
  * The config folder of flex
- * Is either an absolute path or a relative path to the flex directory
+ * By default the XDG config path is used. This can be overwritten by the
+ * environment variable CONFIG_PATH (absolute path). If both are not set
+ * the fallback is a relative path to the flex directory.
  * @property {string} config_path
  */
-const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : 'config';
+const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : (xdgBasedir.config ? path.join(xdgBasedir.config, 'inexor') : 'config');
 
 /**
  * The media directory of inexor
- * Is either an absolute path or a relative path to the flex directory
+ * By default the XDG data path is used. This can be overwritten by the
+ * environment variable MEDIA_PATH (absolute path). If both are not set
+ * the fallback is a relative path to the flex directory.
  */
-const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: path.join(xdgBasedir.data, 'inexor/media');
+const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: (xdgBasedir.data ? path.join(xdgBasedir.data, 'inexor/media') : 'media');
 
 function getBasePath() {
   return path.resolve(path.join(flex_path, '..'));
