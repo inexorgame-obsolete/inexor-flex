@@ -5,14 +5,15 @@ const util = require('util');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 const log = require('@inexor-game/logger')();
+const mkdirp = require('mkdirp');
 
 /**
  * The media repository types.
+ * Future types may be 'http+rest', 'mongo'
  */
 const repository_types = [
   'fs',
-  'git',
-  'db'
+  'git'
 ];
 
 class FilesystemRepositoryManager {
@@ -24,10 +25,7 @@ class FilesystemRepositoryManager {
    */
   constructor(repositories_node, media_path = null) {
     this.repositories_node = repositories_node;
-    this.media_path = media_path;
-    if (this.media_path != null) {
-      this.scan(this.media_path);
-    }
+    this.scanAll();
   }
 
   /**
@@ -41,7 +39,7 @@ class FilesystemRepositoryManager {
     try {
       var _media_path = media_path;
       if (_media_path == null) {
-        _media_path = this.media_path;
+        _media_path = inexor_path.media_path;
       }
       log.info(util.format('Scaning media path %s for FS media repositories', _media_path));
       var nodes = [];
@@ -62,7 +60,20 @@ class FilesystemRepositoryManager {
       });
       return nodes;
     } catch (err) {
-      log.error('Failed to scan media path: ' + media_path, err);
+      log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+    }
+  }
+
+  /**
+   * Scans all media paths. This includes system wide repositories (for
+   * example in /usr/local/share/).
+   * @function
+   * @name FilesystemRepositoryManager.scanAll
+   */
+  scanAll() {
+    var media_paths = inexor_path.getMediaPaths();
+    for (var i = 0; i < media_paths.length; i++) {
+      this.scan(media_paths[i]);
     }
   }
 
@@ -144,14 +155,11 @@ class GitRepositoryManager {
   /**
    * Constructs the GitRepositoryManager.
    * @constructor
-   * @param {string} media_path - The path to a folder which contains the media repositories.
+   * @param {Node} repositories_node - The node which contains the repositories.
    */
-  constructor(repositories_node, media_path = null) {
+  constructor(repositories_node) {
     this.repositories_node = repositories_node;
-    this.media_path = media_path;
-    if (this.media_path != null) {
-      this.scan(this.media_path);
-    }
+    this.scanAll();
   }
 
   /**
@@ -165,7 +173,7 @@ class GitRepositoryManager {
     try {
       var _media_path = media_path;
       if (_media_path == null) {
-        _media_path = this.media_path;
+        _media_path = inexor_path.media_path;
       }
       log.info(util.format('Scaning media path %s for GIT media repositories', _media_path));
       var nodes = [];
@@ -186,7 +194,20 @@ class GitRepositoryManager {
       });
       return nodes;
     } catch (err) {
-      log.error('Failed to scan media path: ' + media_path, err);
+      log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+    }
+  }
+
+  /**
+   * Scans all media paths. This includes system wide repositories (for
+   * example in /usr/local/share/).
+   * @function
+   * @name GitRepositoryManager.scanAll
+   */
+  scanAll() {
+    var media_paths = inexor_path.getMediaPaths();
+    for (var i = 0; i < media_paths.length; i++) {
+      this.scan(media_paths[i]);
     }
   }
 
@@ -449,11 +470,15 @@ class MediaRepositoryManager {
     var root = application_context.get('tree');
     this.media_node = root.getOrCreateNode('media');
     this.repositories_node = this.media_node.getOrCreateNode('repositories');
-    this.media_path = path.resolve(path.join(inexor_path.getBasePath(), inexor_path.media_path));
-    this.fs = new FilesystemRepositoryManager(this.repositories_node, this.media_path);
-    this.git = new GitRepositoryManager(this.repositories_node, this.media_path);
+    // Ensure that the default media path exists
+    mkdirp.sync(inexor_path.media_path);
+    this.fs = new FilesystemRepositoryManager(this.repositories_node);
+    this.git = new GitRepositoryManager(this.repositories_node);
+    this.fetchCoreRepository();
     // Print scan result
     log.info(this.repositories_node.toString());
+    // Print the media paths
+    // log.info(inexor_path.getMediaPaths());
   }
 
   /**
@@ -487,15 +512,45 @@ class MediaRepositoryManager {
     return this.repositories_node.hasChild(name);
   }
 
+  /**
+   * Scans the default media path for media repositories.
+   * @function
+   * @name MediaRepositoryManager.scanAll
+   */
   scan() {
-    this.fs.scan(this.media_path);
-    this.git.scan(this.media_path);
+    this.fs.scan();
+    this.git.scan();
   }
 
+  /**
+   * Scans all media paths. This includes system wide repositories (for
+   * example in /usr/local/share/).
+   * @function
+   * @name MediaRepositoryManager.scanAll
+   */
+  scanAll() {
+    var media_paths = inexor_path.getMediaPaths();
+    for (var i = 0; i < media_paths.length; i++) {
+      this.fs.scan(media_paths[i]);
+      this.git.scan(media_paths[i]);
+    }
+  }
+
+  /**
+   * Returns the type of a media repository.
+   * @function
+   * @name MediaRepositoryManager.getType
+   */
   getType(name) {
     return this.repositories_node.getChild(name).type;
   }
 
+  /**
+   * Updates the media repository with the given name.
+   * @function
+   * @name MediaRepositoryManager.update
+   * @param {string} name - The name of the media repository
+   */
   update(name) {
     switch (this.getType(name)) {
       case 'fs':
@@ -517,6 +572,27 @@ class MediaRepositoryManager {
     if (this.exists(name)) {
       this.repositories_node.removeChild(name);
     }
+  }
+
+  /**
+   * Fetches the core repository if not already available.
+   * @function
+   * @name MediaRepositoryManager.fetchCoreRepository
+   */
+  fetchCoreRepository() {
+    if (!this.exists('core')) {
+      this.git.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexor-game/data.git');
+    }
+  }
+
+  /**
+   * Returns the default repository path for the given repository name.
+   * @function
+   * @name MediaRepositoryManager.getRepositoryPath
+   * @param {string} name - The name of the media repository
+   */
+  getRepositoryPath(name) {
+    return path.join(inexor_path.media_path, name);
   }
 
 }

@@ -43,6 +43,7 @@
     "node-rest-client": "^2.0.1",
     "npid": "^0.4.0",
     "wait-on": "^2.0.1",
+    "xdg-basedir": "^2.0.0",
     "yargs": "^6.5.0"
   },
   "devDependencies": {

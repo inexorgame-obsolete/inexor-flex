@@ -5,6 +5,7 @@
 const os = require('os');
 const process = require('process');
 const path = require('path');
+const xdgBasedir = require('xdg-basedir');
 
 /**
  * The path of the flex folder
@@ -52,10 +53,18 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : 'confi
  * The media directory of inexor
  * Is either an absolute path or a relative path to the flex directory
  */
-const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: 'media';
+const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: path.join(xdgBasedir.data, 'inexor/media');
 
 function getBasePath() {
   return path.resolve(path.join(flex_path, '..'));
+}
+
+function getMediaPaths() {
+  var media_paths = [];
+  for (var i = 0; i < xdgBasedir.dataDirs.length; i++) {
+    media_paths.push(path.join(xdgBasedir.dataDirs[i], 'inexor/media'));
+  }
+  return media_paths;
 }
 
 module.exports = {
@@ -64,5 +73,6 @@ module.exports = {
   pid_path: pid_path,
   config_path: config_path,
   media_path: media_path,
-  getBasePath: getBasePath
+  getBasePath: getBasePath,
+  getMediaPaths: getMediaPaths
 };

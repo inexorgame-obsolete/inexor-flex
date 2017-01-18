@@ -253,7 +253,7 @@ router.post('/tree/:id/:path', (req, res) => {
 
 // Scans a new media repository.
 router.post('/media/repositories', (req, res)  => {
-  media_repository_manager.scan();
+  media_repository_manager.scanAll();
   //TODO: improve result
   res.status(200).send({});
 })
