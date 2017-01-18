@@ -313,7 +313,7 @@ class GitRepositoryManager {
           node.addChild('branch', 'string', 'master');
           node.addNode('branches');
           // Initially clone the repository
-          this.update(name, true);
+          this.update(name, null, true);
           return node;
         } else {
           throw new Error('Directory already exist: ' + repository_path);
@@ -331,8 +331,10 @@ class GitRepositoryManager {
    * @function
    * @name GitRepositoryManager.update
    * @param {string} name - The repository name.
+   * @param {string} branch_name - If true, the repository will be cloned.
+   * @param {boolean} clone - If true, the repository will be cloned.
    */
-  update(name, clone = false) {
+  update(name, branch_name = null, clone = false) {
     let repository_node = this.repositories_node.getChild(name);
     let repository_path = this.repositories_node.getChild(name).path;
     var self = this;
@@ -377,6 +379,13 @@ class GitRepositoryManager {
         .then(function(repository) {
           return self.mergeBranches(name, repository);
         })
+        .then(function(repository) {
+          if (branch_name != null) {
+            return self.checkoutBranch(name, repository, branch_name);
+          } else {
+            return repository;
+          }
+        })
         .done(function() {
           log.info(util.format('[%s] Successfully updated media repository', name));
         });
@@ -387,6 +396,8 @@ class GitRepositoryManager {
    * Fetches updates from the remote repository.
    * @function
    * @name GitRepositoryManager.mergeBranches
+   * @param {string} name - The repository name.
+   * @param {Repository} repository - The git repository.
    */
   fetchAll(name, repository) {
     log.debug(util.format('[%s] Fetching new data from remote', name));
@@ -408,6 +419,8 @@ class GitRepositoryManager {
    * Merges the previously fetched updates from remote into the local copy.
    * @function
    * @name GitRepositoryManager.mergeBranches
+   * @param {string} name - The repository name.
+   * @param {Repository} repository - The git repository.
    */
   mergeBranches(name, repository) {
     let branch_node = this.repositories_node.getChild(name).branch;
@@ -426,9 +439,62 @@ class GitRepositoryManager {
   }
 
   /**
+   * Checkout the given branch.
+   * @function
+   * @name GitRepositoryManager.checkoutBranch
+   * @param {string} name - The repository name.
+   * @param {Repository} repository - The git repository.
+   * @param {string} branch_name - If true, the repository will be cloned.
+   */
+  checkoutBranch(name, repository, branch_name) {
+    let branch_node = this.repositories_node.getChild(name).branch;
+    return repository
+      .getBranch('refs/remotes/origin/' + branch_name)
+      .then(function(reference) {
+        let branch_name = reference.toString().substr(20);
+        if (branch_name == '') {
+          branch_name = 'master';
+        }
+        log.info(util.format('[%s] Checking out branch %s (%s)', name, branch_name, reference.toString()));
+        branch_node = branch_name;
+        return repository
+          .checkoutBranch(branch_name)
+          .then(function() {
+            log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+            return repository;
+          })
+          .catch(function(err) {
+            log.info(err);
+            return repository
+              .checkoutRef(reference)
+              .then(function(commit) {
+                log.info("creating local branch");
+                return repository
+                  .getHeadCommit()
+                  .then(function(commit) {
+                    return repository
+                      .createBranch(branch_name, commit, true)
+                      .then(function(reference) {
+                        log.info(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
+                        return repository
+                          .checkoutBranch(branch_name)
+                          .then(function() {
+                            log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+                            return repository;
+                          });
+                      });
+                  });
+              });
+          });
+      });
+  }
+
+  /**
    * Sets the current branch name of the given repository in the Inexor Tree.
    * @function
    * @name GitRepositoryManager.getCurrentBranch
+   * @param {string} name - The repository name.
+   * @param {Repository} repository - The git repository.
    */
   getCurrentBranch(name, repository) {
     // TODO: update branch node
@@ -450,6 +516,8 @@ class GitRepositoryManager {
    * Sets the branch names of the given repository in the Inexor Tree.
    * @function
    * @name GitRepositoryManager.getBranches
+   * @param {string} name - The repository name.
+   * @param {Repository} repository - The git repository.
    */
   getBranches(name, repository) {
     let repository_node = this.repositories_node.getChild(name);
@@ -605,14 +673,15 @@ class MediaRepositoryManager {
    * @function
    * @name MediaRepositoryManager.update
    * @param {string} name - The name of the media repository
+   * @param {string} branch_name - The name of the branch
    */
-  update(name) {
+  update(name, branch_name = null) {
     switch (this.getType(name)) {
       case 'fs':
         this.fs.update(name);
         break;
       case 'git':
-        this.git.update(name);
+        this.git.update(name, branch_name, false);
         break;
     }
   }

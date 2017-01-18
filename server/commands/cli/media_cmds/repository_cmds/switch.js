@@ -1,0 +1,25 @@
+const TreeClient = require('@inexor-game/treeclient').TreeClient;
+const log = require('@inexor-game/logger')();
+
+// Configuration for switching the branch of a media repository
+exports.command = 'switch <name> <branch>'
+exports.describe = 'Switches the branch of a media repository'
+
+exports.builder = {
+  name: {
+    type: 'string',
+    describe: 'The name of the media repository.'
+  },
+  branch: {
+    type: 'string',
+    describe: 'The name of the branch to switch to.'
+  }
+}
+
+exports.handler = function(argv) {
+  log.info('Switching to branch ' + argv.branch + ' of the media repository ' + argv.name);
+  var client = new TreeClient('localhost', 31416);
+  client.flex.media.repositories.branch(argv.name, argv.branch, function(data, response) {
+    log.info('Response: ' + response.statusCode + ' ' + response.statusMessage);
+  });
+}

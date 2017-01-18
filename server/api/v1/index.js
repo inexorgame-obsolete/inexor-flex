@@ -291,6 +291,16 @@ router.put('/media/repositories/:name', (req, res)  => {
   }
 })
 
+// Updates a media repository.
+router.put('/media/repositories/:name/:branchName', (req, res)  => {
+  if (media_repository_manager.exists(req.params.name)) {
+    media_repository_manager.update(req.params.name, req.params.branchName);
+    res.status(200).send({});
+  } else {
+    res.status(404).send(util.format('Media repository %s was not found', req.params.name));
+  }
+})
+
 // Removes a repository from the Inexor Tree.
 router.delete('/media/repositories/:name', (req, res)  => {
   if (media_repository_manager.exists(req.params.name)) {
