@@ -29,6 +29,7 @@ router.use(bodyParser.json());
 let application_context = new context.ApplicationContext();
 let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
+//let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });
 
 // NOTE: This might be changed in the future where trees can be im/exported
 var instances = null;

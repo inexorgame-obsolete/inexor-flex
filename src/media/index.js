@@ -4,7 +4,9 @@
  */
 
 const Repository = require('./Repository');
+const Media = require('./Media');
 
 module.exports = {
-  Repository: Repository
+  Repository: Repository,
+  Media: Media
 }
