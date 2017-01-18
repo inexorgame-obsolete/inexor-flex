@@ -499,7 +499,6 @@ class GitRepositoryManager {
 /**
  * The MediaRepositoryManager manages the media repositories. The repositories
  * can be repositories in the local file system or public remote repositories.
- * 
  */
 class MediaRepositoryManager {
 
@@ -509,18 +508,32 @@ class MediaRepositoryManager {
    * @param {ApplicationContext} application_context - The application context.
    */
   constructor(application_context) {
+    
+    // Create the basic structure in the Inexor Tree
     var root = application_context.get('tree');
-    this.media_node = root.getOrCreateNode('media');
-    this.repositories_node = this.media_node.getOrCreateNode('repositories');
+    var media_node = root.getOrCreateNode('media');
+    this.repositories_node = media_node.getOrCreateNode('repositories');
+
     // Ensure that the default media path exists
     mkdirp.sync(inexor_path.media_path);
+
+    // Publish the media paths on the Inexor Tree
+    var paths_node = media_node.getOrCreateNode('paths');
+    var media_paths = inexor_path.getMediaPaths();
+    for (var i = 0; i < media_paths.length; i++) {
+      paths_node.addChild(String(i), 'string', media_paths[i]);
+    }
+    log.info(paths_node.toString());
+
+    // Create the manager instances for the repository types
     this.fs = new FilesystemRepositoryManager(this.repositories_node);
     this.git = new GitRepositoryManager(this.repositories_node);
+
+    // If not exist fetch the core repository
     this.fetchCoreRepository();
+
     // Print scan result
     log.info(this.repositories_node.toString());
-    // Print the media paths
-    // log.info(inexor_path.getMediaPaths());
   }
 
   /**
