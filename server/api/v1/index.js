@@ -13,6 +13,7 @@ const util = require('util');
 const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
+const context = require('@inexor-game/context');
 const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
 const media = require('@inexor-game/media');
@@ -24,8 +25,10 @@ var router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-var root = new tree.Root();
-let media_repository_manager = new media.Repository.MediaRepositoryManager(root);
+// Build the application context and contruct components
+let application_context = new context.ApplicationContext();
+let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
+let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 
 // NOTE: This might be changed in the future where trees can be im/exported
 var instances = null;

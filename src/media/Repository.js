@@ -443,49 +443,17 @@ class MediaRepositoryManager {
   /**
    * Constructs the MediaRepositoryManager.
    * @constructor
-   * @param {Node} root - The root node of the Inexor Tree.
-   * @param {string} media_path - The path to a folder which contains the media repositories.
+   * @param {ApplicationContext} application_context - The application context.
    */
-  constructor(root, media_path = null) {
-    this.initTree(root);
-    this.initMediaPath(media_path);
+  constructor(application_context) {
+    var root = application_context.get('tree');
+    this.media_node = root.getOrCreateNode('media');
+    this.repositories_node = this.media_node.getOrCreateNode('repositories');
+    this.media_path = path.resolve(path.join(inexor_path.getBasePath(), inexor_path.media_path));
     this.fs = new FilesystemRepositoryManager(this.repositories_node, this.media_path);
     this.git = new GitRepositoryManager(this.repositories_node, this.media_path);
     // Print scan result
     log.info(this.repositories_node.toString());
-  }
-
-  /**
-   * Initializes the Inexor Tree structure for media repositories.
-   * @function
-   * @param {Node} root - The root node of the Inexor Tree.
-   */
-  initTree(root) {
-    this.root = root;
-    if (!this.root.hasChild('media')) {
-      this.media_node = this.root.addNode('media');
-    } else {
-      this.media_node = this.root.getChild('media');
-    }
-    if (!this.media_node.hasChild('repositories')) {
-      this.repositories_node = this.media_node.addNode('repositories');
-    } else {
-      this.repositories_node = this.media_node.getChild('repositories');
-    }
-  }
-
-  /**
-   * Initializes the media path member.
-   * @function
-   * @param {string} media_path - The path to a folder which contains the media repositories.
-   */
-  initMediaPath(media_path) {
-    if (media_path != null) {
-      this.media_path = media_path;
-    } else {
-      // TODO: check if absolute file or relative
-      this.media_path = path.resolve(path.join(inexor_path.getBasePath(), inexor_path.media_path));
-    }
   }
 
   /**

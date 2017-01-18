@@ -29,6 +29,7 @@
   "dependencies": {
     "@inexor-game/api": "file:server/api",
     "@inexor-game/connector": "file:src/connector",
+    "@inexor-game/context": "file:src/context",
     "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/manager": "file:src/manager",
     "@inexor-game/media": "file:src/media",

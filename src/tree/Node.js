@@ -209,6 +209,21 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Returns the child with the given name. If non-existent a node will be created.
+     * @function
+     * @name Node.getOrCreateNode
+     * @param {string} name
+     * @return {Node}
+     */
+    getOrCreateNode(name) {
+        if (this.hasChild(name)) {
+            return this.getChild(name);
+        } else {
+            return this.addNode(name);
+        }
+    }
+
+    /**
      * Returns the child names
      * @function
      * @name Node.getChildNames

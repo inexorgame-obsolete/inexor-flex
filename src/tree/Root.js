@@ -7,9 +7,10 @@ const util = require('./util')
 class Root extends Node {
     /**
      * @constructor
+     * @param {ApplicationContext} application_context - The application context.
      * @see Node.constructor
      */
-    constructor() {
+    constructor(application_context) {
         // Initialise this as the root node
         super(null, '', 'node');
     }
