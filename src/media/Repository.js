@@ -77,10 +77,21 @@ class FilesystemRepositoryManager {
     }
   }
 
+  /**
+   * Returns true if a media repository exists in the Inexor Tree.
+   * @function
+   * @name FilesystemRepositoryManager.exists
+   * @return {boolean}
+   */
   exists(name) {
     return this.repositories_node.hasChild(name);
   }
 
+  /**
+   * Returns a list of sub directories for the given path.
+   * @function
+   * @name FilesystemRepositoryManager.get_sub_directories
+   */
   get_sub_directories(_path) {
     return fs.readdirSync(_path).filter(function(file) {
       return fs.statSync(path.join(_path, file)).isDirectory();
@@ -211,10 +222,21 @@ class GitRepositoryManager {
     }
   }
 
+  /**
+   * Returns true if a media repository exists in the Inexor Tree.
+   * @function
+   * @name GitRepositoryManager.exists
+   * @return {boolean}
+   */
   exists(name) {
     return this.repositories_node.hasChild(name);
   }
 
+  /**
+   * Returns a list of sub directories for the given path.
+   * @function
+   * @name GitRepositoryManager.get_sub_directories
+   */
   get_sub_directories(_path) {
     return fs.readdirSync(_path).filter(function(file) {
       return fs.statSync(path.join(_path, file)).isDirectory();
@@ -361,6 +383,11 @@ class GitRepositoryManager {
     }
   }
 
+  /**
+   * Fetches updates from the remote repository.
+   * @function
+   * @name GitRepositoryManager.mergeBranches
+   */
   fetchAll(name, repository) {
     log.debug(util.format('[%s] Fetching new data from remote', name));
     return repository
@@ -377,6 +404,11 @@ class GitRepositoryManager {
       });
   }
 
+  /**
+   * Merges the previously fetched updates from remote into the local copy.
+   * @function
+   * @name GitRepositoryManager.mergeBranches
+   */
   mergeBranches(name, repository) {
     let branch_node = this.repositories_node.getChild(name).branch;
     let branches_node = this.repositories_node.getChild(name).branches;
@@ -393,6 +425,11 @@ class GitRepositoryManager {
       });
   }
 
+  /**
+   * Sets the current branch name of the given repository in the Inexor Tree.
+   * @function
+   * @name GitRepositoryManager.getCurrentBranch
+   */
   getCurrentBranch(name, repository) {
     // TODO: update branch node
     let branch_node = this.repositories_node.getChild(name).branch;
@@ -409,6 +446,11 @@ class GitRepositoryManager {
       });
   }
 
+  /**
+   * Sets the branch names of the given repository in the Inexor Tree.
+   * @function
+   * @name GitRepositoryManager.getBranches
+   */
   getBranches(name, repository) {
     let repository_node = this.repositories_node.getChild(name);
     let branches_node = this.repositories_node.getChild(name).branches;
