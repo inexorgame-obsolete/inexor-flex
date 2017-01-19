@@ -1,7 +1,7 @@
 {
-  "name": "@inexor-plugins/configurator",
+  "name": "@inexor-plugins/tomlreader",
   "version": "1.0.0",
-  "description": "Provides functionality to read game configurations.",
+  "description": "Provides functionality to read TOML configurations.",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -22,7 +22,6 @@
   },
   "private": "true",
   "dependencies": {
-    "glob": "^7.1.1",
-    "toml-js": "0.0.8"
+    "toml": "^2.3.1"
   }
 }

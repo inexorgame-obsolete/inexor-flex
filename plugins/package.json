@@ -23,7 +23,7 @@
   "private": true,
   "dependencies": {
     "@inexor-plugins/cfgreader": "file:cfgreader",
-    "@inexor-plugins/configurator": "file:configurator",
+    "@inexor-plugins/tomlreader": "file:tomlreader",
     "body-parser": "^1.15.2",
     "express": "^4.14.0"
   }

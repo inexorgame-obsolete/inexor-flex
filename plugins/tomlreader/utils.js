@@ -3,7 +3,7 @@ const debuglog = util.debuglog('configurator');
 
 // File system stuff
 const tree = require('@inexor-game/tree');
-const toml = require('toml-js');
+const toml = require('toml');
 //const glob = require('glob');
 const fs = require('fs');
 const path = require('path');
