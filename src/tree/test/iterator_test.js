@@ -11,13 +11,25 @@ describe('Iterator', function() {
       let node = new Node(null, '/', 'node');
       expect(node).to.be.iterable;
     })
-    it('should return a single element for a fresh node', function() {
+    it('should return zero elements for a fresh node', function() {
       let node = new Node(null, '/', 'node');
-      expect(node).to.iterate.for.lengthOf(1);
+      expect(node).to.iterate.for.lengthOf(0);
     })
-    it.only('should always return the root element as last element', function() {
+    it('should return 2 for a node with 2 elements', function() {
       let node = new Node(null, '/', 'node');
-      expect(node).to.iterate.until(node);
+      node.addChild('a', 'node');
+      node.addChild('b', 'node');
+      expect(node).to.iterate.for.lengthOf(2);
+    })
+    // This seems to be broken, please have a look at https://github.com/chaijs/chai/issues/908
+    it.only('should iterate over child elements', function() {
+      let node = new Node(null, '/', 'node');
+      node.addChild('a', 'node');
+      let node_a = node.getChild('a');
+      node.addChild('b', 'node');
+      let node_b = node.getChild('b');
+
+      expect(node).should.iterate.over([node_a, node_b]);
     })
   })
 })

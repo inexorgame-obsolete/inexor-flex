@@ -110,12 +110,8 @@ class Node extends EventEmitter {
                 throw new Error('No initial value provided');
             }
 
-            if (datatype == 'flex') {
-              this._sync = false; // Never enable sync for flex types
-            } else {
-              // Sets if the tree node should be synchronized.
-              this._sync = sync;
-            }
+            // Sets if the tree node should be synchronized.
+            this._sync = sync;
         }
     }
 
@@ -179,6 +175,15 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Checks wether the node has children
+     * @name Node.hasChildren
+     * @return {boolean}
+     */
+    hasChildren() {
+      return !this.isContainer || !(this._value.size == 0);
+    }
+
+    /**
      * Returns the root node (from parent)
      * @function
      * @name Node.getRoot
@@ -198,7 +203,7 @@ class Node extends EventEmitter {
      * @function
      * @name Node.getChild
      * @param {string} name
-     * @return {Node}
+     * @return {Node|null}
      */
     getChild(name) {
         if (this.hasChild(name)) {
@@ -206,6 +211,16 @@ class Node extends EventEmitter {
         } else {
         	  return null;
         }
+    }
+
+    /**
+     * Returns the first child of the Node
+     * @function
+     * @name Node.firstChild
+     * @return {Node|null}
+     */
+    firstChild() {
+      return (this.hasChild()) ? this.getChild(this.getChildNames()[0]) : [];
     }
 
     /**
@@ -230,7 +245,7 @@ class Node extends EventEmitter {
      * @return {Array<string>}
      */
     getChildNames() {
-        let keys = (this.isContainer) ? new Array().from(this._value.keys()) : [];
+        let keys = (this.hasChildren) ? Array.from(this._value.keys()) : [];
         return keys;
     }
 
@@ -346,24 +361,18 @@ class Node extends EventEmitter {
      * @return {Node}
      */
     [Symbol.iterator]() {
-      let done = false;
-      let root = this;
-      let previous = null;
-      let current = root;
+      let self = this; // Hacky slashy
+      let position = 0;
+      let childs = this.getChildNames();
 
       return {
         next: function() {
-          if (current.hasChild()) {
-            /*previous = current;
-            let childName = previous.getChildNames([0]);
-            current = previous.getChild(childName);
-            previous.removeChild(childName);
-            return {value: current, done: done};*/
-          } else if (current == root && !done) {
-            done = true; // After this iteration the root is reached
-            return {value: current, done: false}
+          // TODO: Lacks full iterative traversal yet
+          if (position < childs.length) {
+            position++;
+            return {value: self.getChild(childs[position - 1]), done: false};
           } else {
-            return {done: done};
+            return {done: true};
           }
         }
       }

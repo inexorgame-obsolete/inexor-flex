@@ -31,6 +31,49 @@ describe('Node', function() {
     })
   })
 
+  describe('getChildNames', function() {
+    it('should return an array with the node names', function() {
+      let node = new Node(null, '', 'node');
+      node.addChild('a', 'node');
+      node.addChild('b', 'node');
+      expect(node.getChildNames()).to.deep.equal(['a', 'b']);
+    });
+
+    it('should consistently return the same children names', function() {
+      let node = new Node(null, '/', 'node');
+      node.addChild('a', 'node');
+      node.addChild('b', 'node');
+      expect(node.getChildNames()).to.equal(node.getChildNames());
+    });
+
+    it.only('should return an empty array for a fresh node', function() {
+      let node = new Node(null, '/', 'node');
+      expect(node.getChildNames()).to.deep.equal([]);
+    })
+  })
+
+  describe('hasChildren', function() {
+    it.only('should return false for an empty node', function() {
+      let node = new Node(null, '/', 'node');
+      expect(node.hasChildren()).to.be.false;
+    })
+
+    it.only('should return true for a node with children', function() {
+      let node = new Node(null, '/', 'node');
+      node.addChild('a', 'node');
+      expect(node.hasChildren()).to.be.true;
+    })
+  })
+
+  describe('firstChild', function() {
+    it('should return the first child added when 2 childs are added to a node', function() {
+      let node = new Node(null, '/', 'node');
+      node.addChild('a', 'node');
+      node.addChild('b', 'node');
+      expect(node.firstChild()).to.equal(node.getChild('a'));
+    })
+  })
+
   describe('toStr', function() {
     it('should serialize a string object', function() {
       let n = new Node(null, 'setting', 'string', 'someimportantsetting')
