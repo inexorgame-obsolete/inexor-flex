@@ -22,14 +22,14 @@ describe('Iterator', function() {
       expect(node).to.iterate.for.lengthOf(2);
     })
     // This seems to be broken, please have a look at https://github.com/chaijs/chai/issues/908
-    it.only('should iterate over child elements', function() {
+    it.skip('should iterate over child elements', function() {
       let node = new Node(null, '/', 'node');
       node.addChild('a', 'node');
       let node_a = node.getChild('a');
       node.addChild('b', 'node');
       let node_b = node.getChild('b');
 
-      expect(node).should.iterate.over([node_a, node_b]);
+      expect(node).to.iterate.over([node_a, node_b]);
     })
   })
 })

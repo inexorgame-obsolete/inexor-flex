@@ -220,7 +220,7 @@ class Node extends EventEmitter {
      * @return {Node|null}
      */
     firstChild() {
-      return (this.hasChild()) ? this.getChild(this.getChildNames()[0]) : [];
+      return (this.hasChildren()) ? this.getChild(this.getChildNames()[0]) : [];
     }
 
     /**
@@ -245,7 +245,7 @@ class Node extends EventEmitter {
      * @return {Array<string>}
      */
     getChildNames() {
-        let keys = (this.hasChildren) ? Array.from(this._value.keys()) : [];
+        let keys = (this.hasChildren()) ? Array.from(this._value.keys()) : [];
         return keys;
     }
 

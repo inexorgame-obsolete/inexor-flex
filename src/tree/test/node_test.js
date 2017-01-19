@@ -43,22 +43,22 @@ describe('Node', function() {
       let node = new Node(null, '/', 'node');
       node.addChild('a', 'node');
       node.addChild('b', 'node');
-      expect(node.getChildNames()).to.equal(node.getChildNames());
+      expect(node.getChildNames()).to.deep.equal(node.getChildNames());
     });
 
-    it.only('should return an empty array for a fresh node', function() {
+    it('should return an empty array for a fresh node', function() {
       let node = new Node(null, '/', 'node');
       expect(node.getChildNames()).to.deep.equal([]);
     })
   })
 
   describe('hasChildren', function() {
-    it.only('should return false for an empty node', function() {
+    it('should return false for an empty node', function() {
       let node = new Node(null, '/', 'node');
       expect(node.hasChildren()).to.be.false;
     })
 
-    it.only('should return true for a node with children', function() {
+    it('should return true for a node with children', function() {
       let node = new Node(null, '/', 'node');
       node.addChild('a', 'node');
       expect(node.hasChildren()).to.be.true;
