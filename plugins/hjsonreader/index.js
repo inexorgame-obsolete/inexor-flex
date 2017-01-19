@@ -1,8 +1,9 @@
 /**
  * @module inexor-plugins/hjsonreader
- * @see {@link https://github.com/hjson/hjson-js}
- * @see {@link @inexor-plugins/tomlreader}
+ * @see {@link inexor-plugins/tomlreader}
+ * @see {@link https://github.com/hjson/hjson}
  */
+
 const types = require('@inexor-game/types');
 const Hjson = require('hjson');
 const tomlreader = require('@inexor-plugins/tomlreader');
@@ -45,4 +46,4 @@ exports = module.exports = function(router) {
   return router;
 }
 
-exports[@routable] = true;
+exports['@routable'] = true;

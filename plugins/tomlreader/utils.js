@@ -26,8 +26,8 @@ const config_path = path.resolve(path.join(inexor_path.flex_path, inexor_path.co
  * Checks wether or not given path (file, directory) is in directory
  * NOTE: Could be ported to @inexor-game/path
  * @function
- * @param  {string} path
- * @param  {string} directory
+ * @param {string} path
+ * @param {string} directory
  * @return {boolean}
  */
 function withinDirectory(_path, directory) {
@@ -39,8 +39,8 @@ function withinDirectory(_path, directory) {
  * Checks wether or not a directory is in the media or config path
  * Checks absolute paths only at the moment.
  * @function
- * @param  {[type]}  path [description]
- * @return {Boolean}      [description]
+ * @param {string} path
+ * @return {Boolean}
  */
 function isInMediaOrConfigDirectory(_path) {
   return (withinDirectory(_path, media_path) || withinDirectory(_path, config_path));

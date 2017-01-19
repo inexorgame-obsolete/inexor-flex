@@ -63,7 +63,7 @@ const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: (xdgBasedi
 /**
  * Returns the base directory of an Inexor installation (which is the parent
  * directory of Inexor Flex path).
- * @returns
+ * @return {string}
  */
 function getBasePath() {
   return path.resolve(path.join(flex_path, '..'));
@@ -72,7 +72,7 @@ function getBasePath() {
 /**
  * Returns a preference-ordered array of base directories to search for media
  * files in addition to the default media path.
- * @returns
+ * @return {string}
  */
 function getMediaPaths() {
   var media_paths = [];
@@ -85,7 +85,7 @@ function getMediaPaths() {
 /**
  * Returns a preference-ordered array of base directories to search for
  * configuration files in addition to the default config path.
- * @returns
+ * @return {string}
  */
 function getConfigPaths() {
   var config_paths = [];

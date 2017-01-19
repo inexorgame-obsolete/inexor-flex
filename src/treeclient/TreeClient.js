@@ -8,9 +8,9 @@ const log = require('@inexor-game/logger')();
 class TreeClient {
   /**
    * @constructor
-   * @type {string} hostname - the hostname flex listens on
-   * @type {number} port - the port that flex listens on
-   * @type {number} api_version - the api version that should be used
+   * @param {string} hostname - the hostname flex listens on
+   * @param {number} port - the port that flex listens on
+   * @param {number} api_version - the api version that should be used
    */
   constructor(hostname = 'localhost', port = 31416, api_version = 1) {
     this.client = new Client();
@@ -51,7 +51,7 @@ class TreeClient {
       plugins: {
           tomlreader: this.createEndpoint('/plugins/tomlreader/', this.readTOMLConfig.name, 'POST'),
           hjsonreader: this.createEndpoint('/plugins/hjsonreader', this.readHJsonConfig.name, 'POST')
-      }
+      },
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
     }
   }
@@ -59,9 +59,9 @@ class TreeClient {
   /**
    * Creates an endpoint within the Inexor Tree Client
    * @function
-   * @type {string} url - the url
-   * @type {string} methodName - the name of the method to be called
-   * @type {httpMethod} httpMethod - the http method to be used
+   * @param {string} url - the url
+   * @param {string} methodName - the name of the method to be called
+   * @param {httpMethod} httpMethod - the http method to be used
    */
   createEndpoint(url, methodName, httpMethod = 'GET') {
     this.client.registerMethod(methodName, this.getEndpointUrl(url), httpMethod);
