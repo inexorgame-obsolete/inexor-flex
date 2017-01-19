@@ -1,7 +1,7 @@
 {
-  "name": "@inexor-plugins/tomlreader",
+  "name": "@inexor-plugins/hjsonreader",
   "version": "1.0.0",
-  "description": "Provides functionality to read TOML configurations.",
+  "description": "A HJSON config reader for Inexor",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -9,7 +9,8 @@
   },
   "keywords": [
     "inexor",
-    "config"
+    "plugins",
+    "hjson"
   ],
   "author": "The Inexor Team",
   "license": "Zlib",
@@ -22,6 +23,6 @@
   },
   "private": "true",
   "dependencies": {
-    "toml": "^2.3.1"
+    "hjson": "^2.4.1"
   }
 }

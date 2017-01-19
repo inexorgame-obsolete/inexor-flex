@@ -1,8 +1,26 @@
-// Debugging
-const util = require('util');
-const debuglog = util.debuglog('configurator');
-const tomlreader = require('./utils');
+/**
+ * @module inexor-plugins/hjsonreader
+ * @see {@link https://github.com/hjson/hjson-js}
+ * @see {@link @inexor-plugins/tomlreader}
+ */
 const types = require('@inexor-game/types');
+const Hjson = require('hjson');
+const tomlreader = require('@inexor-plugins/tomlreader');
+
+// Redundant code makes testing obsolete
+function readConfigFile(path) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(_path, (err, data) => {
+      if (err) reject(err);
+      let str = data.toString();
+      try {
+        resolve(Hjson.parse(str));
+      } catch (err) {
+        reject(err);
+      }
+    })
+  })
+}
 
 // The module expects the absolute path as req.body.path, JSON encoded
 exports = module.exports = function(router) {
@@ -27,5 +45,4 @@ exports = module.exports = function(router) {
   return router;
 }
 
-exports['@routable'] = true;
-exports.util = tomlreader;
+exports[@routable] = true;

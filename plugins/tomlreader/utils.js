@@ -1,3 +1,10 @@
+/**
+ * @module inexor-plugins/tomlreader
+ * @see {@link https://www.npmjs.com/package/toml}
+ */
+
+// Since core functionality resides here, also use this as the module file for documentation.
+
 const util = require('util');
 const debuglog = util.debuglog('configurator');
 
@@ -16,14 +23,8 @@ const config_path = path.resolve(path.join(inexor_path.flex_path, inexor_path.co
 // debuglog('The config directory is located at [%s]', config_path);
 
 /**
- * @module inexor-plugins/configurator
- * TODO: Add a seperate type conversion library for inexor !
- */
-
-/**
  * Checks wether or not given path (file, directory) is in directory
  * NOTE: Could be ported to @inexor-game/path
- * @private
  * @function
  * @param  {string} path
  * @param  {string} directory
@@ -37,7 +38,6 @@ function withinDirectory(_path, directory) {
 /**
  * Checks wether or not a directory is in the media or config path
  * Checks absolute paths only at the moment.
- * @private
  * @function
  * @param  {[type]}  path [description]
  * @return {Boolean}      [description]
@@ -47,7 +47,6 @@ function isInMediaOrConfigDirectory(_path) {
 }
 
 /**
- * @private
  * Reads a TOML file
  * @param  {string} path
  * @return {Promise<Object>}
