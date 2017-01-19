@@ -42,18 +42,23 @@ var pid = null;
 
 try {
   pid = npid.create(require('@inexor-game/path').pid_path);
-  pid.removeOnExit();
+  pid.removeOnExit(); // This does not sanely work
 } catch (err) {
   log.error(err.message);
   process.exit(1);
 }
 
-// TODO: enhance reloading
-process.on('SIGINT', () => {
-  log.info('Got SIGINT. Graceful reloading the server', new Date().toISOString())
+process.on('SIGHUP', () => {
+  log.info('Got SIGHUP. Graceful reloading the server', new Date().toISOString())
   require('@inexor-game/plugins').then((router) => {
     app.use('/plugins', router);
   })
+});
+
+process.on('SIGINT', () => {
+  log.info('Got SIGINT. Graceful shutdown start', new Date().toISOString())
+  pid.remove();
+  process.exit();
 });
 
 process.on('SIGTERM', () => {
@@ -61,6 +66,11 @@ process.on('SIGTERM', () => {
   pid.remove();
   process.exit();
 });
+
+process.on('exit', (code) => {
+  log.info('Got ' + code + ' and gracefully killed the server.', new Date().toISOString());
+  pid.remove();
+})
 
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;

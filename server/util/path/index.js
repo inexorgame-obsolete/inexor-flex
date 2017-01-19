@@ -1,5 +1,6 @@
 /**
  * @module path
+ * // TODO: Might be better called inexor-game/defaults
  */
 
 const os = require('os');
@@ -94,6 +95,12 @@ function getConfigPaths() {
   return config_paths;
 }
 
+/**
+ * The default port of Inexor Flex to use
+ * @property {number} DEFAULT_PORT
+ */
+const DEFAULT_PORT = 31416;
+
 module.exports = {
   flex_path: flex_path,
   binary_path: binary_path,
@@ -102,5 +109,6 @@ module.exports = {
   media_path: media_path,
   getBasePath: getBasePath,
   getMediaPaths: getMediaPaths,
-  getConfigPaths: getConfigPaths
+  getConfigPaths: getConfigPaths,
+  DEFAULT_PORT: DEFAULT_PORT
 };

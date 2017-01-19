@@ -48,6 +48,10 @@ class TreeClient {
           remove: this.createEndpoint('/media/repositories/${name}', this.removeMediaRepository.name, 'DELETE')
         }
       },
+      plugins: {
+          tomlreader: this.createEndpoint('/plugins/tomlreader/', this.readTOMLConfig.name, 'POST'),
+          hjsonreader: this.createEndpoint('/plugins/hjsonreader', this.readHJsonConfig.name, 'POST')
+      }
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
     }
   }
@@ -127,7 +131,7 @@ class TreeClient {
    * @function
    * @param {number} id - the instance id
    * @param {string} type - the type of the instance: either 'server' or 'client'
-   * @param {number} port - the grpc port for synchronization - by default instance id and port are the same  
+   * @param {number} port - the grpc port for synchronization - by default instance id and port are the same
    * @param {string} name - the name of the instance
    * @param {string} description - the description of the instance
    * @param {function} callback
@@ -312,6 +316,26 @@ class TreeClient {
    */
   removeMediaRepository(name, callback) {
     this.callEndpoint(this.removeMediaRepository.name, callback, { name: name });
+  }
+
+  /**
+   * Reads a TOML object using the {@link @inexor-plugins/tomlreader}
+   * @function
+   * @param {string} path - The path of the file to be read
+   * @param {function} callback
+   */
+  readTOMLConfig(path, callback) {
+    this.callEndpoint(this.readTOMLConfig.name, callback, { path: path });
+  }
+
+  /**
+   * Reads a HJson object using the {@link @inexor-plugins/hjsonreader}
+   * @function
+   * @param {string} path - The path of the file to be read
+   * @param {function} callback
+   */
+  readHJsonConfig(path, callback) {
+    this.callEndpoint(this.readHJsonConfig.name, callback, { path: path });
   }
 
 }
