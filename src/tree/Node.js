@@ -367,16 +367,31 @@ class Node extends EventEmitter {
 
       return {
         next: function() {
-          // TODO: Lacks full iterative traversal yet
           if (position < childs.length) {
             position++;
             return {value: self.getChild(childs[position - 1]), done: false};
           } else {
             return {done: true};
           }
+        },
+        // Return a well formated iterator
+        [Symbol.iterator]: function() {
+          return this;
         }
       }
     }
+
+    /**
+     * NOTE:
+     * For compete traversal one should use iterator with children
+     * for (child of node) {
+     *  if (child.hasChildren) {
+     *    for (children of child) {
+     *      // Do this for as much recursion levels as you like
+     *    }
+     *  }
+     * }
+     */
 }
 
 module.exports = Node;
