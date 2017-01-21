@@ -41,6 +41,7 @@
     "express": "^4.14.0",
     "nock": "^9.0.2",
     "node-rest-client": "^2.0.1",
+    "nodegit": "^0.16.0",
     "npid": "^0.4.0",
     "wait-on": "^2.0.1",
     "xdg-basedir": "^2.0.0",
