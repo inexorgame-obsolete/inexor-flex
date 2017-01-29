@@ -361,25 +361,30 @@ class GitRepositoryManager {
       });
     } else {
       // git pull
+      // TODO: Resolve the repository url first!
       log.info(util.format('[%s] Updating media repository (url: %s local: %s)', name, repository_node.url, repository_node.path));
       var repository;
       git.Repository
         .open(repository_path)
         .then(function(repo) {
           repository = repo;
-          log.debug(util.format('[%s] Opened media repository', name));
+          log.info(util.format('[%s] Opened media repository', name));
           return self.getBranches(name, repository);
         })
         .then(function(repository) {
+          log.info(util.format('[%s] Got branches', name));
           return self.getCurrentBranch(name, repository);
         })
         .then(function(repository) {
+          log.info(util.format('[%s] Got current branch', name));
           return self.fetchAll(name, repository);
         })
         .then(function(repository) {
+          log.info(util.format('[%s] Fetched changes from remote', name));
           return self.mergeBranches(name, repository);
         })
         .then(function(repository) {
+          log.info(util.format('[%s] Merged changes into local branch', name));
           if (branch_name != null) {
             return self.checkoutBranch(name, repository, branch_name);
           } else {
@@ -412,6 +417,9 @@ class GitRepositoryManager {
       .then(function() {
         log.debug(util.format('[%s] Successfully fetched data', name));
         return repository;
+      })
+      .catch(function() {
+        return repository;
       });
   }
 
@@ -434,6 +442,9 @@ class GitRepositoryManager {
       .mergeBranches(local, remote)
       .then(function() {
         log.debug(util.format('[%s] Successfully merged new data', name));
+        return repository;
+      })
+      .catch(function() {
         return repository;
       });
   }
@@ -481,11 +492,26 @@ class GitRepositoryManager {
                           .then(function() {
                             log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
                             return repository;
+                          })
+                          .catch(function() {
+                            return repository;
                           });
+                      })
+                      .catch(function() {
+                        return repository;
                       });
+                  })
+                  .catch(function() {
+                    return repository;
                   });
+              })
+              .catch(function() {
+                return repository;
               });
           });
+      })
+      .catch(function() {
+        return repository;
       });
   }
 
@@ -502,12 +528,24 @@ class GitRepositoryManager {
     return repository
       .getCurrentBranch()
       .then(function(reference) {
-        let branch_name = reference.toString().substr(11);
-        if (branch_name == '') {
-          branch_name = 'master';
+        try {
+          let branch_name = reference.toString().substr(11);
+          if (branch_name != '') {
+            branch_node = branch_name;
+            log.info(util.format('[%s] Current branch is %s', name, branch_name));
+          } else {
+            branch_node = 'master';
+            log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
+          }
+        } catch (err) {
+          branch_node = 'master';
+          log.error(util.format('[%s] Failed to get current branch', name));
         }
-        log.debug(util.format('[%s] Current branch is %s', name, branch_name));
-        branch_node = branch_name;
+        return repository;
+      })
+      .catch(function(reference) {
+        log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
+        branch_node = 'master';
         return repository;
       });
   }
@@ -525,39 +563,48 @@ class GitRepositoryManager {
     return repository
       .getReferenceNames(git.Reference.TYPE.LISTALL)
       .then(function(reference_names) {
-        for (var i = 0; i < reference_names.length; i++) {
-          var reference_name = reference_names[i];
-          if (reference_name.substr(0, 11) == 'refs/heads/') {
-            // local branch
-            var branch_name = reference_name.substr(11);
-            var branch_node;
-            if (branches_node.hasChild(branch_name)) {
-              branch_node = branches_node.getChild(branch_name);
-            } else {
-              branch_node = branches_node.addNode(branch_name);
-            }
-            if (branch_node.hasChild('local')) {
-              branch_node.getChild('local').set(reference_name);
-            } else {
-              branch_node.addChild('local', 'string', reference_name);
-            }
-          } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
-            // remote branch
-            var branch_name = reference_name.substr(20);
-            var branch_node;
-            if (branches_node.hasChild(branch_name)) {
-              branch_node = branches_node.getChild(branch_name);
-            } else {
-              branch_node = branches_node.addNode(branch_name);
-            }
-            if (branch_node.hasChild('remote')) {
-              branch_node.getChild('remote').set(reference_name);
-            } else {
-              branch_node.addChild('remote', 'string', reference_name);
+        try {
+          for (var i = 0; i < reference_names.length; i++) {
+            var reference_name = reference_names[i];
+            if (reference_name.substr(0, 11) == 'refs/heads/') {
+              // local branch
+              var branch_name = reference_name.substr(11);
+              var branch_node;
+              if (branches_node.hasChild(branch_name)) {
+                branch_node = branches_node.getChild(branch_name);
+              } else {
+                branch_node = branches_node.addNode(branch_name);
+              }
+              if (branch_node.hasChild('local')) {
+                branch_node.getChild('local').set(reference_name);
+              } else {
+                branch_node.addChild('local', 'string', reference_name);
+              }
+              log.info(util.format('[%s] Found local branch %s', name, branch_name));
+            } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
+              // remote branch
+              var branch_name = reference_name.substr(20);
+              var branch_node;
+              if (branches_node.hasChild(branch_name)) {
+                branch_node = branches_node.getChild(branch_name);
+              } else {
+                branch_node = branches_node.addNode(branch_name);
+              }
+              if (branch_node.hasChild('remote')) {
+                branch_node.getChild('remote').set(reference_name);
+              } else {
+                branch_node.addChild('remote', 'string', reference_name);
+              }
+              log.info(util.format('[%s] Found remote branch %s', name, branch_name));
             }
           }
+          log.debug(branches_node.toString());
+        } catch (err) {
+          log.error(util.format('[%s] Failed to get available branches', name));
         }
-        log.debug(branches_node.toString());
+        return repository;
+      })
+      .catch(function() {
         return repository;
       });
   }
@@ -705,7 +752,12 @@ class MediaRepositoryManager {
    */
   fetchCoreRepository() {
     if (!this.exists('core')) {
+      // Clones the core media repository
       this.git.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexor-game/data.git');
+    }
+    if (!this.exists('user')) {
+      // Creates a personal media repository for the current user
+      this.fs.createRepository('user', this.getRepositoryPath('user'));
     }
   }
 
