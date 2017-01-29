@@ -71,7 +71,7 @@ router.post('/instances/:id', (req, res) => {
         node.addChild('name', 'string', req.body.name);
         node.addChild('description', 'string', req.body.description);
       	node.addChild('state', 'string', 'stopped');
-      	let instance_node = node.addChild('instance', 'flex', instance);
+      	let instance_node = node.addChild('instance', 'node', instance);
       	debuglog("Successfully created instance: " + node.getPath());
         res.status(201).json(instance_node.get());
       }).catch((err) => {
