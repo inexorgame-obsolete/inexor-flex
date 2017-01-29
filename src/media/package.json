@@ -28,5 +28,7 @@
     "node": ">=6.9.1"
   },
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "nodegit": "^0.16.0"
+  }
 }
