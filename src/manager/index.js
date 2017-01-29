@@ -119,17 +119,17 @@ function start(instance) {
       let media_path = path.join(base_path, inexor_path.media_path);
       debuglog('media_path = ' + path.resolve(media_path));
       let media_repositories = get_sub_directories(media_path);
-      let args = [];
-      args.push('-q~/.inexor');
-      if (instance.args.length > 0) {
-        args.push(instance.args);
-      }
-      // args.push('-k' + path.resolve(media_path));
-      media_repositories.forEach(function(media_repository) {
-        var media_dir = path.join(media_path, media_repository);
-        // args.push('-k' + path.resolve(media_dir));
-        args.push('-k./media/' + media_repository);
-      });
+      let args = [ instance.id ];
+//      args.push('-q~/.inexor');
+//      if (instance.args.length > 0) {
+//        args.push(instance.args);
+//      }
+//      // args.push('-k' + path.resolve(media_path));
+//      media_repositories.forEach(function(media_repository) {
+//        var media_dir = path.join(media_path, media_repository);
+//        // args.push('-k' + path.resolve(media_dir));
+//        args.push('-k./media/' + media_repository);
+//      });
       let options = {
         cwd: path.resolve(base_path)
       };
