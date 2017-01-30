@@ -25,11 +25,11 @@ const validName = /^[\w ]+$/;
  * @return {boolean}
  */
 function isValidDataType(datatype) {
-    return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp';
+  return datatype == 'node' || datatype == 'int64' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp' || datatype == 'object';
 }
 
 module.exports = {
-    separator: separator,
-    validName: validName,
-    isValidDataType: isValidDataType
+  separator: separator,
+  validName: validName,
+  isValidDataType: isValidDataType
 }

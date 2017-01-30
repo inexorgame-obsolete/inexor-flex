@@ -239,6 +239,16 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Returns the name of the node itself.
+     * @function
+     * @name Node.getName
+     * @return {string} name the name of the node.
+     */
+    getName() {
+        return this._name;
+    }
+
+    /**
      * Returns the child names
      * @function
      * @name Node.getChildNames

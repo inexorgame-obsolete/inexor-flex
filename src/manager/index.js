@@ -101,8 +101,12 @@ function get_sub_directories(_path) {
  * @param {manager.instance}
  * @return {Promise<instance>}
  */
-function start(instance) {
-	debuglog('Starting instance ' + instance.id);
+function start(node) {
+  // debuglog(node);
+	debuglog('Starting instance ' + node.name + ' (id: ' + node.getName() + ')');
+	
+	let instance_node = node.getChild('instance');
+	let instance = instance_node.get();
 
   return new Promise((resolve, reject) => {
   	try {
@@ -112,14 +116,14 @@ function start(instance) {
 			// log.info('flex_dir = ' + path.resolve(flex_dir));
 
       debuglog('flex_path = ' + inexor_path.flex_path);
-      let base_path = inexor_path.get_base_path();
+      let base_path = inexor_path.getBasePath();
   	  debuglog('base_path = ' + path.resolve(base_path));
       let binary_path = path.join(base_path, inexor_path.binary_path);
       debuglog('binary_path = ' + path.resolve(binary_path));
-      let media_path = path.join(base_path, inexor_path.media_path);
-      debuglog('media_path = ' + path.resolve(media_path));
-      let media_repositories = get_sub_directories(media_path);
-      let args = [ instance.id ];
+//    let media_path = path.join(base_path, inexor_path.media_path);
+//    debuglog('media_path = ' + path.resolve(media_path));
+//    let media_repositories = get_sub_directories(media_path);
+//    let args = [ node.getName() ];
 //      args.push('-q~/.inexor');
 //      if (instance.args.length > 0) {
 //        args.push(instance.args);
@@ -130,6 +134,7 @@ function start(instance) {
 //        // args.push('-k' + path.resolve(media_dir));
 //        args.push('-k./media/' + media_repository);
 //      });
+      let args = [ node.getName() ];
       let options = {
         cwd: path.resolve(base_path)
       };

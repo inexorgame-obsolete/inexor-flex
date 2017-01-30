@@ -71,7 +71,7 @@ router.post('/instances/:id', (req, res) => {
         node.addChild('name', 'string', req.body.name);
         node.addChild('description', 'string', req.body.description);
       	node.addChild('state', 'string', 'stopped');
-      	let instance_node = node.addChild('instance', 'node', instance);
+      	let instance_node = node.addChild('instance', 'object', instance);
       	debuglog("Successfully created instance: " + node.getPath());
         res.status(201).json(instance_node.get());
       }).catch((err) => {
@@ -110,7 +110,7 @@ router.get('/instances/:id/start', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
     let instance_node = node.getChild('instance');
-    manager.start(instance_node.get()).then((instance) => {
+    manager.start(node).then((instance) => {
       instance_node.set(instance);
       instance_node.getParent().getChild('state').set('started');
       res.json(instance);
