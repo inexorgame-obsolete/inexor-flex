@@ -24,10 +24,14 @@ node {
 
     stage('Run tests') {
         try {
-            sh 'npm test'
+            sh 'mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js') --reporter mocha-junit-reporter --reporter-options mochaFile=./test-results.xml'
         } catch(err) {
             echo "Error: ${err}";
         }
+        step([
+            $class: 'JUnitResultArchiver',
+            testResults: '**/test-results.xml'
+        ])
     }
 
     stage('Generate API documentation') {
