@@ -24,7 +24,7 @@ node {
 
     stage('Run tests') {
         try {
-            sh 'mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js') --reporter mocha-junit-reporter --reporter-options mochaFile=./test-results.xml'
+            sh "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js') --reporter mocha-junit-reporter --reporter-options mochaFile=./test-results.xml"
         } catch(err) {
             echo "Error: ${err}";
         }
