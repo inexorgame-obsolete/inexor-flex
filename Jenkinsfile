@@ -9,11 +9,22 @@ node {
     }
 
     stage('Run tests') {
-        sh 'npm test'
+        try {
+            sh 'npm test'
+        } catch(err) {
+        }
     }
 
     stage('Generate API documentation') {
         sh 'jsdoc -c .jsdoc.json'
+        publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'docs/',
+            reportFiles: 'index.html',
+            reportName: 'Inexor Flex API Documentation'
+        ])
     }
 
 }
