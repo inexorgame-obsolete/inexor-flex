@@ -1,5 +1,7 @@
 # Inexor Flex
 
+[![Build Status](https://ci.inexor.org/job/inexor/job/flex/job/master/badge/icon)](https://ci.inexor.org/job/inexor/job/flex/job/master/)
+
 Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
 ## Architecture
