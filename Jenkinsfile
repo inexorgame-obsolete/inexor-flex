@@ -8,6 +8,19 @@ node {
         sh 'npm install'
     }
 
+    stage('Check code style') {
+        try {
+            sh 'eslint . --format=checkstyle > eslint.xml'
+            step([
+                $class: 'CheckStylePublisher',
+                pattern: '**/eslint.xml',
+                unstableTotalAll: '0',
+                usePreviousBuildAsReference: true
+            ])
+        } catch(err) {
+        }
+    }
+
     stage('Run tests') {
         try {
             sh 'npm test'
