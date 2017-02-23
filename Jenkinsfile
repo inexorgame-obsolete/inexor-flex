@@ -18,6 +18,7 @@ node {
                 usePreviousBuildAsReference: true
             ])
         } catch(err) {
+            echo 'Error: ${err}';
         }
     }
 
@@ -25,6 +26,7 @@ node {
         try {
             sh 'npm test'
         } catch(err) {
+            echo 'Error: ${err}';
         }
     }
 
