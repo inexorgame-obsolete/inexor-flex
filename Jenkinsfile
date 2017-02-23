@@ -10,16 +10,16 @@ node {
 
     stage('Check code style') {
         try {
-            sh 'eslint . --format=checkstyle > eslint.xml'
-            step([
-                $class: 'CheckStylePublisher',
-                pattern: '**/eslint.xml',
-                unstableTotalAll: '0',
-                usePreviousBuildAsReference: true
-            ])
+            sh 'eslint . --format=checkstyle --output-file=eslint.xml'
         } catch(err) {
             echo "Error: ${err}";
         }
+        step([
+            $class: 'CheckStylePublisher',
+            pattern: '**/eslint.xml',
+            unstableTotalAll: '0',
+            usePreviousBuildAsReference: true
+        ])
     }
 
     stage('Run tests') {
