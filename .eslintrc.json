@@ -202,7 +202,7 @@
             "error",
             "never"
         ],
-        "valid-jsdoc": "true",
+        "valid-jsdoc": "warn",
         "vars-on-top": "error",
         "wrap-iife": "error",
         "wrap-regex": "error",

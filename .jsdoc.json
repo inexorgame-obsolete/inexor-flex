@@ -1,10 +1,11 @@
 {
-  "opts": {
-    "destination": "./docs/",
-    "recurse": true,
-    "template": "node_modules/minami",
-    "readme": "README.md"
-  },
+    "opts": {
+        "destination": "./docs/",
+        "encoding": "utf8",
+        "recurse": true,
+        "template": "node_modules/minami",
+        "readme": "README.md"
+    },
     "tags": {
         "allowUnknownTags": true,
         "dictionaries": ["jsdoc","closure"]
