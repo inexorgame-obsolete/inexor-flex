@@ -13,7 +13,7 @@ const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 
 // The default port to use
-const defaultPort = 31415;
+const defaultPort = 31417;
 
 /**
  * An Inexor Core instance defines the meta information about an client or server instance.
