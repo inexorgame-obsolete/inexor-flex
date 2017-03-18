@@ -1,7 +1,7 @@
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const log = require('@inexor-game/logger')();
 
-// Configuration for starting a client instance of Inexor Core
+// Configuration for removing a client instance of Inexor Core
 exports.command = 'remove <instance>'
 exports.describe = 'Removes a client'
 

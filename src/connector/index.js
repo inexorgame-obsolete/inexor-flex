@@ -6,10 +6,14 @@
 const path = require('path');
 const EventEmitter = require('events');
 const grpc = require('grpc');
+const util = require('util');
 const tree = require('@inexor-game/tree');
+const inexor_path = require('@inexor-game/path');
+
+const debuglog = util.debuglog('connector');
 
 /** @private */
-const protoPath = path.dirname(require.main.filename) + '/core/bin/inexor.proto'
+// const protoPath = path.dirname(require.main.filename) + '/core/bin/inexor.proto'
 
 /**
  * Connects a {@link Root} with a Inexor Core instance
@@ -20,15 +24,20 @@ class Connector extends EventEmitter {
    * @param {number} port - the port of Inexor Core
    * @param {Root} root - the tree to synchronize with
    */
-  constructor(port, root) {
+  constructor(instance_node) {
+    super();
+    /** @private */
+    this._instance_node = instance_node;
+    this._port = instance_node.port;
+    this._tree = tree;
+    
+    let protoPath = path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
+    
     /**
      * @property {Object} protoDescriptor
      */
-    this.protoDescriptor = grpc.load(protoPath);
-    /** @private */
-    this._root = root;
-    this._port = port;
-    this._tree = tree;
+    debuglog('Path to the .proto file: %s', protoPath);
+    this.protoDescriptor = grpc.load(path.resolve(protoPath));
   }
 
   /**
@@ -38,7 +47,7 @@ class Connector extends EventEmitter {
    * @return {string}
    */
   getPath(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(path)'];
+    return this._instance_node.getPath() + this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(path)'];
   }
 
   /**
@@ -78,10 +87,19 @@ class Connector extends EventEmitter {
    */
   connect() {
     // Connect to the gRPC client
+    debuglog('CONNECT');
     this.treeServiceClient = new this.protoDescriptor.inexor.tree.TreeService('localhost:' + this._port, grpc.credentials.createInsecure());
 
+    // Here we start to synchronize our tree
+    
+    // TODO: neue funktion
+    // this.treeServiceClient.synchronize();
+    // this.treeServiceClient. FINISHED_TREE_INTRO_SEND
+    
+    debuglog('Synchronize START');
     this.synchronize = this.treeServiceClient.synchronize();
     this.synchronize.on('data', (message) => {
+      debuglog('Synchronize DATA');
       try {
         let protoKey = message.key;
         let value = message[protoKey];
@@ -98,17 +116,29 @@ class Connector extends EventEmitter {
       }
     });
 
+    // The server has finished sending
     this.synchronize.on('end', function() {
-        // The server has finished sending
+      try {
+        debuglog('Synchronize END');
+      } catch (err) {
         throw new Error('Synchronization has end.')
+      }
     });
 
     this.synchronize.on('status', function(status) {
+      try {
+        debuglog('Synchronize STATUS %s', status);
+      } catch (err) {
         throw new Error('Status ${status} has been received.') // Usually we don't send status information, might change
+      }
     });
 
     this.synchronize.on('error', function(err) {
-        throw new Error('${err} has occured.')
+      try {
+        debuglog('Synchronize ERROR %s', err);
+      } catch (err) {
+        // throw new Error('${err} has occured.')
+      }
     });
 
     this._tree.on('add', function(node) {
@@ -122,10 +152,32 @@ class Connector extends EventEmitter {
           throw new Error('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
         }
       })
-    })
+    });
 
-    // this.initializeTree(); @deprecated
+    // TODO: populate tree
+    
+    // send FINISHED_TREE_INTRO_SEND
+
+    // @deprecated
+    // this.initializeTree();
+
+    // Finally send an event, that the connection has been established successfully.
     this.emit('connected');
+  }
+
+  /**
+   * Populates the tree.
+   */
+  populateTree() {
+    
+  }
+
+  /**
+   * Sends an event to Inexor Core which signals that the tree initialization
+   * has been finished.
+   */
+  sendFinishedTreeIntro() {
+    
   }
 
   /**
@@ -142,6 +194,7 @@ class Connector extends EventEmitter {
           }
     }
   }
+
 }
 
 module.exports = Connector

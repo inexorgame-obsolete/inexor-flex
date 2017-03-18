@@ -17,7 +17,7 @@ const context = require('@inexor-game/context');
 const tree = require('@inexor-game/tree');
 const manager = require('@inexor-game/manager');
 const media = require('@inexor-game/media');
-const connector = require('@inexor-game/connector');
+const Connector = require('@inexor-game/connector');
 const inexor_path = require('@inexor-game/path');
 // const configurator = require('@inexor-game/configurator');
 
@@ -62,27 +62,22 @@ router.get('/instances/:id', (req, res) => {
 // Returns HTTP status code 500 if the instance couldn't be created
 router.post('/instances/:id', (req, res) => {
   if (!instances.hasChild(req.params.id)) {
-    if (req.body.args != null) {
-      debuglog("Creating instance: " + req.params.id);
-      manager.create(req.body.args, req.params.id, req.body.port).then((instance) => {
-      	let node = instances.addChild(String(instance.id), 'node');
-      	node.addChild('type', 'string', req.body.type);
-        node.addChild('port', 'int64', instance.port);
-        node.addChild('name', 'string', req.body.name);
-        node.addChild('description', 'string', req.body.description);
-      	node.addChild('state', 'string', 'stopped');
-      	let instance_node = node.addChild('instance', 'object', instance);
-      	debuglog("Successfully created instance: " + node.getPath());
-        res.status(201).json(instance_node.get());
-      }).catch((err) => {
-        debuglog(err);
-        // Failed to create the instance
-        res.status(500).send(err);
-      })
-    } else {
-      // Bad request: wrong parameters
-      res.status(400).send('Instance can not be created without command line arguments.');
-    }
+    debuglog("Creating instance: " + req.params.id);
+    manager.create(instances, req.params.id, req.body.port, req.body.type, req.body.name, req.body.description).then((instance_node) => {
+    	// let node = instances.addChild(String(instance.id), 'node');
+    	// node.addChild('type', 'string', req.body.type);
+      // node.addChild('port', 'int64', instance.port);
+      // node.addChild('name', 'string', req.body.name);
+      // node.addChild('description', 'string', req.body.description);
+    	// node.addChild('state', 'string', 'stopped');
+    	// let instance_node = node.addChild('instance', 'object', instance);
+    	debuglog("Successfully created instance: " + instance_node.getPath());
+      res.status(201).json(instance_node.get());
+    }).catch((err) => {
+      debuglog(err);
+      // Failed to create the instance
+      res.status(500).send(err);
+    })
   } else {
     // The instance id already exist!
     res.status(409).send(util.format('Instance with id %s already exists.', req.params.id));
@@ -108,12 +103,9 @@ router.delete('/instances/:id', (req, res) => {
 // Returns HTTP status code 500 if the instance couldn't be started.
 router.get('/instances/:id/start', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
-    let instance_node = node.getChild('instance');
-    manager.start(node).then((instance) => {
-      instance_node.set(instance);
-      instance_node.getParent().getChild('state').set('started');
-      res.json(instance);
+    let instance_node = instances.getChild(req.params.id);
+    manager.start(instance_node).then((instance_node) => {
+      res.json(instance_node);
     }).catch((err) => {
       // Failed to start the instance
       res.status(500).send(err);
@@ -167,20 +159,16 @@ router.get('/instances/stop', (req, res)  => {
 // Returns HTTP status code 500 if the connection failed.
 router.get('/instances/:id/connect', (req, res) => {
   if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
-    let instance_node = node.getChild('instance');
-    let instance = instance_node.get();
-    let connector = new Connector(instance.port, instance.tree);
-
+    let instance_node = instances.getChild(req.params.id);
+    let connector = new Connector(instance_node);
     try {
       connector.connect();
       // Useful for synchronization
-      instance._connector = connector;
-      res.json(instance.toStr());
+      instance_node.addChild('connector', 'object', connector);
+      res.json(instance_node);
     } catch (err) {
       res.status(500).send(err);
     }
-
   } else {
     res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
   }
@@ -192,13 +180,10 @@ router.get('/instances/:id/connect', (req, res) => {
 // Returns HTTP status code 500 if the synchronization failed.
 router.get('/instances/:id/synchronize', (req, res) => {
   if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
-    let instance_node = node.getChild('instance');
-    let instance = instance_node.get();
-
-    if (instance._connector) {
-      instance._connector._initialize();
-      res.json(instance.toStr());
+    let instance_node = instances.getChild(req.params.id);
+    if (instance_node.hasChild('connector')) {
+      instance_node.getChild('connector')._initialize();
+      res.json(instance_node);
     } else {
       res.status(500).send(util.format('Cannot synchronize with instance. There is no connector for instance with id %s!', req.params.id));
     }
@@ -208,11 +193,12 @@ router.get('/instances/:id/synchronize', (req, res) => {
 })
 
 // Configures the tree from instance :id using the TOML cofigurator module. Returns the configured tree or raises an error.
-router.get('/instance/:id/configure', (req, res) => {
+router.get('/instances/:id/configure', (req, res) => {
 
 })
 
 // Set and get keys from instance/id's tree.
+// TODO: start with 'instances' instead of 'tree'
 router.get('/tree/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
@@ -232,6 +218,7 @@ router.get('/tree/:id/:path', (req, res) => {
   }
 })
 
+// TODO: start with 'instances' instead of 'tree'
 router.post('/tree/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);

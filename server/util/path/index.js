@@ -29,6 +29,7 @@ if (process.env.BINARY) {
 
   switch(platform) {
     // TODO: Add more platforms
+    // TODO: Add more binary types (inexor_client, inexor_server, inexor_bot, ...)
     case 'linux': binary_path = 'bin/inexor'; break;
     case 'win32': binary_path = 'bin/inexor.exe'; break; // TODO: @a_teammate, add windows path
     case 'darwin': binary_path = 'bin/inexor'; break; // TODO: @Fohlen, add OSX path
@@ -70,6 +71,14 @@ function getBasePath() {
 }
 
 /**
+ * Returns the binary directory of an Inexor installation.
+ * @return {string}
+ */
+function getBinaryPath() {
+  return path.resolve(path.join(getBasePath(), 'bin'));
+}
+
+/**
  * Returns a preference-ordered array of base directories to search for media
  * files in addition to the default media path.
  * @return {string}
@@ -108,6 +117,7 @@ module.exports = {
   config_path: config_path,
   media_path: media_path,
   getBasePath: getBasePath,
+  getBinaryPath: getBinaryPath,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
