@@ -39,6 +39,12 @@ class TreeClient {
           }
         }
       },
+      tree: {
+        get: this.createEndpoint('/instances/${id}/${path}', this.getTreeNode.name),
+        set: this.createEndpoint('/instances/${id}/${path}', this.setTreeNode.name, 'POST'),
+        delete: this.createEndpoint('/instances/${id}/${path}', this.deleteTreeNode.name, 'DELETE'),
+        dump: this.createEndpoint('/instances/${id}/dump', this.dumpInstanceTree.name)
+      },
       media: {
         repositories: {
           scan: this.createEndpoint('/media/repositories/', this.scanMediaRepositories.name, 'POST'),
@@ -206,6 +212,50 @@ class TreeClient {
    */
   synchronizeInstance(id, callback) {
     this.callEndpoint(this.synchronizeInstance.name, callback, { id: id });
+  }
+
+  /**
+   * Gets a tree node.
+   * @function
+   * @param {number} id
+   * @param {string} path
+   * @param {function} callback
+   */
+  getTreeNode(id, path, callback) {
+    this.callEndpoint(this.getTreeNode.name, callback, { id: id, path: path });
+  }
+
+  /**
+   * Sets a tree node.
+   * @function
+   * @param {number} id
+   * @param {string} path
+   * @param {string} value
+   * @param {function} callback
+   */
+  setTreeNode(id, path, value, callback) {
+    this.callEndpoint(this.setTreeNode.name, callback, { id: id, path: path }, { value: value });
+  }
+
+  /**
+   * Deletes a tree node.
+   * @function
+   * @param {number} id
+   * @param {string} path
+   * @param {function} callback
+   */
+  deleteTreeNode(id, path, callback) {
+    this.callEndpoint(this.deleteTreeNode.name, callback, { id: id, path: path });
+  }
+
+  /**
+   * Dumps the instance tree.
+   * @function
+   * @param {number} id
+   * @param {function} callback
+   */
+  dumpInstanceTree(id, callback) {
+    this.callEndpoint(this.dumpInstanceTree.name, callback, { id: id });
   }
 
   /**

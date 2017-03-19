@@ -38,8 +38,10 @@
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
     "@inexor-game/types": "file:src/types",
+    "circular-json": "^0.3.1",
     "express": "^4.14.0",
     "npid": "^0.4.0",
+    "prettyjson": "^1.2.1",
     "wait-on": "^2.0.1",
     "xdg-basedir": "^2.0.0",
     "yargs": "^6.5.0"

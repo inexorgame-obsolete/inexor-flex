@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const JSON = require('circular-json');
 const util = require('./util')
 
 /**

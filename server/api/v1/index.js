@@ -209,19 +209,24 @@ router.get('/instances/:id/configure', (req, res) => {
 
 })
 
-// Set and get keys from instance/id's tree.
-// TODO: start with 'instances' instead of 'tree'
-router.get('/tree/:id/:path', (req, res) => {
+// Returns the subtree of tree node of an instance tree.
+router.get('/instances/:id/dump', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
-    let instance_node = node.getChild('instance');
-    let instance = instance_node.get();
-    if (instance.tree.contains(req.params.path)) {
-      if (instance.tree.findNode(req.params.path) == 'node') {
-        res.type('json').send(instance.tree.findNode(req.params.path).toString());
-      } else {
-        res.json(instance.tree.findNode(req.params.path).get());
-      }
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).send(node.toString());
+  } else {
+    res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
+  }
+})
+
+// Returns the value of the tree node.
+router.get('/instances/:id/:path', (req, res) => {
+  if (instances.hasChild(req.params.id)) {
+    let full_path = '/instances/' + req.params.id + '/' + req.params.path;
+    let node = instances.getRoot().findNode(full_path);
+    if (node != null) {
+      res.type('json').send(node.get());
     } else {
       res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
@@ -230,7 +235,7 @@ router.get('/tree/:id/:path', (req, res) => {
   }
 })
 
-// TODO: start with 'instances' instead of 'tree'
+// Sets the value of the tree node.
 router.post('/tree/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
