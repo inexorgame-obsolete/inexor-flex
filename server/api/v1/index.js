@@ -224,9 +224,10 @@ router.get('/instances/:id/dump', (req, res) => {
 router.get('/instances/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let full_path = '/instances/' + req.params.id + '/' + req.params.path;
-    let node = instances.getRoot().findNode(full_path);
+    let node = root.findNode(full_path);
     if (node != null) {
-      res.type('json').send(node.get());
+      res.status(200).json(node.get());
+      // res.type('json').send(node.get());
     } else {
       res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
@@ -236,21 +237,29 @@ router.get('/instances/:id/:path', (req, res) => {
 })
 
 // Sets the value of the tree node.
-router.post('/tree/:id/:path', (req, res) => {
+router.post('/instances/:id/:path', (req, res) => {
   if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
-    let instance_node = node.getChild('instance');
-    let instance = instance_node.get();
-    if (instance.tree.contains(req.params.path)) {
-      if (instance.tree.findNode(req.params.path)._datatype == 'node') {
-        res.status(500).send('Synchronizing nodes is not possible.');
-      } else {
-        instance.tree.findNode(req.params.path).set(req.body.value);
-        res.status(200);
-      }
+    let full_path = '/instances/' + req.params.id + '/' + req.params.path;
+    let node = root.findNode(full_path);
+    if (node != null) {
+      node.set(req.body.value, req.body.nosync);
+      res.status(200).json(node.get());
     } else {
       res.status(404).send('Key with path ' + req.params.path + ' was not found');
     }
+//    let node = instances.getChild(req.params.id);
+//    let instance_node = node.getChild('instance');
+//    let instance = instance_node.get();
+//    if (instance.tree.contains(req.params.path)) {
+//      if (instance.tree.findNode(req.params.path)._datatype == 'node') {
+//        res.status(500).send('Synchronizing nodes is not possible.');
+//      } else {
+//        instance.tree.findNode(req.params.path).set(req.body.value);
+//        res.status(200);
+//      }
+//    } else {
+//      res.status(404).send('Key with path ' + req.params.path + ' was not found');
+//    }
   } else {
     res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
   }

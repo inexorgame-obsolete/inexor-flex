@@ -233,8 +233,8 @@ class TreeClient {
    * @param {string} value
    * @param {function} callback
    */
-  setTreeNode(id, path, value, callback) {
-    this.callEndpoint(this.setTreeNode.name, callback, { id: id, path: path }, { value: value });
+  setTreeNode(id, path, value, nosync, callback) {
+    this.callEndpoint(this.setTreeNode.name, callback, { id: id, path: path }, { value: value, nosync: nosync });
   }
 
   /**

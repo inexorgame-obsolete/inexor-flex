@@ -1,7 +1,7 @@
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const log = require('@inexor-game/logger')();
 
-exports.command = 'set <instance> <path> <value>'
+exports.command = 'set <instance> <path> <value> [nosync]'
 exports.describe = 'Sets the value of an Inexor Tree node'
 
 exports.builder = {
@@ -16,12 +16,17 @@ exports.builder = {
   value: {
     type: 'string',
     describe: 'The value to set'
+  },
+  nosync: {
+    type: 'boolean',
+    describe: 'If set, no synchronization is done',
+    default: false
   }
 }
 
 exports.handler = function(argv) {
   var client = new TreeClient('localhost', 31416);
-  client.flex.tree.set(argv.instance, argv.path, argv.value, function(data, response) {
+  client.flex.tree.set(argv.instance, argv.path, argv.value, argv.nosync, function(data, response) {
     if (response.statusCode == 200) {
       log.info('200');
       // TODO: print
