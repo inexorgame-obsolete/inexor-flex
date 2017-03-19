@@ -11,6 +11,7 @@ const util = require('util');
 const debuglog = util.debuglog('manager');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
+const log = require('@inexor-game/logger')();
 
 // The default port to use
 const defaultPort = 31417;
@@ -146,30 +147,56 @@ function start(instance_node) {
         cwd: path.resolve(base_path)
       };
       debuglog(args);
-      debuglog('Starting ' + binary_path + ' ' + args.join(' '));
+      log.info('Starting ' + binary_path + ' ' + args.join(' '));
       
       // Spawn process and add process node
       let process = spawn(binary_path, args, options);
       process.on('error', (err) => {
-        debuglog('Error on instance ' + instance_id + ': ' + err.message);
+        log.error('Error on instance ' + instance_id + ': ' + err.message);
         throw new Error(err); // This should be instantly fired
       });
+
       process.stdout.on('data', function(data) {
-        debuglog(String(data));
+        for (var line of data.toString('utf8').split("\n")) {
+          if (line.includes('[info]')) {
+            log.info(line);
+          } else if (line.includes('[warn]')) {
+            log.error(line);
+          } else if (line.includes('[error]')) {
+            log.error(line);
+          } else {
+            log.debug(line);
+          }
+        }
       });
+
       process.stderr.on('data', function(data) {
-        debuglog(String(data));
+        for (var line of data.toString('utf8').split("\n")) {
+          if (line.includes('[info]')) {
+            log.info(line);
+          } else if (line.includes('[warn]')) {
+            log.error(line);
+          } else if (line.includes('[error]')) {
+            log.error(line);
+          } else {
+            log.debug(line);
+          }
+        }
       });
+
       process.on('exit', function(code) {
-        debuglog('Child process exited with code ' + String(code));
+        log.info('Child process exited with code ' + String(code));
+        instance_node.state = 'stopped';
+        // TODO: shutdown instance node!
       });
 
       // Store the process handle
       let process_node = instance_node.addChild('process', 'object', process);
       
       debuglog('Process has been started: ' + binary_path + ' ' + args.join(' '));
-      
-      
+
+      instance_node.state = 'started';
+      resolve(instance_node);
       
 //      let connection = 'localhost:' + instance_port;
 //      debuglog('connection: ' + connection);
@@ -247,8 +274,6 @@ function start(instance_node) {
 //      */
       
       
-      instance_node.state = 'started';
-      resolve(instance_node);
   	} catch (err) {
   		debuglog(err.message);
   		throw new Error(err);

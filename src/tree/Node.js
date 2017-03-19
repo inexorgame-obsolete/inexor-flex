@@ -6,6 +6,7 @@ const util = require('./util')
  * @todo Add a verbose logging system (shouldn't be difficult though)
  */
 class Node extends EventEmitter {
+
     /**
      * @constructor
      * @param {(Node|null)} - the parent node
@@ -15,7 +16,7 @@ class Node extends EventEmitter {
      * @param {boolean} sync
      * @param {boolean} readOnly
      */
-    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false) {
+    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         // parent constructor
         super();
 
@@ -30,6 +31,12 @@ class Node extends EventEmitter {
          * @property {string} _name
          */
         this._name = name;
+
+        /**
+         * @private
+         * @property {string} _protoKey
+         */
+        this._protoKey = protoKey;
 
         /**
          * @private
@@ -54,7 +61,15 @@ class Node extends EventEmitter {
 
         // The data type of the Node
         if (util.isValidDataType(datatype)) {
-            this._datatype = datatype;
+            switch (datatype) {
+              case 'int32':
+              case 'int64':
+              case 'enum':
+                this._datatype = 'int64';
+                break;
+              default:
+                this._datatype = datatype;
+            }
         } else {
             throw new Error('Invalid data type');
         }
@@ -154,7 +169,8 @@ class Node extends EventEmitter {
 
             // Emit sync to be synchronized by the connector.
             if (this._sync && !preventSync) {
-                this.emit('sync', value);
+                // this.emit('sync', value);
+                this.emit('sync', {oldValue: oldValue, newValue: value});
             }
 
             // Set the timestamp when the value was last changed
@@ -175,12 +191,30 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Checks wether the node has children
+     * Checks whether the node has children
      * @name Node.hasChildren
      * @return {boolean}
      */
     hasChildren() {
       return !this.isContainer || !(this._value.size == 0);
+    }
+
+    /**
+     * Returns true, if the node is a child node (recursive) of other_node.
+     * @name Node.isChildOf
+     * @return {boolean}
+     */
+    isChildOf(other_node) {
+      if (other_node) {
+        let parent = this._parent;
+        while (parent._path != util.separator) {
+          if (parent._path == other_node._path) {
+            return true;
+          }
+          parent = parent._parent;
+        }
+      }
+      return false;
     }
 
     /**
@@ -190,12 +224,15 @@ class Node extends EventEmitter {
      * @return {Root}
      */
     getRoot() {
+      if (this._path == util.separator) {
+        return this;
+      } else {
         let root = this._parent;
         while (root._path != util.separator) {
-            node = node._parent;
+          root = root._parent;
         }
-
         return root;
+      }
     }
 
     /**
@@ -268,22 +305,26 @@ class Node extends EventEmitter {
      * @param {mixed} initialValue
      * @param {boolean} sync
      * @param {boolean} readOnly
+     * @param {string} protoKey
      * @return {Node}
      * @see Node.constructor
      * @fires Node.add
      */
-    addChild(name, datatype, initialValue = null, sync = false, readOnly = false) {
+    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         if (this.hasChild(name)) {
             return this.getChild(name);
         } else if (name.indexOf('/') == 0) {
             // This is NOT the root leave, don't insert it like this
             throw new Error('Child nodes shall not be prefixed with /');
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
-            // Create the child tree node
-            let childNode = new Node(this, name, datatype, initialValue, sync, readOnly);
+
+          // Create the child tree node
+            let childNode = new Node(this, name, datatype, initialValue, sync, readOnly, protoKey);
+
             // Add the child tree node to the children map
             this._value.set(name, childNode);
 
+            // JavaScript-Magic for transparent getters and setters
             let self = this;
             Object.defineProperty(self, name, {
                 get() {
@@ -296,7 +337,14 @@ class Node extends EventEmitter {
                 writeable: !readOnly
             });
 
-            this.emit('add', childNode); // Used for subscribing
+            // Let the world know, that a new node was born
+            this.getRoot().emit('add', childNode);
+
+            // First sync of the newly created child node
+            if (sync) {
+                childNode.emit('sync', {oldValue: null, newValue: initialValue});
+            }
+
             return childNode;
         } else {
         	  var reason = "";
@@ -371,7 +419,8 @@ class Node extends EventEmitter {
      * @return {Node}
      */
     [Symbol.iterator]() {
-      let self = this; // Hacky slashy
+      // Hacky slashy
+      let self = this;
       let position = 0;
       let childs = this.getChildNames();
 

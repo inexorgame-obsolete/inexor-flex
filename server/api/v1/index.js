@@ -8,6 +8,7 @@
 const process = require('process');
 const express = require('express');
 const bodyParser = require('body-parser');
+// TODO: const stringify = require('json-stringify-safe');
 const path = require('path');
 const util = require('util');
 const debuglog = util.debuglog('api/v1');
@@ -71,7 +72,7 @@ router.post('/instances/:id', (req, res) => {
       // node.addChild('description', 'string', req.body.description);
     	// node.addChild('state', 'string', 'stopped');
     	// let instance_node = node.addChild('instance', 'object', instance);
-    	debuglog("Successfully created instance: " + instance_node.getPath());
+    	debuglog('Successfully created instance: ' + instance_node.getPath());
       res.status(201).json(instance_node.get());
     }).catch((err) => {
       debuglog(err);
@@ -105,8 +106,10 @@ router.get('/instances/:id/start', (req, res)  => {
   if (instances.hasChild(req.params.id)) {
     let instance_node = instances.getChild(req.params.id);
     manager.start(instance_node).then((instance_node) => {
-      res.json(instance_node);
+      // res.json(instance_node);
+      res.status(200).send({});
     }).catch((err) => {
+      debuglog(err);
       // Failed to start the instance
       res.status(500).send(err);
     })
@@ -118,8 +121,10 @@ router.get('/instances/:id/start', (req, res)  => {
 // Starts all existing instances.
 router.get('/instances/start', (req, res)  => {
   manager.startAll().then(() => {
-    res.json(instances.get());
+    // res.json(instances.get());
+    res.status(200).send({});
   }).catch((err) => {
+    debuglog(err);
     res.status(500).send(err);
   })
 })
@@ -135,8 +140,10 @@ router.get('/instances/:id/stop', (req, res)  => {
     manager.stop(instance_node.get()).then((instance) => {
       instance_node.set(instance);
       instance_node.getParent().getChild('state').set('stopped');
-      res.json(instance);
+      // res.json(instance);
+      res.status(200).send({});
     }).catch((err) => {
+      debuglog(err);
       res.status(500).send(err);
     })
   } else {
@@ -147,8 +154,10 @@ router.get('/instances/:id/stop', (req, res)  => {
 // Stops all existing instances.
 router.get('/instances/stop', (req, res)  => {
   manager.stopAll().then(() => {
-    res.json(instances.get());
+    // res.json(instances.get());
+    res.status(200).send({});
   }).catch((err) => {
+    debuglog(err);
     res.status(500).send(err);
   })
 })
@@ -165,8 +174,10 @@ router.get('/instances/:id/connect', (req, res) => {
       connector.connect();
       // Useful for synchronization
       instance_node.addChild('connector', 'object', connector);
-      res.json(instance_node);
+      // res.status(200).json(instance_node);
+      res.status(200).send({});
     } catch (err) {
+      debuglog(err);
       res.status(500).send(err);
     }
   } else {
@@ -183,7 +194,8 @@ router.get('/instances/:id/synchronize', (req, res) => {
     let instance_node = instances.getChild(req.params.id);
     if (instance_node.hasChild('connector')) {
       instance_node.getChild('connector')._initialize();
-      res.json(instance_node);
+      // res.json(instance_node);
+      res.status(200).send({});
     } else {
       res.status(500).send(util.format('Cannot synchronize with instance. There is no connector for instance with id %s!', req.params.id));
     }
