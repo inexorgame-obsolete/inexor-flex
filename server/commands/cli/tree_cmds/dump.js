@@ -1,4 +1,3 @@
-const prettyjson = require('prettyjson');
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const log = require('@inexor-game/logger')();
 
@@ -24,7 +23,7 @@ exports.handler = function(argv) {
       } else {
         // var treeAsString = data.toString('utf-8');
         // log.info(data);
-        log.info(prettyjson.render(data));
+        log.info(JSON.stringify(data, null, 2));
       }
     } else if (response.statusCode == 404) {
       log.info('404');

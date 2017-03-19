@@ -70,6 +70,7 @@ class Node extends EventEmitter {
                 break;
               default:
                 this._datatype = datatype;
+                break;
             }
         } else {
             throw new Error('Invalid data type');
@@ -408,10 +409,33 @@ class Node extends EventEmitter {
             for (var [name, childNode] of this._value.entries()) {
                 entries[name] = childNode.toString();
             }
-            return JSON.stringify(entries);
+            return JSON.stringify(entries, null, 2);
+        } else if (this._datatype != 'object') {
+            // return JSON.stringify(this._value);
+            return this._value;
         } else {
-            return JSON.stringify(this._value);
+            // don't serialize native objects!
+            return null;
         }
+    }
+    
+    toObject() {
+      if (this.isContainer) {
+          let entries = {};
+          for (var [name, childNode] of this._value.entries()) {
+              entries[name] = childNode.toObject();
+          }
+          return entries;
+      } else if (this._datatype != 'object') {
+          return this._value;
+      } else {
+          // don't serialize native objects!
+          return null;
+      }
+    }
+
+    toJson() {
+      return JSON.stringify(toObject(), null, 2);
     }
 
     /**

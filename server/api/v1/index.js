@@ -214,7 +214,7 @@ router.get('/instances/:id/dump', (req, res) => {
   if (instances.hasChild(req.params.id)) {
     let node = instances.getChild(req.params.id);
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(node.toString());
+    res.status(200).json(node.toObject());
   } else {
     res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
   }
