@@ -339,12 +339,12 @@ class Node extends EventEmitter {
                 writeable: !readOnly
             });
 
-            // Let the world know, that a new node was born
-            this.getRoot().emit('add', childNode);
-
-            // First sync of the newly created child node
             if (sync) {
-                childNode.emit('sync', {oldValue: null, newValue: initialValue});
+                // Let the world know, that a new node was born
+                this.getRoot().emit('add', childNode);
+
+                // First sync of the newly created child node
+                childNode.emit('sync', { oldValue: null, newValue: initialValue });
             }
 
             return childNode;

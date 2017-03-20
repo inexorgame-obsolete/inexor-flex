@@ -173,7 +173,7 @@ router.get('/instances/:id/connect', (req, res) => {
     try {
       connector.connect();
       // Useful for synchronization
-      instance_node.addChild('connector', 'object', connector);
+      instance_node.addChild('connector', 'object', connector, false, true);
       // res.status(200).json(instance_node);
       res.status(200).send({});
     } catch (err) {

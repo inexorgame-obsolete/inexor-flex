@@ -167,7 +167,7 @@ class Connector extends EventEmitter {
       // Send signal that the tree initialization has been finished
       self.sendFinishedTreeIntro();
 
-      self._synchronize.end();
+      // self._synchronize.end();
 
       // @deprecated
       // this.initializeTree();
