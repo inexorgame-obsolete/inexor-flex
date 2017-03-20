@@ -13,7 +13,10 @@ const xdgBasedir = require('xdg-basedir');
  * @property {string} flex_path
  */
 
-const flex_path = process.env.PWD;
+let flex_path = process.env.PWD;
+if (process.platform == 'win32') {
+  flex_path = process.cwd()
+}
 
 /**
  * The executable path of Inexor Core
