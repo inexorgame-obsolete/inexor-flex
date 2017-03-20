@@ -222,8 +222,8 @@ router.get('/instances/:id/dump', (req, res) => {
 
 // Returns the value of the tree node.
 router.get('/instances/:id/*', (req, res) => {
-  let path = req.param(0);
   if (instances.hasChild(req.params.id)) {
+    let path = req.param(0);
     let full_path = '/instances/' + req.params.id + '/' + path;
     let node = root.findNode(full_path);
     if (node != null) {
@@ -239,8 +239,8 @@ router.get('/instances/:id/*', (req, res) => {
 
 // Sets the value of the tree node.
 router.post('/instances/:id/*', (req, res) => {
-  let path = req.param(0);
   if (instances.hasChild(req.params.id)) {
+    let path = req.param(0);
     let full_path = '/instances/' + req.params.id + '/' + path;
     let node = root.findNode(full_path);
     if (node != null) {
