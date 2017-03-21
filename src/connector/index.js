@@ -23,7 +23,7 @@ class Connector extends EventEmitter {
 
   /**
    * @constructor
-   * @param {number} port - the port of Inexor Core
+   * @param {tree.Node} instance_node - the instance node
    */
   constructor(instance_node) {
 

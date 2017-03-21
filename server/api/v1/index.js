@@ -16,7 +16,7 @@ const debuglog = util.debuglog('api/v1');
 // Pull the inexor dependencies
 const context = require('@inexor-game/context');
 const tree = require('@inexor-game/tree');
-const instances = require('@inexor-game/instances');
+const InstanceManager = require('@inexor-game/instances');
 const media = require('@inexor-game/media');
 const Connector = require('@inexor-game/connector');
 const inexor_path = require('@inexor-game/path');
@@ -29,6 +29,7 @@ router.use(bodyParser.json());
 // Build the application context and contruct components
 let application_context = new context.ApplicationContext();
 let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
+let instance_manager = application_context.construct('instance_manager', function() { return new InstanceManager(application_context); });
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 //let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });
 
@@ -59,7 +60,7 @@ router.get('/instances/:id', (req, res) => {
 router.post('/instances/:id', (req, res) => {
   if (!instances_node.hasChild(req.params.id)) {
     debuglog("Creating instance: " + req.params.id);
-    instances.create(instances_node, req.params.id, req.body.port, req.body.type, req.body.name, req.body.description).then((instance_node) => {
+    instance_manager.create(req.params.id, req.body.port, req.body.type, req.body.name, req.body.description).then((instance_node) => {
     	debuglog('Successfully created instance: ' + instance_node.getPath());
       res.status(201).json(instance_node.get());
     }).catch((err) => {
@@ -93,7 +94,7 @@ router.delete('/instances/:id', (req, res) => {
 router.get('/instances/:id/start', (req, res)  => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    instances.start(instance_node).then((instance_node) => {
+    instance_manager.start(instance_node).then((instance_node) => {
       // res.json(instance_node);
       res.status(200).send({});
     }).catch((err) => {
@@ -108,7 +109,7 @@ router.get('/instances/:id/start', (req, res)  => {
 
 // Starts all existing instances.
 router.get('/instances/start', (req, res)  => {
-  instances.startAll().then(() => {
+  instance_manager.startAll().then(() => {
     res.status(200).send({});
   }).catch((err) => {
     debuglog(err);
@@ -124,7 +125,7 @@ router.get('/instances/:id/stop', (req, res)  => {
   if (instances_node.hasChild(req.params.id)) {
     let node = instances_node.getChild(req.params.id);
     let instance_node = node.getChild('instance');
-    instances.stop(instance_node.get()).then((instance) => {
+    instance_manager.stop(instance_node.get()).then((instance) => {
       instance_node.set(instance);
       instance_node.getParent().getChild('state').set('stopped');
       // res.json(instance);
@@ -140,8 +141,7 @@ router.get('/instances/:id/stop', (req, res)  => {
 
 // Stops all existing instances.
 router.get('/instances/stop', (req, res)  => {
-  instances.stopAll().then(() => {
-    // res.json(instances.get());
+  instance_manager.stopAll().then(() => {
     res.status(200).send({});
   }).catch((err) => {
     debuglog(err);
@@ -170,6 +170,10 @@ router.get('/instances/:id/connect', (req, res) => {
   } else {
     res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
   }
+})
+
+router.get('/instances/:id/disconnect', (req, res) => {
+  // TODO: implement
 })
 
 // Synchronizes an instance with Inexor Core.
