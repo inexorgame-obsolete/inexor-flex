@@ -16,7 +16,7 @@ const debuglog = util.debuglog('api/v1');
 // Pull the inexor dependencies
 const context = require('@inexor-game/context');
 const tree = require('@inexor-game/tree');
-const manager = require('@inexor-game/manager');
+const instances = require('@inexor-game/instances');
 const media = require('@inexor-game/media');
 const Connector = require('@inexor-game/connector');
 const inexor_path = require('@inexor-game/path');
@@ -32,25 +32,20 @@ let root = application_context.construct('tree', function() { return new tree.Ro
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 //let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });
 
-// NOTE: This might be changed in the future where trees can be im/exported
-var instances = null;
-if (!root.hasChild('instances')) {
-  instances = root.addChild('instances', 'node');
-}
+// The tree node which contains all instance nodes
+let instances_node = root.getOrCreateNode('instances');
 
 // Lists all available instances
 router.get('/instances', (req, res) => {
-  debuglog('Showing instances [:%o]', instances.toString());
-  res.type('json').send(instances.toString());
+  res.status(200).json(instances_node.getChildNames());
 })
 
 // Lists information about a given instance or raises a NonFoundError
 // Returns HTTP status code 404 if there is no instance with the given id.
 router.get('/instances/:id', (req, res) => {
-	if (instances.hasChild(req.params.id)) {
-		let node = instances.getChild(req.params.id);
-		let instance_node = node.getChild('instance');
-		res.json(instance_node.get());
+	if (instances_node.hasChild(req.params.id)) {
+		let instance_node = instances_node.getChild(req.params.id);
+		res.status(200).json(instance_node.toJson());
 	} else {
 		res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
 	}
@@ -62,16 +57,9 @@ router.get('/instances/:id', (req, res) => {
 // Returns HTTP status code 400 if the request has wrong parameters
 // Returns HTTP status code 500 if the instance couldn't be created
 router.post('/instances/:id', (req, res) => {
-  if (!instances.hasChild(req.params.id)) {
+  if (!instances_node.hasChild(req.params.id)) {
     debuglog("Creating instance: " + req.params.id);
-    manager.create(instances, req.params.id, req.body.port, req.body.type, req.body.name, req.body.description).then((instance_node) => {
-    	// let node = instances.addChild(String(instance.id), 'node');
-    	// node.addChild('type', 'string', req.body.type);
-      // node.addChild('port', 'int64', instance.port);
-      // node.addChild('name', 'string', req.body.name);
-      // node.addChild('description', 'string', req.body.description);
-    	// node.addChild('state', 'string', 'stopped');
-    	// let instance_node = node.addChild('instance', 'object', instance);
+    instances.create(instances_node, req.params.id, req.body.port, req.body.type, req.body.name, req.body.description).then((instance_node) => {
     	debuglog('Successfully created instance: ' + instance_node.getPath());
       res.status(201).json(instance_node.get());
     }).catch((err) => {
@@ -89,8 +77,8 @@ router.post('/instances/:id', (req, res) => {
 // Returns HTTP status code 204 if the instance was successfully removed
 // Returns HTTP status code 404 if there is no instance with the given id.
 router.delete('/instances/:id', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
-    instaces.removeChild(req.params.id);
+  if (instances_node.hasChild(req.params.id)) {
+    instances_node.removeChild(req.params.id);
     // Successfully removed
     res.status(204).send({});
   } else {
@@ -103,9 +91,9 @@ router.delete('/instances/:id', (req, res) => {
 // Returns HTTP status code 404 if there is no instance with the given id.
 // Returns HTTP status code 500 if the instance couldn't be started.
 router.get('/instances/:id/start', (req, res)  => {
-  if (instances.hasChild(req.params.id)) {
-    let instance_node = instances.getChild(req.params.id);
-    manager.start(instance_node).then((instance_node) => {
+  if (instances_node.hasChild(req.params.id)) {
+    let instance_node = instances_node.getChild(req.params.id);
+    instances.start(instance_node).then((instance_node) => {
       // res.json(instance_node);
       res.status(200).send({});
     }).catch((err) => {
@@ -120,8 +108,7 @@ router.get('/instances/:id/start', (req, res)  => {
 
 // Starts all existing instances.
 router.get('/instances/start', (req, res)  => {
-  manager.startAll().then(() => {
-    // res.json(instances.get());
+  instances.startAll().then(() => {
     res.status(200).send({});
   }).catch((err) => {
     debuglog(err);
@@ -134,10 +121,10 @@ router.get('/instances/start', (req, res)  => {
 // Returns HTTP status code 404 if there is no instance with the given id.
 // Returns HTTP status code 500 if the instance couldn't be started.
 router.get('/instances/:id/stop', (req, res)  => {
-  if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
+  if (instances_node.hasChild(req.params.id)) {
+    let node = instances_node.getChild(req.params.id);
     let instance_node = node.getChild('instance');
-    manager.stop(instance_node.get()).then((instance) => {
+    instances.stop(instance_node.get()).then((instance) => {
       instance_node.set(instance);
       instance_node.getParent().getChild('state').set('stopped');
       // res.json(instance);
@@ -153,7 +140,7 @@ router.get('/instances/:id/stop', (req, res)  => {
 
 // Stops all existing instances.
 router.get('/instances/stop', (req, res)  => {
-  manager.stopAll().then(() => {
+  instances.stopAll().then(() => {
     // res.json(instances.get());
     res.status(200).send({});
   }).catch((err) => {
@@ -167,12 +154,12 @@ router.get('/instances/stop', (req, res)  => {
 // Returns HTTP status code 404 if there is no instance with the given id.
 // Returns HTTP status code 500 if the connection failed.
 router.get('/instances/:id/connect', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
-    let instance_node = instances.getChild(req.params.id);
+  if (instances_node.hasChild(req.params.id)) {
+    let instance_node = instances_node.getChild(req.params.id);
     let connector = new Connector(instance_node);
     try {
       connector.connect();
-      // Useful for synchronization
+      // Store the connector as private child of the instance node
       instance_node.addChild('connector', 'object', connector, false, true);
       // res.status(200).json(instance_node);
       res.status(200).send({});
@@ -190,8 +177,8 @@ router.get('/instances/:id/connect', (req, res) => {
 // Returns HTTP status code 404 if there is no instance with the given id.
 // Returns HTTP status code 500 if the synchronization failed.
 router.get('/instances/:id/synchronize', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
-    let instance_node = instances.getChild(req.params.id);
+  if (instances_node.hasChild(req.params.id)) {
+    let instance_node = instances_node.getChild(req.params.id);
     if (instance_node.hasChild('connector')) {
       instance_node.getChild('connector')._initialize();
       // res.json(instance_node);
@@ -211,10 +198,10 @@ router.get('/instances/:id/configure', (req, res) => {
 
 // Returns the subtree of tree node of an instance tree.
 router.get('/instances/:id/dump', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
-    let node = instances.getChild(req.params.id);
+  if (instances_node.hasChild(req.params.id)) {
+    let instance_node = instances_node.getChild(req.params.id);
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(node.toObject());
+    res.status(200).json(instance_node.toObject());
   } else {
     res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
   }
@@ -222,13 +209,13 @@ router.get('/instances/:id/dump', (req, res) => {
 
 // Returns the value of the tree node.
 router.get('/instances/:id/*', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
+  if (instances_node.hasChild(req.params.id)) {
     let path = req.param(0);
     let full_path = '/instances/' + req.params.id + '/' + path;
     let node = root.findNode(full_path);
     if (node != null) {
+      // TODO: handle container nodes
       res.status(200).json(node.get());
-      // res.type('json').send(node.get());
     } else {
       res.status(404).send('Key with path ' + path + ' was not found');
     }
@@ -239,11 +226,12 @@ router.get('/instances/:id/*', (req, res) => {
 
 // Sets the value of the tree node.
 router.post('/instances/:id/*', (req, res) => {
-  if (instances.hasChild(req.params.id)) {
+  if (instances_node.hasChild(req.params.id)) {
     let path = req.param(0);
     let full_path = '/instances/' + req.params.id + '/' + path;
     let node = root.findNode(full_path);
     if (node != null) {
+      // TODO: handle container nodes
       node.set(req.body.value, req.body.nosync);
       res.status(200).json(node.get());
     } else {

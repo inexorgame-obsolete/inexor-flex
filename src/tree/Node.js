@@ -302,12 +302,12 @@ class Node extends EventEmitter {
      * Adds a child to the node
      * @function
      * @name Node.addChild
-     * @param {string} name
-     * @param {tree.datatype} datatype
-     * @param {mixed} initialValue
-     * @param {boolean} sync
-     * @param {boolean} readOnly
-     * @param {string} protoKey
+     * @param {string} name - The name of the child node.
+     * @param {tree.datatype} datatype - The datatype of the child node.
+     * @param {mixed} initialValue - The initial value of the child node. The type of the initial value must be the given datatype.
+     * @param {boolean} sync - If true, the node shall be synchronized automatically. If false, the child node exists locally only.
+     * @param {boolean} readOnly - If true, the node cannot be modified.
+     * @param {string} protoKey - The key in the .proto file.
      * @return {Node}
      * @see Node.constructor
      * @fires Node.add
@@ -364,9 +364,10 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Adds a child node of type 'node' which is basically a container node.
      * @function
-     * @property {string} name
      * @name Node.addNode
+     * @property {string} name - The name of the child node.
      * @alias Node.addChild
      */
     addNode(name) {
@@ -374,21 +375,25 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Removes a child by name
+     * Removes a child by name.
      * @function
      * @name Node.removeChild
-     * @param {string} name
+     * @param {string} name - The name of the child node.
+     * @return {boolean} True if the child node has been deleted. False if there wasn't a child node with the given name or the child node was read only.
      */
     removeChild(name) {
         if (this.hasChild(name) && !this.getChild(name)._readOnly) {
             this._value.delete(name);
             let self = this;
             delete self[name];
+            return true;
+        } else {
+            return false;
         }
     }
 
     /**
-     * Returns the parent node or null if the tree node is the root node
+     * Returns the parent node or null if the tree node is the root node.
      * @function
      * @name Node.getParent
      * @return {Node|null}
@@ -398,7 +403,7 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns a JSON representation of the node
+     * Returns a JSON string representation of the node.
      * @function
      * @name Node.toString
      * @return {string}
@@ -418,12 +423,23 @@ class Node extends EventEmitter {
             return null;
         }
     }
-    
-    toObject() {
+
+    /**
+     * Returns a pure object representation of the node.
+     * @function
+     * @name Node.toObject
+     * @param {number} recursion_limit - The recursion limit. If negative there is no recursion limit.
+     * @return {object}
+     */
+    toObject(recursion_limit = -1) {
       if (this.isContainer) {
           let entries = {};
           for (var [name, childNode] of this._value.entries()) {
-              entries[name] = childNode.toObject();
+              if (recursion_limit < 0) {
+                  entries[name] = childNode.toObject(recursion_limit);
+              } else if (recursion_limit > 0) {
+                  entries[name] = childNode.toObject(recursion_limit - 1);
+              }
           }
           return entries;
       } else if (this._datatype != 'object') {
@@ -434,8 +450,15 @@ class Node extends EventEmitter {
       }
     }
 
-    toJson() {
-      return JSON.stringify(toObject(), null, 2);
+    /**
+     * Returns a JSON representation.
+     * @function
+     * @name Node.toJson
+     * @param {number} recursion_limit - The recursion limit. If negative there is no recursion limit.
+     * @return {string}
+     */
+    toJson(recursion_limit = -1) {
+      return JSON.stringify(toObject(recursion_limit), null, 2);
     }
 
     /**
@@ -476,6 +499,7 @@ class Node extends EventEmitter {
      *  }
      * }
      */
+
 }
 
 module.exports = Node;

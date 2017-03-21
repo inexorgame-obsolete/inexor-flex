@@ -1,21 +1,20 @@
 /**
+ * This module provides a connector to Inexor Core instances.
  * @module connector
  * @see grpc
  */
 
-const path = require('path');
 const EventEmitter = require('events');
+const fs = require('fs');
+const path = require('path');
 const grpc = require('grpc');
 const util = require('util');
+
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
-const log = require('@inexor-game/logger')();
 
 const debuglog = util.debuglog('connector');
-
-/** @private */
-// const protoPath = path.dirname(require.main.filename) +
-// '/core/bin/inexor.proto'
+const log = require('@inexor-game/logger')();
 
 /**
  * Connects a {@link Root} with a Inexor Core instance
@@ -24,10 +23,7 @@ class Connector extends EventEmitter {
 
   /**
    * @constructor
-   * @param {number}
-   *          port - the port of Inexor Core
-   * @param {Root}
-   *          root - the tree to synchronize with
+   * @param {number} port - the port of Inexor Core
    */
   constructor(instance_node) {
 
@@ -37,17 +33,24 @@ class Connector extends EventEmitter {
     this._instance_node = instance_node;
 
     /** @private */
+    // TODO: instance_node.hostname
+    this._hostname = 'localhost';
+
+    /** @private */
     this._port = instance_node.port;
 
     /** @private */
     this._client = null;
     
     /** @private */
-    // TODO: we need distinguish between server and client, therefore we need
-    // two .proto files: inexor-core-client.proto and inexor-core-server.proto
-    this._protoPath = path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
+    this._protoPath = this.getProtoPath(instance_node.type);
     log.info('Path to the .proto file: %s', this._protoPath);
-    
+
+    if (!fs.existsSync(this._protoPath)) {
+      log.error('Proto file does not exist: ' + this._protoPath);
+      throw new Error('Proto file does not exist: ' + this._protoPath);
+    }
+
     /**
      * @property {Object} protoDescriptor
      */
@@ -61,11 +64,11 @@ class Connector extends EventEmitter {
    * @fires Connector.connected
    */
   connect() {
-    log.info('Connecting to the gRPC server on localhost:' + this._port);
+    log.info('Connecting to the gRPC server on ' + this._hostname + ':' + this._port);
     
     // Create a GRPC client
     this._client = new this.protoDescriptor.inexor.tree.TreeService(
-      'localhost:' + this._port,
+      this._hostname + ':' + this._port,
       grpc.credentials.createInsecure()
     );
 
@@ -75,34 +78,34 @@ class Connector extends EventEmitter {
 
     // Fetching stream data
     this._synchronize.on('data', (message) => {
+      log.debug('Getting stream data: ' + JSON.stringify(message));
+      let protoKey = message.key;
       try {
-
-        log.info('Getting stream data: ' + JSON.stringify(message));
-
-        // let event_type = message.event_type
-        let protoKey = message.key;
         let value = message[protoKey];
         let path = this.getPath(protoKey);
         let eventType = this.getEventType(protoKey);
         
         if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
-          log.info('[DATA] id: ' + id + ' protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' eventType: ' + eventType);
-          
+          log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType);
+
+          if (protoKey != '__numargs') {
+            // throw new Error('${protoKey} does not have enough arguments.')
+            debuglog('protoKey = "' + protoKey + '" path = "' + path + '" value = "' + value + '"');
+          }
+          // let node = this._tree.findNode(path);
+          let node = this._instance_node.getRoot().findNode(path);
+
+          // Prevent sync
+          node.set(value, true);
+
         } else {
           // TODO: handle other event types like SharedLists and SharedFunctions
+          log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey);
         }
 
-        if (protoKey != '__numargs') {
-          // throw new Error('${protoKey} does not have enough arguments.')
-          debuglog('protoKey = "' + protoKey + '" path = "' + path + '" value = "' + value + '"');
-        }
-        // let node = this._tree.findNode(path);
-        let node = this._instance_node.getRoot().findNode(path);
-
-        // Prevent sync
-        node.set(value, true);
 
       } catch (err) {
+        log.error(err, 'Synchronization of ' + protoKey + ' failed');
         throw new Error('Synchronization of ${protoKey} has failed because of ${err}.')
       }
     });
@@ -314,6 +317,23 @@ class Connector extends EventEmitter {
    */
   getEventType(protoKey) {
     return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(event_type)'];
+  }
+
+  /**
+   * Returns the path to the proto file by instance type.
+   * @function
+   * @name Connector.getProtoPath
+   * @param {string} instance_type - The instance type - either client or server.
+   * @return {string} the path to the proto file.
+   */
+  getProtoPath(instance_type) {
+    switch (instance_type) {
+      case 'client':
+      default:
+        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
+      case 'server':
+        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-server.proto');
+    }
   }
 
 }

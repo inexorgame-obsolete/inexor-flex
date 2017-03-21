@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 const tree = require('@inexor-game/tree');
-const manager = require('../');
+const instances = require('../');
 
 /**
  * Verified to work but somehow the test suite throws exceptions on OSX currently
@@ -29,11 +29,11 @@ const manager = require('../');
 describe('Manager', function() {
   describe('create', function() {
     it.skip('should create an instance', function() {
-      expect(manager.create('gabbagecli')).to.be.fulfilled;
+      expect(instances.create('gabbagecli')).to.be.fulfilled;
     })
 
     it.skip('should contain a valid Node instance after creation', function() {
-      manager.create('gabbagecli').then((instance) => {
+      instances.create('gabbagecli').then((instance) => {
         expect(instance.tree).to.be.an.instanceof(tree.Node);
       })
     })

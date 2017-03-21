@@ -1,6 +1,6 @@
 /**
- * Is responsible for starting and handling of Inexor Core instances.
- * @module manager
+ * This module is responsible for starting and handling of Inexor Core instances.
+ * @module instances
  */
 
 const path = require('path');
@@ -8,35 +8,35 @@ const fs = require('fs');
 const spawn = require('child_process').spawn;
 const portastic = require('portastic');
 const util = require('util');
-const debuglog = util.debuglog('manager');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
+
+const debuglog = util.debuglog('instances');
 const log = require('@inexor-game/logger')();
 
 // The default port to use
 const defaultPort = 31417;
 
-/**
- * An Inexor Core instance defines the meta information about an client or server instance.
- * @typedef {Object} instance
- * @property {number} id - the instance identifier
- * @property {string} args - the command line arguments to supply to Inexor Core
- * @property {tree.Root} tree - the tree associated with the instance
- */
+// TODO: Define separate port ranges for each instance type
+// TODO: Define the default instance type ('client')
 
 /**
  * Creates an instance of Inexor Core. The instance is created but not started!
  * @function
- * @param {Node} the instances node
- * @param {string} args
+ * @param {tree.Node} [instances_node] - the tree node containing all instances
  * @param {number} [identifier] - the instance identifier
  * @param {number} [port] - the port to bind to
- * @param {tree.Root} [t] - the configuration tree
- * @return {Promise<manager.instance>}
+ * @param {string} [type] - the instance type - either server or client
+ * @param {string} [name] - the name of the instance
+ * @param {string} [description] - the description of the instance
+ * @return {Promise<tree.Node>} - the tree node which represents the instance
  */
-function create(instances_node, identifier = null, port = null, type = null, name = null, description = null) {
+function create(instances_node, identifier = null, port = null, type = null, name = null, description = '') {
   return new Promise((resolve, reject) => {
-    // TODO: identifier must not be null!
+    // TODO: Identifier must not be null!
+    // TODO: New behaviour: Use the instance id as port. No port resolving needed if the instance id is given.
+    // TODO: Resolve the default port by instance type
+    // TODO: Resolve the default name by instance type, something like 'Inexor Client (id)'
     let instance_node = instances_node.addNode(String(identifier));
 
     // Initialize the instance sub tree
@@ -109,7 +109,7 @@ function get_sub_directories(_path) {
 /**
  * Starts an instance and returns the instance with a child_process attached
  * @function
- * @param {manager.instance}
+ * @param {tree.Node}
  * @return {Promise<instance>}
  */
 function start(instance_node) {
@@ -126,6 +126,11 @@ function start(instance_node) {
   	  debuglog('base_path = ' + path.resolve(base_path));
       let binary_path = path.join(base_path, inexor_path.binary_path);
       debuglog('binary_path = ' + path.resolve(binary_path));
+      
+      if (!fs.existsSync(binary_path)) {
+        debuglog('Binary does not exist: ' + binary_path);
+        throw new Error('Binary does not exist: ' + binary_path);
+      }
 
 //    let media_path = path.join(base_path, inexor_path.media_path);
 //    debuglog('media_path = ' + path.resolve(media_path));
@@ -142,6 +147,7 @@ function start(instance_node) {
 //        args.push('-k./media/' + media_repository);
 //      });
 
+      // Starting an instance with the instance id as 
       let args = [ instance_id ];
       let options = {
         cwd: path.resolve(base_path)
@@ -284,7 +290,7 @@ function start(instance_node) {
 /**
  * Stops an instance
  * @function
- * @param {manager.instance}
+ * @param {instances.instance}
  * @return {Promise<bool>}
  */
 function stop(instance) {
