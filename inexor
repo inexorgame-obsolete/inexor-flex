@@ -2,6 +2,7 @@
 
 const process = require('process');
 const fs = require('fs');
+const yargs = require('yargs');
 
 const child_process = require('child_process');
 const wait_on = require('wait-on');
@@ -33,11 +34,9 @@ if (!fs.existsSync(pid_path)) {
   child.unref();
 }
 
-// Wait until PID is
+// Wait until PID is available
 wait_on({
-  resources: [
-    pid_path
-  ],
+  resources: [ pid_path ],
   delay: 0,
   interval: 25,
   window: 50,
@@ -46,10 +45,19 @@ wait_on({
   if (err) {
     log.error('Inexor Flex didn\'t came up');
   } else {
-    const argv = require('yargs')
-      .commandDir('server/commands/cli/')
-      .demandCommand(1)
-      .help()
-      .argv;
+    if (process.argv.length == 3 && process.argv[2].trim() == 'shell') {
+      const argv = yargs
+        .commandDir('server/commands')
+        .demandCommand(1)
+        .help()
+        .argv;
+    } else {
+      const argv = yargs
+        .commandDir('server/commands/cli/')
+        .command('shell', 'Opens an interactive shell')
+        .demandCommand(1)
+        .help()
+        .argv;
+    }
   }
 });
