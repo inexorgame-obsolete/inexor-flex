@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server/index.js log --port 31416 --webdir assets/",
     "stop": "./inexor flex shutdown",
+    "restart": "./inexor flex restart",
     "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ."
@@ -29,6 +30,7 @@
   "dependencies": {
     "@inexor-game/api": "file:server/api",
     "@inexor-game/connector": "file:src/connector",
+    "@inexor-game/console": "file:src/console",
     "@inexor-game/context": "file:src/context",
     "@inexor-game/instances": "file:src/instances",
     "@inexor-game/logger": "file:server/util/logger",
