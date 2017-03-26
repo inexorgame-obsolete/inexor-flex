@@ -9,7 +9,7 @@ const argv = require('yargs')
   .help()
   .argv;
 
-//Returns a logger instance
+// Returns a logger instance
 var log = require('@inexor-game/logger')(argv.console, argv.file, argv.level);
 
 // Pull the dependencies
@@ -33,9 +33,9 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Manages startup Inexor Flex
+// Manages startup of Inexor Flex
 // - only a single instance is allowed
-// - on SIGINT a reload should be triggerd
+// - on SIGINT a reload should be triggered
 // - on SIGTERM process is killed
 
 var pid = null;
@@ -51,7 +51,7 @@ try {
 process.on('SIGHUP', () => {
   switch (os.platform) {
     case 'win32':
-      log.info('Got SIGTERM. Graceful shutdown start', new Date().toISOString())
+      log.info('Got SIGHUP. Graceful shutdown start', new Date().toISOString())
       pid.remove();
       process.exit();
       break;
