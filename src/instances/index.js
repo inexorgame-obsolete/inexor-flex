@@ -223,9 +223,9 @@ class InstanceManager extends EventEmitter {
         this.transist(instance_node, 'running', 'started');
         this.transist(instance_node, 'started', 'stopped');
         if (code != null) {
-          log.info(util.format('Child process exited with code %d', code));
+          log.info(util.format('%s process exited with code %d', code));
         } else if (signal != null) {
-          log.info(util.format('Child process exited with signal %s', signal));
+          log.info(util.format('%s process exited with signal %s', this.getInstanceName(instance_node), signal));
         }
       });
 
@@ -233,7 +233,7 @@ class InstanceManager extends EventEmitter {
       instance_node.addChild('pid', 'int64', instance_process.pid);
       instance_node.addChild('process', 'object', instance_process);
 
-      log.info(util.format('%s started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
+      log.info(util.format('%s process started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
 
       this.transist(instance_node, 'stopped', 'started');
       resolve(instance_node);
