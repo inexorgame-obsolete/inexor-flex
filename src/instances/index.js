@@ -23,9 +23,11 @@ const util = require('util');
 
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
+const inexor_log = require('@inexor-game/logger');
 
 const debuglog = util.debuglog('instances');
 const log = require('@inexor-game/logger')();
+const core_log = inexor_log(name = '@inexor-game/core');
 
 /**
  * The list of instance types.
@@ -508,13 +510,13 @@ class InstanceManager extends EventEmitter {
   mapStreamToLog(data) {
     for (var line of data.toString('utf8').split("\n")) {
       if (line.includes('[info]')) {
-        log.info(line);
+        core_log.info(line);
       } else if (line.includes('[warn]')) {
-        log.error(line);
+        core_log.warn(line);
       } else if (line.includes('[error]')) {
-        log.error(line);
+        core_log.error(line);
       } else {
-        log.debug(line);
+        core_log.debug(line);
       }
     }
   }

@@ -10,7 +10,7 @@ const bunyanDebugStream = require('bunyan-debug-stream');
  * @param {string} path - a file path
  * @param {string} level - the log level to display
  */
-module.exports = (console = true, file = null, level = 'info') => {
+module.exports = (name = '@inexor-game/flex', console = true, file = null, level = 'info') => {
   streams = [];
 
   if (console) {
@@ -26,5 +26,5 @@ module.exports = (console = true, file = null, level = 'info') => {
    })
   }
 
-  return bunyan.createLogger({name: '@inexor-game/flex', level: level, streams: streams, serializers: bunyanDebugStream.serializers });
+  return bunyan.createLogger({name: name, level: level, streams: streams, serializers: bunyanDebugStream.serializers });
 }
