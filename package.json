@@ -45,6 +45,7 @@
     "figlet": "^1.2.0",
     "npid": "^0.4.0",
     "prettyjson": "^1.2.1",
+    "tomlify": "^0.2.0",
     "wait-on": "^2.0.1",
     "xdg-basedir": "^2.0.0",
     "yargs": "^6.5.0"

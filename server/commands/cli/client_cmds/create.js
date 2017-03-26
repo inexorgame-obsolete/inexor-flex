@@ -2,18 +2,13 @@ const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const log = require('@inexor-game/logger')();
 
 // Configuration for creating a client instance of Inexor Core
-exports.command = 'create <instance> [port] [name] [description] [start]'
+exports.command = 'create <instance> [name] [description] [autostart] [persistent] [start]'
 exports.describe = 'Creates a client'
 
 exports.builder = {
   instance: {
     type: 'number',
     describe: 'The instance id.'
-  },
-  port: {
-    default: null,
-    type: 'number',
-    describe: 'The port to use. If not given, the port is the same as the instance id.'
   },
   name: {
     default: '',
@@ -25,9 +20,19 @@ exports.builder = {
     type: 'string',
     describe: 'A description of the instance.'
   },
+  persistent: {
+    type: 'boolean',
+    descibe: 'True, if the instance should be persisted',
+    default: false
+  },
+  autostart: {
+    type: 'boolean',
+    descibe: 'If the instance should be started automatically on startup',
+    default: false
+  },
   start: {
     type: 'boolean',
-    descibe: 'Also starts the created instance',
+    descibe: 'Also starts the created instance immediately',
     default: false
   }
 }
@@ -35,7 +40,7 @@ exports.builder = {
 exports.handler = function(argv) {
   log.info('Creating a client with instance id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.create(argv.instance, 'client', argv.port, argv.name, argv.description, function(data, response) {
+  client.flex.instances.create(argv.instance, 'client', argv.name, argv.description, argv.persistent, argv.autostart, function(data, response) {
     if (response.statusCode == 201) {
       log.info('Client with instance id ' + argv.instance + ' created');
       if (argv.start) {

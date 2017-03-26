@@ -10,11 +10,6 @@ exports.builder = {
     type: 'number',
     describe: 'The instance id.'
   },
-  port: {
-    default: null,
-    type: 'number',
-    describe: 'The port to use. If not given, the port is the same as the instance id.'
-  },
   name: {
     default: '',
     type: 'string',
@@ -24,13 +19,28 @@ exports.builder = {
     default: '',
     type: 'string',
     describe: 'A description of the instance.'
+  },
+  persistent: {
+    type: 'boolean',
+    descibe: 'True, if the instance should be persisted',
+    default: false
+  },
+  autostart: {
+    type: 'boolean',
+    descibe: 'If the instance should be started automatically on startup',
+    default: false
+  },
+  start: {
+    type: 'boolean',
+    descibe: 'Also starts the created instance immediately',
+    default: false
   }
 }
 
 exports.handler = function(argv) {
   log.info('Creating a server with instance id ' + argv.instance);
   var client = new TreeClient('localhost', 31416);
-  client.flex.instances.create(argv.instance, 'server', argv.port, argv.name, argv.description, function(data, response) {
+  client.flex.instances.create(argv.instance, 'server', argv.name, argv.description, argv.persistent, argv.autostart, function(data, response) {
     if (response.statusCode == 201) {
       log.info('Server with instance id ' + argv.instance + ' created');
     } else if (response.statusCode == 409) {

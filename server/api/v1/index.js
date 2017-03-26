@@ -59,15 +59,15 @@ router.get('/instances/:id', (req, res) => {
 // Returns HTTP status code 500 if the instance couldn't be created
 router.post('/instances/:id', (req, res) => {
   if (!instances_node.hasChild(req.params.id)) {
-    debuglog("Creating instance: " + req.params.id);
-    instance_manager.create(req.params.id, req.body.type, req.body.name, req.body.description).then((instance_node) => {
-    	debuglog('Successfully created instance: ' + instance_node.getPath());
-      res.status(201).json(instance_node.get());
-    }).catch((err) => {
-      debuglog(err);
-      // Failed to create the instance
-      res.status(500).send(err);
-    })
+    instance_manager
+      .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart)
+      .then((instance_node) => {
+        res.status(201).json(instance_node.get());
+      }).catch((err) => {
+        // Failed to create the instance
+        log.error(util.format('Failed to create instance %s: %s', req.params.id, err.message));
+        res.status(500).send(err);
+      });
   } else {
     // The instance id already exist!
     res.status(409).send(util.format('Instance with id %s already exists.', req.params.id));
@@ -132,7 +132,7 @@ router.get('/instances/:id/stop', (req, res)  => {
     }).catch((err) => {
       debuglog(err);
       res.status(500).send(err);
-    })
+    });
   } else {
     res.status(404).send(util.format('Cannot stop instance. Instance with id %s was not found', req.params.id));
   }

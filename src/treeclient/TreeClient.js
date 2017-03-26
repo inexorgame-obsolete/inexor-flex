@@ -137,13 +137,14 @@ class TreeClient {
    * @function
    * @param {number} id - the instance id
    * @param {string} type - the type of the instance: either 'server' or 'client'
-   * @param {number} port - the grpc port for synchronization - by default instance id and port are the same
    * @param {string} name - the name of the instance
    * @param {string} description - the description of the instance
+   * @param {boolean} persistent - True, if the instance should be persisted.
+   * @param {boolean} autostart - True, if the instance should be started automatically on startup.
    * @param {function} callback
    */
-  createInstance(id, type, port, name, description, callback) {
-    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, port: port, name: name, description: description });
+  createInstance(id, type, name, description, autostart, persistent, callback) {
+    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, name: name, description: description, persistent: persistent, autostart: autostart });
   }
 
   /**

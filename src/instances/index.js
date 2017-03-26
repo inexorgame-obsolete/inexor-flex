@@ -18,6 +18,7 @@ const portastic = require('portastic');
 const process = require('process');
 const spawn = require('child_process').spawn;
 const toml = require('toml');
+const tomlify = require('tomlify');
 const util = require('util');
 
 const tree = require('@inexor-game/tree');
@@ -122,9 +123,11 @@ class InstanceManager extends EventEmitter {
    * @param {string} [type] - the instance type - either server or client
    * @param {string} [name] - the name of the instance
    * @param {string} [description] - the description of the instance
+   * @param {boolean} persistent - True, if the instance should be persisted.
+   * @param {boolean} autostart - True, if the instance should be started automatically on startup.
    * @return {Promise<tree.Node>} - the tree node which represents the instance
    */
-  create(identifier = null, type = default_instance_type, name = '', description = '') {
+  create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false) {
     return new Promise((resolve, reject) => {
       if (identifier == null) {
         reject(new Error('Failed to create instance: No identifier'));
@@ -150,8 +153,14 @@ class InstanceManager extends EventEmitter {
       // The port of the GRPC server
       instance_node.addChild('port', 'int64', identifier);
 
+      // The port of the GRPC server
+      instance_node.addChild('autostart', 'bool', autostart);
+
       // Save instances.toml
-      this.saveInstances()
+      if (persistent) {
+        // TODO: save only the current instance
+        this.saveInstances();
+      }
 
       resolve(instance_node);
     });
@@ -243,7 +252,8 @@ class InstanceManager extends EventEmitter {
       log.info(util.format('Stopping instance %s', this.getInstanceName(instance_node)));
       // SIGTERM
       instance_node.getChild('process').get().kill();
-      this.transist(instance_node, 'stopped', 'started');
+      // not needed should happen automatically
+      // this.transist(instance_node, 'stopped', 'started');
       resolve(instance_node);
     });
   }
@@ -304,32 +314,95 @@ class InstanceManager extends EventEmitter {
     });
   }
 
-  // Load instances from TOML or JSON file
-  loadInstances() {
-    let config_paths = inexor_path.getConfigPaths();
-    for (var i = 0; i < config_paths.length; i++) {
-      let config_path = path.join(config_paths[i], 'instances.toml');
-      log.info(util.format('Looking for  %s', config_path));
-      if (fs.existsSync(config_path)) {
-        log.info(util.format('Loading %s', config_path));
-        fs.readFile(config_path, (err, data) => {
-          if (err) {
-            log.error(err);
-          } else {
-            let config = toml.parse(data.toString());
-            for (let instance_id of Object.keys(config['instances'])) {
-              log.info(util.format('Creating instance %s', instance_id));
-              this.create(instance_id, config['instances'][instance_id]['type'], config['instances'][instance_id]['name'], config['instances'][instance_id]['description']);
-            }
+  /**
+   * Loading instances from a TOML file.
+   * @function
+   * @param {string} [filename] - The filename.
+   * @return {Promise<bool>}
+   */
+  loadInstances(filename = 'instances.toml') {
+    return new Promise((resolve, reject) => {
+      let config_path = this.getConfigPath(filename);
+      log.info(util.format('Loading instances from %s', config_path));
+      fs.readFile(config_path, (err, data) => {
+        if (err) {
+          log.error(util.format('Failed to load instances from %s: %s', config_path, err.message));
+          reject(util.format('Failed to load instances from %s: %s', config_path, err.message));
+        } else {
+          let config = toml.parse(data.toString());
+          for (let instance_id of Object.keys(config['instances'])) {
+            this.create(
+              instance_id,
+              config['instances'][instance_id]['type'],
+              config['instances'][instance_id]['name'],
+              config['instances'][instance_id]['description'],
+              false,
+              config['instances'][instance_id]['autostart']
+            ).then((instance_node) => {
+              if (instance_node.autostart) {
+                this.start(instance_node);
+              }
+            }).catch((err) => {
+            });
           }
-        })
-      }
-    }
+          resolve(true);
+        }
+      });
+    });
   }
 
-  saveInstances() {
-    // TODO: implement
-    // Save instances to TOML or JSON file
+  /**
+   * Saves an instance to a TOML file.
+   * @function
+   * @param {tree.Node} instance_node - The instance to save.
+   * @param {string} [filename] - The filename.
+   * @return {Promise<bool>}
+   */
+  saveInstances(filename = 'instances.toml') {
+    return new Promise((resolve, reject) => {
+      let config_path = this.getConfigPath(filename);
+      let instance_ids = this._instances_node.getChildNames();
+      let config = {
+        instances: {}
+      };
+      for (var i = 0; i < instance_ids.length; i++) {
+        let instance_id = instance_ids[i];
+        let instance_node = this._instances_node.getChild(instance_id);
+        config['instances'][instance_id] = {
+          'type': instance_node.type,
+          'name': instance_node.name,
+          'description': instance_node.description,
+          'autostart': instance_node.autostart
+        };
+      }
+      var toml = tomlify(config, {delims: false});
+      log.info(toml);
+      fs.writeFile(config_path, toml, (err) => {
+        if (err) {
+          log.warn(util.format('Failed to write instances to %s: %s', config_path, err.message));
+          reject(util.format('Failed to write instances to %s: %s', config_path, err.message));
+        } else {
+          log.info(util.format('Wrote instances to %s', config_path));
+          resolve(true);
+        }
+      }); 
+    });
+  }
+
+  /**
+   * Returns the config path for the instances configuration file.
+   * @function
+   * @param {string} [filename] - The filename.
+   */
+  getConfigPath(filename = 'instances.toml') {
+    let config_paths = inexor_path.getConfigPaths();
+    for (var i = 0; i < config_paths.length; i++) {
+      let config_path = path.join(config_paths[i], filename);
+      if (fs.existsSync(config_path)) {
+        return config_path;
+      }
+    }
+    return path.join(config_paths[0], filename);
   }
 
   /**
