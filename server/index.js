@@ -9,6 +9,8 @@ const argv = require('yargs')
   .help()
   .argv;
 
+const inexor_path = require('@inexor-game/path');
+
 // Returns a logger instance
 var log = require('@inexor-game/logger')(argv.console, argv.file, argv.level);
 
@@ -41,7 +43,7 @@ app.use((err, req, res, next) => {
 var pid = null;
 
 try {
-  pid = npid.create(require('@inexor-game/path').pid_path);
+  pid = npid.create(inexor_path.pid_path);
   pid.removeOnExit(); // This does not sanely work
 } catch (err) {
   log.error(err.message);
