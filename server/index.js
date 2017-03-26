@@ -35,8 +35,8 @@ app.use((err, req, res, next) => {
 
 // Manages startup of Inexor Flex
 // - only a single instance is allowed
-// - on SIGINT a reload should be triggered
-// - on SIGTERM process is killed
+// - on SIGHUP a reload should be triggered (unix)
+// - on SIGINT and SIGTERM process is killed
 
 var pid = null;
 
@@ -51,7 +51,7 @@ try {
 process.on('SIGHUP', () => {
   switch (os.platform) {
     case 'win32':
-      log.info('Got SIGHUP. Graceful shutdown start', new Date().toISOString())
+      log.info('Got SIGHUP. Graceful shutdown', new Date().toISOString())
       pid.remove();
       process.exit();
       break;
@@ -65,13 +65,13 @@ process.on('SIGHUP', () => {
 });
 
 process.on('SIGINT', () => {
-  log.info('Got SIGINT. Graceful shutdown start', new Date().toISOString())
+  log.info('Got SIGINT. Graceful shutdown', new Date().toISOString())
   pid.remove();
   process.exit();
 });
 
 process.on('SIGTERM', () => {
-  log.info('Got SIGTERM. Graceful shutdown start', new Date().toISOString())
+  log.info('Got SIGTERM. Graceful shutdown', new Date().toISOString())
   pid.remove();
   process.exit();
 });
