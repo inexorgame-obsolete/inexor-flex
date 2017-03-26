@@ -139,13 +139,13 @@ class Connector extends EventEmitter {
     var self = this;
     this._instance_node.getRoot().on('add', function(node) {
       if (node.isChildOf(self._instance_node)) {
-        log.info('Adding synchronization event of node ' + node.getPath());
+        log.debug('Adding synchronization event of node ' + node.getPath());
         node.on('sync', function(oldValue, newValue) {
-          log.info('Synchronizing node ' + node.getPath());
+          log.debug('Synchronizing node ' + node.getPath());
           try {
             let message = {};
             message[node._protoKey] = node.get();
-            log.info('Sending message: ' + JSON.stringify(message));
+            log.debug('Sending message: ' + JSON.stringify(message));
             self._synchronize.write(message);
           } catch (err) {
             log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');

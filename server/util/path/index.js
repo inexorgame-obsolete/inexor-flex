@@ -82,6 +82,53 @@ function getBinaryPath() {
 }
 
 /**
+ * Returns the path of the executable.
+ * 
+ * TODO: use naming scheme for executables: inexor-[instance_type]-[platform][.extension]
+ *       examples:
+ *       - inexor-client-win32.exe
+ *       - inexor-server-linux
+ * 
+ * @return {string}
+ */
+function getExecutablePath(instance_type) {
+  let platform = os.platform();
+  let binary_path = getBinaryPath();
+  switch (platform) {
+    case 'linux':
+      switch (instance_type) {
+        case 'server':
+          return path.join(getBinaryPath(), 'server');
+        case 'client':
+          return path.join(getBinaryPath(), 'inexor');
+        default:
+          throw new Error('${instance_type} is not currently supported')
+      }
+    case 'win32':
+      switch (instance_type) {
+        case 'server':
+          return path.join(getBinaryPath(), 'server.exe');
+        case 'client':
+          return path.join(getBinaryPath(), 'inexor.exe');
+        default:
+          throw new Error('${instance_type} is not currently supported')
+      }
+    case 'darwin':
+      switch (instance_type) {
+        case 'server':
+          return path.join(getBinaryPath(), 'server');
+        case 'client':
+          return path.join(getBinaryPath(), 'inexor');
+        default:
+          throw new Error('${instance_type} is not currently supported')
+      }
+    default:
+      throw new Error('${platform} is not currently supported')
+  }
+  return path.resolve(path.join(getBasePath(), 'bin'));
+}
+
+/**
  * Returns a preference-ordered array of base directories to search for media
  * files in addition to the default media path.
  * @return {string}
@@ -121,6 +168,7 @@ module.exports = {
   media_path: media_path,
   getBasePath: getBasePath,
   getBinaryPath: getBinaryPath,
+  getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT

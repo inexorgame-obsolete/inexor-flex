@@ -1,5 +1,13 @@
 /**
- * This module is responsible for starting and handling of Inexor Core instances.
+ * This module is responsible for the lifecycle of instances of Inexor Core.
+ * 
+ * Inexor Core instances can be a game client or a game server. In future there
+ * may be other types of instances like bots.
+ * 
+ * Each instance contains it's own subtree in the Inexor Tree.
+ * 
+ * The lifecycle is defined by the states an instance of Inexor Core can have.
+ * 
  * @module instances
  */
 
@@ -7,7 +15,9 @@ const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
 const portastic = require('portastic');
+const process = require('process');
 const spawn = require('child_process').spawn;
+const toml = require('toml');
 const util = require('util');
 
 const tree = require('@inexor-game/tree');
@@ -16,23 +26,67 @@ const inexor_path = require('@inexor-game/path');
 const debuglog = util.debuglog('instances');
 const log = require('@inexor-game/logger')();
 
-// The default port to use
-const defaultPort = 31417;
+/**
+ * The list of instance types.
+ * @constant {number}
+ */
+const instance_types = [
+  'server',
+  'client'
+]
 
+/**
+ * The instance states.
+ * TODO: document the states in the wiki
+ * 
+ * @constant {array}
+ */
 const instance_states = [
+  null,
   'stopped',
   'started',
-  'connected',
   'running',
   'paused'
 ];
 
-// TODO: Define separate port ranges for each instance type
-// TODO: Define the default instance type ('client')
+/**
+ * The valid transitions of the instance states
+ * @constant {array}
+ */
+const instance_transitions = [
+  { 'name': 'create',     'old_state': null,      'new_state': 'stopped' },
+  { 'name': 'start',      'old_state': 'stopped', 'new_state': 'started' },
+  { 'name': 'connect',    'old_state': 'started', 'new_state': 'running' },
+  { 'name': 'pause',      'old_state': 'running', 'new_state': 'paused'  },
+  { 'name': 'resume',     'old_state': 'paused',  'new_state': 'running' },
+  { 'name': 'disconnect', 'old_state': 'running', 'new_state': 'started' },
+  { 'name': 'stop',       'old_state': 'started', 'new_state': 'stopped' },
+  { 'name': 'destroy',    'old_state': 'stopped', 'new_state': null      }
+];
 
 /**
- * Manages instances.
- * TODO: state machine
+ * The default instance type.
+ * @constant {string}
+ */
+const default_instance_type = 'client';
+
+/**
+ * The default instance state.
+ * @constant {string}
+ */
+const default_instance_state = 'stopped';
+
+/**
+ * The default ports to use.
+ * @constant {array}
+ */
+const default_instance_ports = {
+    'server': 31414,
+    'client': 31417
+}
+
+/**
+ * The instance manager manages all instances.
  */
 class InstanceManager extends EventEmitter {
 
@@ -46,265 +100,365 @@ class InstanceManager extends EventEmitter {
 
     /** @private */
     this._instances_node = root.getOrCreateNode('instances');
-    
-    this.load();
-  }
 
-  transist(instance_node, new_state) {
-    // if new_state in this._states {
-    instance_node.state = new_state;
-  }
-
-  get_instances_by_state(state) {
-    // TODO: implement
-    return [];
-  }
-
-  load() {
-    // TODO: implement
-    // Load instances from TOML or JSON file
+    // Load instances.toml
+    this.loadInstances();
   }
 
   /**
    * Returns if an instance with the given identifier exists.
    * @function
-   * @param {number} [identifier] - the instance identifier
+   * @param {number} [instance_id] - the instance identifier
    * @return {boolean} - True, if the instance exists.
    */
-  exists(identifier) {
-    return this._instances_node.hasChild(identifier);
+  exists(instance_id) {
+    return this._instances_node.hasChild(instance_id);
   }
 
   /**
    * Creates an instance of Inexor Core. The instance is created but not started!
    * @function
    * @param {number} [identifier] - the instance identifier
-   * @param {number} [port] - the port to bind to
    * @param {string} [type] - the instance type - either server or client
    * @param {string} [name] - the name of the instance
    * @param {string} [description] - the description of the instance
    * @return {Promise<tree.Node>} - the tree node which represents the instance
    */
-  create(identifier = null, port = null, type = null, name = null, description = '') {
+  create(identifier = null, type = default_instance_type, name = '', description = '') {
     return new Promise((resolve, reject) => {
-      // TODO: Identifier must not be null!
-      // TODO: New behaviour: Use the instance id as port. No port resolving needed if the instance id is given.
-      // TODO: Resolve the default port by instance type
-      // TODO: Resolve the default name by instance type, something like 'Inexor Client (id)'
+      if (identifier == null) {
+        reject(new Error('Failed to create instance: No identifier'));
+      } else if (this._instances_node.hasChild(String(identifier))) {
+        reject(new Error('Failed to create instance: Instance already exists'));
+      }
+
+      // Create the instance sub tree
       let instance_node = this._instances_node.addNode(String(identifier));
-  
-      // Initialize the instance sub tree
-  
+
       // Start with state 'stopped'
-      // TODO: create a constant list of allowed instance states ('stopped', 'started', 'connected', 'running', 'paused')
-      // TODO: document the states in the wiki
-      instance_node.addChild('state', 'string', 'stopped');
-  
-      // The type, e.g. 'client', 'server', ...
-      // TODO: create a constant list of allowed instance types
+      instance_node.addChild('state', 'string', default_instance_state);
+
+      // The instance type, e.g. 'client', 'server', ...
       instance_node.addChild('type', 'string', type);
-  
+
       // The name of the instance, e.g. 'Client 1'
       instance_node.addChild('name', 'string', name);
-  
+
       // The description of the instance, e.g. 'The default client'
       instance_node.addChild('description', 'string', description);
-  
-      /**
-       * @private
-       * Reduce DRY code
-       */
-      let resolvePort = function(port) {
-        portastic.test(_port).then((isOpen) => {
-          if (isOpen) {
-            instance_node.addChild('port', 'int64', _port);
-            debuglog('Creating instance ' + identifier + ' on port ' + _port);
-            resolve(instance_node);
-          } else {
-            throw new Error('EADDRINUSE, Address already in use.');
-          }
-        })
-      }
-  
-      // Resolve the port
-      let _port = null;
-      // TODO: might need moarr asynchronisation
-      if (port == null && identifier == null) {
-        try {
-          portastic.find({min: defaultPort, max: defaultPort + 1000}).then((ports) => {
-            if (array.length < 0) {
-            	debuglog('No open port found');
-              throw new Error('No open port found'); // This should never happen, honestly.
-            } else {
-              identifier = ports[0];
-              _port = identifier;
-              resolvePort(_port);
-            }
-          })
-        } catch (e) {
-          throw new Error('Failed to find an open port: ' + e.message);
-        }
-      } else if (port == null && identifier != null) {
-        _port = identifier;
-      } else {
-        _port = port;
-      }
-  
-      resolvePort(_port);
-    })
-  }
 
-  remove(instance_node) {
-    // TODO: implement
-  }
+      // The port of the GRPC server
+      instance_node.addChild('port', 'int64', identifier);
 
-  get_sub_directories(_path) {
-    return fs.readdirSync(_path).filter(function(file) {
-      return fs.statSync(path.join(_path, file)).isDirectory();
+      // Save instances.toml
+      this.saveInstances()
+
+      resolve(instance_node);
     });
   }
 
   /**
-   * Starts an instance and returns the instance with a child_process attached
+   * Removes an instance.
    * @function
-   * @param {tree.Node}
+   * @param {tree.Node} [instance_node] - The instance to start.
    * @return {Promise<instance>}
    */
-  start(instance_node) {
-    // debuglog(instance_node);
-    let instance_id = instance_node.getName();
-    let instance_port = instance_node.port;
-    let instance_type = instance_node.type;
-  	debuglog('Starting instance ' + instance_node.name + ' (id: ' + instance_id + ', type: ' + instance_type + ', port: ' + instance_port + ')');
-  
+  remove(instance_node) {
     return new Promise((resolve, reject) => {
-    	try {
-        debuglog('flex_path = ' + inexor_path.flex_path);
-        let base_path = inexor_path.getBasePath();
-    	  debuglog('base_path = ' + path.resolve(base_path));
-        let binary_path = path.join(base_path, inexor_path.binary_path);
-        debuglog('binary_path = ' + path.resolve(binary_path));
-        
-        if (!fs.existsSync(binary_path)) {
-          debuglog('Binary does not exist: ' + binary_path);
-          throw new Error('Binary does not exist: ' + binary_path);
-        }
-  
-  //    let media_path = path.join(base_path, inexor_path.media_path);
-  //    debuglog('media_path = ' + path.resolve(media_path));
-  //    let media_repositories = get_sub_directories(media_path);
-  //    let args = [ node.getName() ];
-  //      args.push('-q~/.inexor');
-  //      if (instance.args.length > 0) {
-  //        args.push(instance.args);
-  //      }
-  //      // args.push('-k' + path.resolve(media_path));
-  //      media_repositories.forEach(function(media_repository) {
-  //        var media_dir = path.join(media_path, media_repository);
-  //        // args.push('-k' + path.resolve(media_dir));
-  //        args.push('-k./media/' + media_repository);
-  //      });
-  
-        // Starting an instance with the instance id as 
-        let args = [ instance_id ];
-        let options = {
-          cwd: path.resolve(base_path)
-        };
-        debuglog(args);
-        log.info('Starting ' + binary_path + ' ' + args.join(' '));
-        
-        // Spawn process and add process node
-        let process = spawn(binary_path, args, options);
-        process.on('error', (err) => {
-          log.error('Error on instance ' + instance_id + ': ' + err.message);
-          throw new Error(err); // This should be instantly fired
-        });
-  
-        process.stdout.on('data', function(data) {
-          for (var line of data.toString('utf8').split("\n")) {
-            if (line.includes('[info]')) {
-              log.info(line);
-            } else if (line.includes('[warn]')) {
-              log.error(line);
-            } else if (line.includes('[error]')) {
-              log.error(line);
-            } else {
-              log.debug(line);
-            }
-          }
-        });
-  
-        process.stderr.on('data', function(data) {
-          for (var line of data.toString('utf8').split("\n")) {
-            if (line.includes('[info]')) {
-              log.info(line);
-            } else if (line.includes('[warn]')) {
-              log.error(line);
-            } else if (line.includes('[error]')) {
-              log.error(line);
-            } else {
-              log.debug(line);
-            }
-          }
-        });
-  
-        process.on('exit', function(code) {
-          log.info('Child process exited with code ' + String(code));
-          instance_node.state = 'stopped';
-          // TODO: shutdown instance node!
-        });
-  
-        // Store the process handle
-        let process_node = instance_node.addChild('process', 'object', process);
-        
-        debuglog('Process has been started: ' + binary_path + ' ' + args.join(' '));
-  
-        instance_node.state = 'started';
-        resolve(instance_node);
-
-    	} catch (err) {
-    		debuglog(err.message);
-    		throw new Error(err);
-    	}
-    })
-  }
-
-  startAll() {
-    // TODO: implement
+      // TODO: only if state is
+    });
   }
 
   /**
-   * Stops an instance
+   * Starts an instance.
    * @function
-   * @param {instances.instance}
+   * @param {tree.Node} [instance_node] - The instance to start.
+   * @return {Promise<instance>}
+   */
+  start(instance_node) {
+    let instance_id = instance_node.getName();
+    let instance_port = instance_node.port;
+    let instance_type = instance_node.type;
+  	log.info('Starting instance ' + instance_node.name + ' (id: ' + instance_id + ', type: ' + instance_type + ', port: ' + instance_port + ')');
+  
+    return new Promise((resolve, reject) => {
+      
+      // Resolve executable
+      let executable_path = inexor_path.getExecutablePath(instance_type)
+      if (!fs.existsSync(executable_path)) {
+        reject(new Error('Executable does not exist: ' + executable_path));
+      }
+
+      // Starting a new process with the instance id as only argument
+      let args = [ instance_id ];
+      let options = {
+        cwd: path.resolve(inexor_path.getBasePath()),
+        env: process.env
+      };
+      log.info(util.format('Starting %s %s', executable_path, args.join(' ')));
+      
+      // Spawn process
+      let instance_process = spawn(executable_path, args, options);
+      instance_process.stdout.on('data', this.mapStreamToLog);
+      instance_process.stderr.on('data', this.mapStreamToLog);
+      instance_process.on('error', (err) => {
+        instance_node.removeChild('process');
+        this.transist(instance_node, 'running', 'started');
+        this.transist(instance_node, 'started', 'stopped');
+        if (err != null) {
+          log.error(util.format('Error in %s: %s', this.getInstanceName(instance_node), err.message));
+        }
+      });
+      instance_process.on('exit', (code, signal) => {
+        instance_node.removeChild('process');
+        this.transist(instance_node, 'running', 'started');
+        this.transist(instance_node, 'started', 'stopped');
+        if (code != null) {
+          log.info(util.format('Child process exited with code %d', code));
+        } else if (signal != null) {
+          log.info(util.format('Child process exited with signal %s', signal));
+        }
+      });
+
+      // Store the PID and the process handle
+      instance_node.addChild('pid', 'int64', instance_process.pid);
+      instance_node.addChild('process', 'object', instance_process);
+
+      log.info(util.format('%s started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
+
+      this.transist(instance_node, 'stopped', 'started');
+      resolve(instance_node);
+
+    });
+  }
+
+  /**
+   * Stops an instance.
+   * @function
+   * @param {tree.Node} [instance_node] - The instance to stop.
+   * @return {Promise<tree.Node>}
+   */
+  stop(instance_node) {
+    return new Promise((resolve, reject) => {
+      log.info(util.format('Stopping instance %s', this.getInstanceName(instance_node)));
+      // SIGTERM
+      instance_node.getChild('process').get().kill();
+      this.transist(instance_node, 'stopped', 'started');
+      resolve(instance_node);
+    });
+  }
+
+  /**
+   * Pauses a running instance.
+   * @function
+   * @param {tree.Node} instance_node - The instance to stop.
+   * @return {Promise<tree.Node>}
+   */
+  pause(instance_node) {
+    return new Promise((resolve, reject) => {
+      this.transist(instance_node, 'running', 'paused');
+      resolve(instance_node);
+    });
+  }
+
+  /**
+   * Resumes a paused instance.
+   * @function
+   * @param {tree.Node} instance_node - The instance to stop.
    * @return {Promise<bool>}
    */
-  stop(instance) {
-  	debuglog('Stopping instance ' + instance.id);
-    return new Promise((resolve, reject) => {
-      instance._process.on('close', (code, signal) => {
-        resolve(`Child process terminated due to receipt of signal ${signal}`)
-      })
-      instance._process.on('error', (err) => {
-        throw new Error(err);
-      })
-  
-      instance._process.kill(); // SIGTERM
-    })
-  }
-
-  stopAll() {
-    // TODO: implement
-  }
-
-  pause(instance_node) {
-    // TODO: implement
-  }
-
   resume(instance_node) {
+    return new Promise((resolve, reject) => {
+      this.transist(instance_node, 'paused', 'running');
+      resolve(true);
+    });
+  }
+
+  /**
+   * Starts all available instances
+   * @function
+   * @return {Promise<bool>}
+   */
+  startAll() {
+    return new Promise((resolve, reject) => {
+      let instance_ids = this._instances_node.getChildNames();
+      instance_ids.forEach(function(instance_id) {
+        this.start(this._instances_node.getChild(instance_id));
+      });
+      resolve(true);
+    });
+  }
+
+  /**
+   * Stops all running instances.
+   * @function
+   * @return {Promise<bool>}
+   */
+  stopAll() {
+    return new Promise((resolve, reject) => {
+      let instance_ids = this._instances_node.getChildNames();
+      instance_ids.forEach(function(instance_id) {
+        this.stop(this._instances_node.getChild(instance_id));
+      });
+      resolve(true);
+    });
+  }
+
+  // Load instances from TOML or JSON file
+  loadInstances() {
+    let config_paths = inexor_path.getConfigPaths();
+    for (var i = 0; i < config_paths.length; i++) {
+      let config_path = path.join(config_paths[i], 'instances.toml');
+      log.info(util.format('Looking for  %s', config_path));
+      if (fs.existsSync(config_path)) {
+        log.info(util.format('Loading %s', config_path));
+        fs.readFile(config_path, (err, data) => {
+          if (err) {
+            log.error(err);
+          } else {
+            let config = toml.parse(data.toString());
+            for (let instance_id of Object.keys(config['instances'])) {
+              log.info(util.format('Creating instance %s', instance_id));
+              this.create(instance_id, config['instances'][instance_id]['type'], config['instances'][instance_id]['name'], config['instances'][instance_id]['description']);
+            }
+          }
+        })
+      }
+    }
+  }
+
+  saveInstances() {
     // TODO: implement
+    // Save instances to TOML or JSON file
+  }
+
+  /**
+   * Returns true if the given instance type is a valid type.
+   * @function
+   * @param {string} [instance_type] - The instance type.
+   * @return {boolean} - True if the given instance type is a valid type.
+   */
+  isValidInstanceType(instance_type) {
+    return instance_types.includes(instance_type);
+  }
+
+  /**
+   * Applies a state transition on an instance.
+   * @function
+   * @param {tree.Node} [instance_node] - The instance on which the transition should apply.
+   * @param {string} [old_state] - The old state.
+   * @param {string} [new_state] - The new state.
+   * @return {boolean} - True if the given state transition is valid.
+   */
+  transist(instance_node, old_state, new_state) {
+    if (instance_states.includes(old_state)) {
+      if (instance_states.includes(new_state)) {
+        if (instance_node.state == old_state) {
+          if (this.isValidTransition(old_state, new_state)) {
+            instance_node.state = new_state;
+            log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instance_node), old_state, new_state));
+            return true;
+          } else {
+            log.error(util.format('%s ---> %s is not a valid transition', old_state, new_state));
+            return false;
+          }
+        } else {
+          log.error(util.format('Source state of %s is not %s', this.getInstanceName(instance_node), old_state));
+          return false;
+        }
+      } else {
+        log.error(util.format('%s is not a valid state', old_state));
+        return false;
+      }
+    } else {
+      log.error(util.format('%s is not a valid state', new_state));
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if the given state transition is valid.
+   * @function
+   * @param {string} [old_state] - The old state.
+   * @param {string} [new_state] - The new state.
+   * @return {boolean} - True if the given state transition is valid.
+   */
+  isValidTransition(old_state, new_state) {
+    for (var i = 0; i < instance_transitions.length; i++) {
+      if (instance_transitions[i].old_state == old_state && instance_transitions[i].new_state == new_state) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns an array of instance ids which the given state.
+   * @function
+   * @param {string} [state] - The state.
+   * @return {array} - The list of instance ids.
+   */
+  getInstancesByType(type) {
+    let instance_ids_of_type = [];
+    let instance_ids = this._instances_node.getChildNames();
+    instance_ids.forEach(function(instance_id) {
+      if (this._instances_node.getChild(instance_id).type == type) {
+        instance_ids_of_type.push(instance_id);
+      }
+    });
+    return instance_ids_of_type;
+  }
+
+  /**
+   * Returns an array of instance ids which the given state.
+   * @function
+   * @param {string} [state] - The state.
+   * @return {array} - The list of instance ids.
+   */
+  getInstancesByState(state) {
+    let instance_ids_with_state = [];
+    let instance_ids = this._instances_node.getChildNames();
+    instance_ids.forEach(function(instance_id) {
+      if (this._instances_node.getChild(instance_id).state == state) {
+        instance_ids_with_state.push(instance_id);
+      }
+    });
+    return instance_ids_with_state;
+  }
+
+  /**
+   * Redirects stdout / stderr streams to logging.
+   * @function
+   * @param {stream} data - The stream data.
+   * @return {Promise<bool>}
+   */
+  mapStreamToLog(data) {
+    for (var line of data.toString('utf8').split("\n")) {
+      if (line.includes('[info]')) {
+        log.info(line);
+      } else if (line.includes('[warn]')) {
+        log.error(line);
+      } else if (line.includes('[error]')) {
+        log.error(line);
+      } else {
+        log.debug(line);
+      }
+    }
+  }
+
+  getInstanceName(instance_node) {
+    return util.format('%s instance %s', instance_node.type, instance_node.getName());
   }
 
 }
 
-module.exports = InstanceManager
+module.exports = {
+  InstanceManager: InstanceManager,
+  instance_types: instance_types,
+  instance_states: instance_states,
+  instance_transitions: instance_transitions,
+  default_instance_type: default_instance_type,
+  default_instance_state: default_instance_state,
+  default_instance_ports: default_instance_ports,
+}
+

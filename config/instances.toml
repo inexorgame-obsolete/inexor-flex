@@ -12,4 +12,4 @@ autostart = false
 type = "client"
 name = "Default Inexor Client"
 description = "The default Inexor Client"
-autostart = true
+autostart = false
