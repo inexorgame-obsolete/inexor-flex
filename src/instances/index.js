@@ -25,9 +25,7 @@ const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 const inexor_log = require('@inexor-game/logger');
 
-const debuglog = util.debuglog('instances');
-const log = require('@inexor-game/logger')();
-const core_log = inexor_log(name = '@inexor-game/core');
+const log = inexor_log('@inexor-game/flex/InstanceManager');
 
 /**
  * The list of instance types.
@@ -36,7 +34,7 @@ const core_log = inexor_log(name = '@inexor-game/core');
 const instance_types = [
   'server',
   'client'
-]
+];
 
 /**
  * The instance states.
@@ -210,8 +208,8 @@ class InstanceManager extends EventEmitter {
       
       // Spawn process
       let instance_process = spawn(executable_path, args, options);
-      instance_process.stdout.on('data', this.mapStreamToLog);
-      instance_process.stderr.on('data', this.mapStreamToLog);
+      instance_process.stdout.on('data', (data) => { this.mapStreamToLog(instance_node, data) });
+      instance_process.stderr.on('data', (data) => { this.mapStreamToLog(instance_node, data) });
       instance_process.on('error', (err) => {
         instance_node.removeChild('process');
         this.transist(instance_node, 'running', 'started');
@@ -234,6 +232,7 @@ class InstanceManager extends EventEmitter {
       // Store the PID and the process handle
       instance_node.addChild('pid', 'int64', instance_process.pid);
       instance_node.addChild('process', 'object', instance_process);
+      instance_node.addChild('log', 'object', inexor_log(util.format('@inexor-game/core(%s)', instance_id)));
 
       log.info(util.format('%s process started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
 
@@ -507,16 +506,17 @@ class InstanceManager extends EventEmitter {
    * @param {stream} data - The stream data.
    * @return {Promise<bool>}
    */
-  mapStreamToLog(data) {
+  mapStreamToLog(instance_node, data) {
+    let log = instance_node.log;
     for (var line of data.toString('utf8').split("\n")) {
       if (line.includes('[info]')) {
-        core_log.info(line);
+        log.info(line);
       } else if (line.includes('[warn]')) {
-        core_log.warn(line);
+        log.warn(line);
       } else if (line.includes('[error]')) {
-        core_log.error(line);
+        log.error(line);
       } else {
-        core_log.debug(line);
+        log.debug(line);
       }
     }
   }
