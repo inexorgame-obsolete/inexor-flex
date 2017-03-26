@@ -49,10 +49,19 @@ try {
 }
 
 process.on('SIGHUP', () => {
-  log.info('Got SIGHUP. Graceful reloading the server', new Date().toISOString())
-  require('@inexor-game/plugins').then((router) => {
-    app.use('/plugins', router);
-  })
+  switch (os.platform) {
+    case 'win32':
+      log.info('Got SIGTERM. Graceful shutdown start', new Date().toISOString())
+      pid.remove();
+      process.exit();
+      break;
+    default:
+      log.info('Got SIGHUP. Graceful reloading the server', new Date().toISOString())
+      require('@inexor-game/plugins').then((router) => {
+        app.use('/plugins', router);
+      })
+      break;
+  }
 });
 
 process.on('SIGINT', () => {
