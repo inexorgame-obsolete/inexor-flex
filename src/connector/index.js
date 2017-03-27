@@ -78,7 +78,6 @@ class Connector extends EventEmitter {
 
     // Fetching stream data
     this._synchronize.on('data', (message) => {
-      log.info('Getting stream data: ' + JSON.stringify(message));
       let protoKey = message.key;
       try {
         let value = message[protoKey];
@@ -87,12 +86,8 @@ class Connector extends EventEmitter {
         var dataType = this.getDataType(protoKey);
         var id = this.getId(protoKey);
         if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
-          log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
-          // log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType);
-
-          if (protoKey != '__numargs') {
-            // throw new Error('${protoKey} does not have enough arguments.')
-            debuglog('protoKey = "' + protoKey + '" path = "' + path + '" value = "' + value + '"');
+          if (protoKey != '__numargs' && protoKey != '_shadowmapcasters') {
+            log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
           }
           // let node = this._tree.findNode(path);
           let node = this._instance_node.getRoot().findNode(path);
@@ -117,6 +112,7 @@ class Connector extends EventEmitter {
       try {
         log.info('Synchronize END');
       } catch (err) {
+        // TODO: handle sync error / don't stop flex here
         throw new Error('Synchronization has end.')
       }
     });
@@ -141,9 +137,9 @@ class Connector extends EventEmitter {
     var self = this;
     this._instance_node.getRoot().on('add', function(node) {
       if (node.isChildOf(self._instance_node)) {
-        log.info('Adding synchronization event of node ' + node.getPath());
+        log.debug('Adding synchronization event of node ' + node.getPath());
         node.on('sync', function(oldValue, newValue) {
-          log.info('Synchronizing node ' + node.getPath());
+          log.debug('Synchronizing node ' + node.getPath());
           try {
             let message = {};
             message[node._protoKey] = node.get();
@@ -162,6 +158,11 @@ class Connector extends EventEmitter {
 
       // Populate tree from defaults
       self.populateInstanceTreeFromDefaults();
+
+      // Set package dir
+      // TODO: improve
+      self._instance_node.package_dir = 'media/core';
+      // self._instance_node.package_dir = inexor_path.media_path;
 
       // Populate tree with instance values
       // TODO: Populate tree with instance values
