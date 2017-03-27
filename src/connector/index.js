@@ -78,15 +78,17 @@ class Connector extends EventEmitter {
 
     // Fetching stream data
     this._synchronize.on('data', (message) => {
-      log.debug('Getting stream data: ' + JSON.stringify(message));
+      log.info('Getting stream data: ' + JSON.stringify(message));
       let protoKey = message.key;
       try {
         let value = message[protoKey];
         let path = this.getPath(protoKey);
         let eventType = this.getEventType(protoKey);
-        
+        var dataType = this.getDataType(protoKey);
+        var id = this.getId(protoKey);
         if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
-          log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType);
+          log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
+          // log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType);
 
           if (protoKey != '__numargs') {
             // throw new Error('${protoKey} does not have enough arguments.')
@@ -139,13 +141,13 @@ class Connector extends EventEmitter {
     var self = this;
     this._instance_node.getRoot().on('add', function(node) {
       if (node.isChildOf(self._instance_node)) {
-        log.debug('Adding synchronization event of node ' + node.getPath());
+        log.info('Adding synchronization event of node ' + node.getPath());
         node.on('sync', function(oldValue, newValue) {
-          log.debug('Synchronizing node ' + node.getPath());
+          log.info('Synchronizing node ' + node.getPath());
           try {
             let message = {};
             message[node._protoKey] = node.get();
-            log.debug('Sending message: ' + JSON.stringify(message));
+            log.info('Sending message: ' + JSON.stringify(message));
             self._synchronize.write(message);
           } catch (err) {
             log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');
