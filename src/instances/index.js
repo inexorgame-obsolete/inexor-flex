@@ -232,7 +232,7 @@ class InstanceManager extends EventEmitter {
       // Store the PID and the process handle
       instance_node.addChild('pid', 'int64', instance_process.pid);
       instance_node.addChild('process', 'object', instance_process);
-      instance_node.addChild('log', 'object', inexor_log(util.format('@inexor-game/core(%s)', instance_id)));
+      instance_node.addChild('log', 'object', inexor_log(util.format('@inexor-game/core(%s)', instance_id), true, null, 'debug'));
 
       log.info(util.format('%s process started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
 
@@ -511,11 +511,13 @@ class InstanceManager extends EventEmitter {
     for (var line of data.toString('utf8').split("\n")) {
       if (line.includes('[info]')) {
         log.info(line);
-      } else if (line.includes('[warn]')) {
+      } else if (line.includes('[warning]')) {
         log.warn(line);
       } else if (line.includes('[error]')) {
         log.error(line);
-      } else {
+      } else if (line.includes('[critical]')) {
+        log.fatal(line);
+      } else if (line.includes('[debug]')) {
         log.debug(line);
       }
     }
