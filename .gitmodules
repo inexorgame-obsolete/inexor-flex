@@ -1,3 +1,6 @@
 [submodule "interfaces/ui-console"]
 	path = interfaces/ui-console
 	url = https://github.com/inexor-game/ui-console.git
+[submodule "interfaces/ui-client-interface"]
+	path = interfaces/ui-client-interface
+	url = https://github.com/inexor-game/ui-client-interface.git
