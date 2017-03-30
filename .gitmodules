@@ -1,6 +1,9 @@
 [submodule "interface"]
 	path = interface
 	url = https://github.com/Fohlen/interface.git
+[submodule "interfaces/ui-client-interface"]
+	path = interfaces/ui-client-interface
+	url = https://github.com/inexor-game/ui-client-interface.git
 [submodule "interfaces/ui-console"]
 	path = interfaces/ui-console
-	url = git@github.com:inexor-game/ui-console.git
+	url = https://github.com/inexor-game/ui-console.git
