@@ -11,13 +11,13 @@ class ApplicationContext {
 
   construct(name, factory) {
     var component = factory();
-    this.register(name, component);
-    return component;
+    return this.register(name, component);
   }
 
   register(name, component) {
     component.application_context = this;
     this.components[name] = component;
+    return component;
   }
 
   unregister(name) {

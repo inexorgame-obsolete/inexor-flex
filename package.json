@@ -33,6 +33,7 @@
     "@inexor-game/console": "file:src/console",
     "@inexor-game/context": "file:src/context",
     "@inexor-game/instances": "file:src/instances",
+    "@inexor-game/interfaces": "file:src/interfaces",
     "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/media": "file:src/media",
     "@inexor-game/path": "file:server/util/path",

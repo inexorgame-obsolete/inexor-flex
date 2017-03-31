@@ -1,0 +1,26 @@
+{
+  "name": "@inexor-game/interfaces",
+  "version": "1.0.0",
+  "description": "Provides user interfaces",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexor-game/flex.git"
+  },
+  "keywords": [
+    "inexor",
+    "user interface"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexor-game/flex/issues"
+  },
+  "homepage": "https://github.com/inexor-game/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {
+  }
+}

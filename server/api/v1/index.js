@@ -14,24 +14,26 @@ const util = require('util');
 const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
+const Connector = require('@inexor-game/connector');
 const context = require('@inexor-game/context');
-const tree = require('@inexor-game/tree');
+const inexor_path = require('@inexor-game/path');
+const interfaces = require('@inexor-game/interfaces');
 const instances = require('@inexor-game/instances');
 const media = require('@inexor-game/media');
-const Connector = require('@inexor-game/connector');
-const inexor_path = require('@inexor-game/path');
+const tree = require('@inexor-game/tree');
 // const configurator = require('@inexor-game/configurator');
-
-var router = express.Router();
-router.use(bodyParser.urlencoded({ extended: true }));
-router.use(bodyParser.json());
 
 // Build the application context and contruct components
 let application_context = new context.ApplicationContext();
+let router = application_context.register('router', express.Router());
+router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.json());
 let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
 let instance_manager = application_context.construct('instance_manager', function() { return new instances.InstanceManager(application_context); });
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 //let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });
+let webUserInterfaceManager = application_context.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(application_context); });
+let clientLayerManager = application_context.construct('clientLayerManager', function() { return new interfaces.ClientLayerManager(application_context); });
 
 // The tree node which contains all instance nodes
 let instances_node = root.getOrCreateNode('instances');
