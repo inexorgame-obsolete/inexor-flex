@@ -223,7 +223,7 @@ class InstanceManager extends EventEmitter {
         this.transist(instance_node, 'running', 'started');
         this.transist(instance_node, 'started', 'stopped');
         if (code != null) {
-          log.info(util.format('%s process exited with code %d', code));
+          log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instance_node), code));
         } else if (signal != null) {
           log.info(util.format('%s process exited with signal %s', this.getInstanceName(instance_node), signal));
         }
