@@ -25,25 +25,25 @@ class Connector extends EventEmitter {
    * @constructor
    * @param {tree.Node} instance_node - the instance node
    */
-  constructor(instance_node) {
+  constructor(instanceNode) {
 
     super();
 
     /** @private */
-    this._instance_node = instance_node;
+    this.instanceNode = instanceNode;
 
     /** @private */
-    // TODO: instance_node.hostname
-    this._hostname = 'localhost';
+    // TODO: instanceNode.hostname
+    this.hostname = 'localhost';
 
     /** @private */
-    this._port = instance_node.port;
+    this.port = instanceNode.port;
 
     /** @private */
     this._client = null;
     
     /** @private */
-    this._protoPath = this.getProtoPath(instance_node.type);
+    this._protoPath = this.getProtoPath(instanceNode.type);
     log.info('Path to the .proto file: %s', this._protoPath);
 
     if (!fs.existsSync(this._protoPath)) {
@@ -64,11 +64,13 @@ class Connector extends EventEmitter {
    * @fires Connector.connected
    */
   connect() {
-    log.info('Connecting to the gRPC server on ' + this._hostname + ':' + this._port);
-    
+    log.info(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
+
+    var self = this;
+
     // Create a GRPC client
     this._client = new this.protoDescriptor.inexor.tree.TreeService(
-      this._hostname + ':' + this._port,
+      this.hostname + ':' + this.port,
       grpc.credentials.createInsecure()
     );
 
@@ -85,60 +87,64 @@ class Connector extends EventEmitter {
         let eventType = this.getEventType(protoKey);
         var dataType = this.getDataType(protoKey);
         var id = this.getId(protoKey);
-        if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
-          if (protoKey != '__numargs' && protoKey != '_shadowmapcasters') {
-            log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
-          }
-          // let node = this._tree.findNode(path);
-          let node = this._instance_node.getRoot().findNode(path);
-
-          // Prevent sync
-          node.set(value, true);
-
-        } else {
-          // TODO: handle other event types like SharedLists and SharedFunctions
-          log.info('[' + eventType + '] id: ' + id + ' protoKey: ' + protoKey);
+        switch (eventType) {
+          case 'TYPE_GLOBAL_VAR_MODIFIED':
+            log.debug(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
+            let node = this.instanceNode.getRoot().findNode(path);
+            // Set value, but prevent sync
+            node.set(value, true);
+            break;
+          case 'TYPE_FUNCTION_EVENT':
+            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+            break;
+          case 'TYPE_FUNCTION_PARAM':
+            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+            break;
+          case 'TYPE_LIST_EVENT_ADDED':
+            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+            break;
+          case 'TYPE_LIST_EVENT_MODIFIED':
+            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+            break;
+          case 'TYPE_LIST_EVENT_REMOVED':
+            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+            break;
+          default:
+            log.warn(util.format('Unknown eventType %s (protoKey %s)', eventType, protoKey));
+            break;
         }
-
-
       } catch (err) {
-        log.error(err, 'Synchronization of ' + protoKey + ' failed');
-        throw new Error('Synchronization of ${protoKey} has failed because of ${err}.')
+        log.error(err, util.format('Incoming synchronization of %s failed!', protoKey));
       }
     });
 
     // The server has finished sending
     this._synchronize.on('end', function() {
-      try {
-        log.info('Synchronize END');
-      } catch (err) {
-        // TODO: handle sync error / don't stop flex here
-        throw new Error('Synchronization has end.')
-      }
+      log.info('Synchronize END');
     });
 
     // We get a status message if the gRPC server disconnects
     this._synchronize.on('status', function(status) {
-      try {
+      if (status.code == 14) {
+        log.info('Endpoint read failed');
+        self.disconnect();
+      } else {
         log.info('Synchronize STATUS\n' + JSON.stringify(status));
-      } catch (err) {
-        debuglog(err);
       }
     });
 
     this._synchronize.on('error', function(err) {
-      try {
-        log.error('Synchronize ERROR\n%s', err);
-      } catch (err) {
-        debuglog(err);
-      }
+      log.error('Synchronize ERROR\n%s', JSON.stringify(err));
+      self.disconnect();
     });
 
-    var self = this;
-    this._instance_node.getRoot().on('add', function(node) {
-      if (node.isChildOf(self._instance_node)) {
+    // TODO: on('connected')
+    // see: https://github.com/grpc/grpc/issues/8117
+
+    this.instanceNode.getRoot().on('add', function(node) {
+      if (node.isChildOf(self.instanceNode)) {
         log.debug('Adding synchronization event of node ' + node.getPath());
-        node.on('sync', function(oldValue, newValue) {
+        let handler = node.on('sync', function(oldValue, newValue) {
           log.debug('Synchronizing node ' + node.getPath());
           try {
             let message = {};
@@ -147,13 +153,11 @@ class Connector extends EventEmitter {
             self._synchronize.write(message);
           } catch (err) {
             log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');
-            // throw new Error('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
           }
         });
       }
     });
 
-    var self = this;
     setTimeout(function() {
 
       // Populate tree from defaults
@@ -161,8 +165,8 @@ class Connector extends EventEmitter {
 
       // Set package dir
       // TODO: improve
-      self._instance_node.package_dir = 'media/core';
-      // self._instance_node.package_dir = inexor_path.media_path;
+      self.instanceNode.package_dir = 'media/core';
+      // self.instanceNode.package_dir = inexor_path.media_path;
 
       // Populate tree with instance values
       // TODO: Populate tree with instance values
@@ -175,17 +179,22 @@ class Connector extends EventEmitter {
 
       // self._synchronize.end();
 
-      // @deprecated
-      // this.initializeTree();
-
       // Finally send an event, that the connection has been established
       // successfully.
       self.emit('connected', {
-        instance_node: self._instance_node
+        'instanceNode': self.instanceNode
       });
 
     }, 2000);
 
+  }
+
+  disconnect() {
+    let instance_id = this.instanceNode.name;
+    log.info('Disconnecting ' + instance_id);
+    this.emit('disconnected', {
+      'instanceNode': this.instanceNode
+    });
   }
 
   /**
@@ -205,7 +214,7 @@ class Connector extends EventEmitter {
           // synchronize = true
           // readOnly = false
           // TODO: Add option "read_only" in proto file!
-          this._instance_node.getRoot().createRecursive(path, dataType, defaultValue, true, false, protoKey);
+          this.instanceNode.getRoot().createRecursive(path, dataType, defaultValue, true, false, protoKey);
           debuglog('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
         } else {
           debuglog('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
@@ -224,18 +233,13 @@ class Connector extends EventEmitter {
    * @function
    */
   sendFinishedTreeIntro() {
-    log.info('Sending finished tree intro signal');
     try {
-      var message = {
-        'general_event': 1
-      };
-      log.info('Sending message: ' + JSON.stringify(message));
-      this._synchronize.write(message);
+      log.debug('Sending FinishedTreeIntroSignal...');
+      this._synchronize.write({ 'general_event': 1 });
+      log.info('Successfully sent finished tree intro signal');
     } catch (err) {
-      debuglog(err);
-      // throw new Error('Synchronization of ' + this.getProtoKey(node._path) + ' failed');
+      log.error(err, 'Failed to send FinishedTreeIntroSignal!');
     }
-    log.info('Finished tree intro signal sent.');
   }
 
   /**
@@ -243,15 +247,14 @@ class Connector extends EventEmitter {
    * path of instance node.
    * 
    * @function
-   * @param {string}
-   *          protoKey
-   * @return {string}
+   * @param {string} protoKey The proto key.
+   * @return {string} The path to the node.
    */
   getPath(protoKey) {
     var subPath = this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(path)'];
     if (typeof subPath != 'undefined') {
       // Prefix with the path of the instance node
-      return this._instance_node.getPath() + subPath;
+      return this.instanceNode.getPath() + subPath;
     } else {
       return '';
     }
@@ -273,8 +276,7 @@ class Connector extends EventEmitter {
    * Returns the default value of the field by proto key.
    * 
    * @function
-   * @param {string}
-   *          protoKey
+   * @param {string} protoKey The proto key.
    * @return {string}
    */
   getDefaultValue(protoKey, dataType = null) {
@@ -302,8 +304,7 @@ class Connector extends EventEmitter {
    * Returns the id of the field by proto key.
    * 
    * @function
-   * @param {string}
-   *          protoKey
+   * @param {string} protoKey The proto key.
    * @return {number}
    */
   getId(protoKey) {
@@ -314,8 +315,7 @@ class Connector extends EventEmitter {
    * Returns the event type of the field by proto key.
    * 
    * @function
-   * @param {string}
-   *          protoKey
+   * @param {string} protoKey The proto key.
    * @return {string}
    */
   getEventType(protoKey) {
@@ -326,11 +326,11 @@ class Connector extends EventEmitter {
    * Returns the path to the proto file by instance type.
    * @function
    * @name Connector.getProtoPath
-   * @param {string} instance_type - The instance type - either client or server.
+   * @param {string} instanceType - The instance type - either client or server.
    * @return {string} the path to the proto file.
    */
-  getProtoPath(instance_type) {
-    switch (instance_type) {
+  getProtoPath(instanceType) {
+    switch (instanceType) {
       case 'client':
       default:
         return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
