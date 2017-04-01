@@ -21,6 +21,7 @@ const toml = require('toml');
 const tomlify = require('tomlify');
 const util = require('util');
 
+const Connector = require('@inexor-game/connector');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 const inexor_log = require('@inexor-game/logger');
@@ -250,12 +251,57 @@ class InstanceManager extends EventEmitter {
    */
   stop(instance_node) {
     return new Promise((resolve, reject) => {
-      log.info(util.format('Stopping instance %s', this.getInstanceName(instance_node)));
-      // SIGTERM
-      instance_node.getChild('process').get().kill();
-      // not needed should happen automatically
-      // this.transist(instance_node, 'stopped', 'started');
-      resolve(instance_node);
+      try {
+        log.info(util.format('Stopping instance %s', this.getInstanceName(instance_node)));
+        // SIGTERM
+        instance_node.getChild('process').get().kill();
+        resolve(instance_node);
+      } catch (err) {
+        reject(util.format('Failed to stop instance %s', this.getInstanceName(instance_node)));
+      }
+    });
+  }
+
+  /**
+   * Connects to an instance.
+   * @function
+   * @param {tree.Node} [instance_node] - The instance to connect to.
+   * @return {Promise<tree.Node>}
+   */
+  connect(instance_node) {
+    return new Promise((resolve, reject) => {
+      try {
+        let connector = new Connector(instance_node);
+        connector.connect();
+        // Store the connector as private child of the instance node
+        instance_node.addChild('connector', 'object', connector, false, true);
+        this.transist(instance_node, 'started', 'running');
+        resolve(instance_node);
+      } catch (err) {
+        log.error(err);
+        reject(util.format('Failed to connect to instance %s', this.getInstanceName(instance_node)));
+      }
+    });
+  }
+
+  /**
+   * Disconnects from an instance.
+   * @function
+   * @param {tree.Node} [instance_node] - The instance to disconnect from.
+   * @return {Promise<tree.Node>}
+   */
+  disconnect(instance_node) {
+    return new Promise((resolve, reject) => {
+      try {
+        let connector = instance_node.connector.get();
+        connector.disconnect();
+        instance_node.removeChild('connector');
+        this.transist(instance_node, 'running', 'started');
+        resolve(instance_node);
+      } catch (err) {
+        log.error(err);
+        reject(util.format('Failed to disconnect from instance %s', this.getInstanceName(instance_node)));
+      }
     });
   }
 
@@ -276,12 +322,12 @@ class InstanceManager extends EventEmitter {
    * Resumes a paused instance.
    * @function
    * @param {tree.Node} instance_node - The instance to stop.
-   * @return {Promise<bool>}
+   * @return {Promise<tree.Node>}
    */
   resume(instance_node) {
     return new Promise((resolve, reject) => {
       this.transist(instance_node, 'paused', 'running');
-      resolve(true);
+      resolve(instance_node);
     });
   }
 

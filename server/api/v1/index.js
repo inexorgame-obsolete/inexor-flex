@@ -14,7 +14,6 @@ const util = require('util');
 const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
-const Connector = require('@inexor-game/connector');
 const context = require('@inexor-game/context');
 const inexor_path = require('@inexor-game/path');
 const interfaces = require('@inexor-game/interfaces');
@@ -147,7 +146,7 @@ router.get('/instances/stop', (req, res)  => {
   }).catch((err) => {
     debuglog(err);
     res.status(500).send(err);
-  })
+  });
 })
 
 // Connects to the instance with :id.
@@ -157,24 +156,30 @@ router.get('/instances/stop', (req, res)  => {
 router.get('/instances/:id/connect', (req, res) => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    let connector = new Connector(instance_node);
-    try {
-      connector.connect();
-      // Store the connector as private child of the instance node
-      instance_node.addChild('connector', 'object', connector, false, true);
-      // res.status(200).json(instance_node);
+    instance_manager.connect(instance_node).then((instance_node) => {
       res.status(200).send({});
-    } catch (err) {
+    }).catch((err) => {
       debuglog(err);
       res.status(500).send(err);
-    }
+    });
   } else {
     res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
   }
 })
 
+// Disconnects from the instance with :id.
 router.get('/instances/:id/disconnect', (req, res) => {
-  // TODO: implement
+  if (instances_node.hasChild(req.params.id)) {
+    let instance_node = instances_node.getChild(req.params.id);
+    instance_manager.disconnect(instance_node).then((instance_node) => {
+      res.status(200).send({});
+    }).catch((err) => {
+      debuglog(err);
+      res.status(500).send(err);
+    });
+  } else {
+    res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
+  }
 })
 
 // Synchronizes an instance with Inexor Core.
