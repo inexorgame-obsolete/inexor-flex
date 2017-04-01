@@ -22,6 +22,5 @@
   },
   "private": true,
   "dependencies": {
-    "grpc": "^1.0.1"
   }
 }
