@@ -1,8 +1,10 @@
 // Configures yargs to use the command directory
-const process = require('process');
-const os = require('os');
 const npid = require('npid');
+const os = require('os');
 const path = require('path');
+const process = require('process');
+const segfaultHandler = require('segfault-handler');
+const util = require('util');
 const argv = require('yargs')
   .commandDir('commands')
   .demandCommand(1)
@@ -44,7 +46,8 @@ var pid = null;
 
 try {
   pid = npid.create(inexor_path.pid_path);
-  pid.removeOnExit(); // This does not sanely work
+  // This does not sanely work
+  pid.removeOnExit();
 } catch (err) {
   log.error(err.message);
   process.exit(1);
@@ -53,35 +56,42 @@ try {
 process.on('SIGHUP', () => {
   switch (os.platform) {
     case 'win32':
-      log.info('Got SIGHUP. Graceful shutdown', new Date().toISOString())
+      // Different behavior on windows: closing a CMD window
+      log.info('Got signal SIGHUP. Graceful shutdown');
       pid.remove();
       process.exit();
       break;
     default:
-      log.info('Got SIGHUP. Graceful reloading the server', new Date().toISOString())
+      log.info('Got signal SIGHUP. Graceful reloading the server');
       require('@inexor-game/plugins').then((router) => {
         app.use('/plugins', router);
-      })
+      });
       break;
   }
 });
 
 process.on('SIGINT', () => {
-  log.info('Got SIGINT. Graceful shutdown', new Date().toISOString())
+  log.info('Got signal SIGINT. Graceful shutdown');
   pid.remove();
   process.exit();
 });
 
 process.on('SIGTERM', () => {
-  log.info('Got SIGTERM. Graceful shutdown', new Date().toISOString())
+  log.info('Got signal SIGTERM. Graceful shutdown');
   pid.remove();
   process.exit();
 });
 
-process.on('exit', (code) => {
-  log.info('Got ' + code + ' and gracefully killed the server.', new Date().toISOString());
+process.on('exit', (code, signal) => {
+  if (code != null) {
+    log.info(util.format('Inexor Flex process exited with exit code %d', code));
+  } else if (signal != null) {
+    log.info(util.format('Inexor Flex process exited with signal %s', signal));
+  }
   pid.remove();
-})
+});
+
+segfaultHandler.registerHandler('crash.log');
 
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;
