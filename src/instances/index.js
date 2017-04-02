@@ -272,11 +272,14 @@ class InstanceManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         let connector = new Connector(instance_node);
-        connector.connect();
         // Store the connector as private child of the instance node
         instance_node.addChild('connector', 'object', connector, false, true);
-        this.transist(instance_node, 'started', 'running');
-        resolve(instance_node);
+        connector.connect().then((instance_node) => {
+          this.transist(instance_node, 'started', 'running');
+          resolve(instance_node);
+        }).catch((err) => {
+          reject(util.format('Failed to connect to instance %s', this.getInstanceName(instance_node)));
+        });
       } catch (err) {
         log.error(err);
         reject(util.format('Failed to connect to instance %s', this.getInstanceName(instance_node)));

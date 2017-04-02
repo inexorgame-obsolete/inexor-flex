@@ -11,10 +11,11 @@ const grpc = require('grpc');
 const util = require('util');
 
 const tree = require('@inexor-game/tree');
+const inexor_log = require('@inexor-game/logger');
 const inexor_path = require('@inexor-game/path');
 
 const debuglog = util.debuglog('connector');
-const log = require('@inexor-game/logger')();
+const log = inexor_log('@inexor-game/flex/Connector');
 
 /**
  * Connects a {@link Root} with a Inexor Core instance
@@ -62,131 +63,136 @@ class Connector extends EventEmitter {
    * Connecting to the gRPC server of Inexor Core.
    * @function
    * @fires Connector.connected
+   * @return {Promise<tree.Node>}
    */
   connect() {
-    log.info(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
-
     var self = this;
+    return new Promise((resolve, reject) => {
+      log.info(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
 
-    // Create a GRPC client
-    this._client = new this.protoDescriptor.inexor.tree.TreeService(
-      this.hostname + ':' + this.port,
-      grpc.credentials.createInsecure()
-    );
+      // Create a GRPC client
+      this._client = new this.protoDescriptor.inexor.tree.TreeService(
+        this.hostname + ':' + this.port,
+        grpc.credentials.createInsecure()
+      );
 
-    // Get the ClientWritableStream
-    // @see http://www.grpc.io/grpc/node/module-src_client-ClientWritableStream.html
-    this._synchronize = this._client.synchronize();
+      // Get the ClientWritableStream
+      // @see http://www.grpc.io/grpc/node/module-src_client-ClientWritableStream.html
+      this._synchronize = this._client.synchronize();
 
-    // Fetching stream data
-    this._synchronize.on('data', (message) => {
-      let protoKey = message.key;
-      try {
-        let value = message[protoKey];
-        let path = this.getPath(protoKey);
-        let eventType = this.getEventType(protoKey);
-        var dataType = this.getDataType(protoKey);
-        var id = this.getId(protoKey);
-        switch (eventType) {
-          case 'TYPE_GLOBAL_VAR_MODIFIED':
-            log.debug(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
-            let node = this.instanceNode.getRoot().findNode(path);
-            // Set value, but prevent sync
-            node.set(value, true);
-            break;
-          case 'TYPE_FUNCTION_EVENT':
-            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-            break;
-          case 'TYPE_FUNCTION_PARAM':
-            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-            break;
-          case 'TYPE_LIST_EVENT_ADDED':
-            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-            break;
-          case 'TYPE_LIST_EVENT_MODIFIED':
-            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-            break;
-          case 'TYPE_LIST_EVENT_REMOVED':
-            log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-            break;
-          default:
-            log.warn(util.format('Unknown eventType %s (protoKey %s)', eventType, protoKey));
-            break;
-        }
-      } catch (err) {
-        log.error(err, util.format('Incoming synchronization of %s failed!', protoKey));
-      }
-    });
-
-    // The server has finished sending
-    this._synchronize.on('end', function() {
-      log.info('Synchronize END');
-    });
-
-    // We get a status message if the gRPC server disconnects
-    this._synchronize.on('status', function(status) {
-      if (status.code == 14) {
-        log.info('Endpoint read failed');
-        self.disconnect();
-      } else {
-        log.info('Synchronize STATUS\n' + JSON.stringify(status));
-      }
-    });
-
-    this._synchronize.on('error', function(err) {
-      log.error('Synchronize ERROR\n%s', JSON.stringify(err));
-      self.disconnect();
-    });
-
-    // TODO: on('connected')
-    // see: https://github.com/grpc/grpc/issues/8117
-
-    this.instanceNode.getRoot().on('add', function(node) {
-      if (node.isChildOf(self.instanceNode)) {
-        log.debug('Adding synchronization event of node ' + node.getPath());
-        let handler = node.on('sync', function(oldValue, newValue) {
-          log.debug('Synchronizing node ' + node.getPath());
-          try {
-            let message = {};
-            message[node._protoKey] = node.get();
-            log.info('Sending message: ' + JSON.stringify(message));
-            self._synchronize.write(message);
-          } catch (err) {
-            log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');
+      // Fetching stream data
+      this._synchronize.on('data', (message) => {
+        let protoKey = message.key;
+        try {
+          let value = message[protoKey];
+          let path = this.getPath(protoKey);
+          let eventType = this.getEventType(protoKey);
+          var dataType = this.getDataType(protoKey);
+          var id = this.getId(protoKey);
+          switch (eventType) {
+            case 'TYPE_GLOBAL_VAR_MODIFIED':
+              log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
+              let node = this.instanceNode.getRoot().findNode(path);
+              // Set value, but prevent sync
+              node.set(value, true);
+              break;
+            case 'TYPE_FUNCTION_EVENT':
+              log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+              break;
+            case 'TYPE_FUNCTION_PARAM':
+              log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+              break;
+            case 'TYPE_LIST_EVENT_ADDED':
+              log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+              break;
+            case 'TYPE_LIST_EVENT_MODIFIED':
+              log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+              break;
+            case 'TYPE_LIST_EVENT_REMOVED':
+              log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+              break;
+            default:
+              log.warn(util.format('Unknown eventType %s (protoKey %s)', eventType, protoKey));
+              break;
           }
-        });
-      }
-    });
-
-    setTimeout(function() {
-
-      // Populate tree from defaults
-      self.populateInstanceTreeFromDefaults();
-
-      // Set package dir
-      // TODO: improve
-      self.instanceNode.package_dir = 'media/core';
-      // self.instanceNode.package_dir = inexor_path.media_path;
-
-      // Populate tree with instance values
-      // TODO: Populate tree with instance values
-
-      // Link tree mounts (like textures)
-      // TODO: Link tree mounts (like textures)
-
-      // Send signal that the tree initialization has been finished
-      self.sendFinishedTreeIntro();
-
-      // self._synchronize.end();
-
-      // Finally send an event, that the connection has been established
-      // successfully.
-      self.emit('connected', {
-        'instanceNode': self.instanceNode
+        } catch (err) {
+          log.error(err, util.format('Incoming synchronization of %s failed!', protoKey));
+        }
       });
 
-    }, 2000);
+      // The server has finished sending
+      this._synchronize.on('end', function() {
+        log.info('Synchronize END');
+      });
 
+      // We get a status message if the gRPC server disconnects
+      this._synchronize.on('status', function(status) {
+        if (status.code == 14) {
+          log.info('Endpoint read failed');
+          self.disconnect();
+        } else {
+          log.info('Synchronize STATUS\n' + JSON.stringify(status));
+        }
+      });
+
+      this._synchronize.on('error', function(err) {
+        log.error('Synchronize ERROR\n%s', JSON.stringify(err));
+        self.disconnect();
+      });
+
+      this.instanceNode.getRoot().on('add', function(node) {
+        if (node.isChildOf(self.instanceNode)) {
+          log.debug('Adding synchronization event of node ' + node.getPath());
+          let handler = node.on('sync', function(oldValue, newValue) {
+            log.debug('Synchronizing node ' + node.getPath());
+            try {
+              let message = {};
+              message[node._protoKey] = node.get();
+              log.info('Sending message: ' + JSON.stringify(message));
+              self._synchronize.write(message);
+            } catch (err) {
+              log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');
+            }
+          });
+        }
+      });
+      
+      // TODO: on('connected')
+      // see: https://github.com/grpc/grpc/issues/8117
+      grpc.waitForClientReady(this._client, Infinity, (err) => {
+        if (err != null) {
+          reject('GRPC connection failed');
+        } else {
+          // Populate tree from defaults
+          self.populateInstanceTreeFromDefaults();
+
+          // Set package dir
+          // TODO: improve
+          self.instanceNode.package_dir = 'media/core';
+          // self.instanceNode.package_dir = inexor_path.media_path;
+
+          // Populate tree with instance values
+          // TODO: Populate tree with instance values
+
+          // Link tree mounts (like textures)
+          // TODO: Link tree mounts (like textures)
+
+          // Send signal that the tree initialization has been finished
+          self.sendFinishedTreeIntro();
+
+          // self._synchronize.end();
+
+          // Finally send an event, that the connection has been established
+          // successfully.
+          self.emit('connected', {
+            'instanceNode': self.instanceNode
+          });
+
+          resolve(self.instanceNode);
+        }
+      });
+
+    });
   }
 
   disconnect() {
