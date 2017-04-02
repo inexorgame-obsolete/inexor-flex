@@ -37,6 +37,8 @@ let clientLayerManager = application_context.construct('clientLayerManager', fun
 // The tree node which contains all instance nodes
 let instances_node = root.getOrCreateNode('instances');
 
+router.use('/interfaces', express.static('interfaces'));
+
 // Lists all available instances
 router.get('/instances', (req, res) => {
   res.status(200).json(instances_node.getChildNames());
