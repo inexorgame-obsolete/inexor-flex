@@ -49,6 +49,7 @@ try {
   // This does not sanely work
   pid.removeOnExit();
 } catch (err) {
+  log.error('Could not create pid file');
   log.error(err.message);
   process.exit(1);
 }
@@ -91,7 +92,22 @@ process.on('exit', (code, signal) => {
   pid.remove();
 });
 
-segfaultHandler.registerHandler('crash.log');
+// We override the default handler since we want our pid file removed in any case.
+process.on('uncaughtException', function(err) {
+  log.error(util.format("%s uncaughtException: %s", (new Date()).toUTCString(), err.message));
+  log.error(err.stack);
+  pid.remove();
+  process.exit(1);
+});
+
+// segfaultHandler is used for handling crashes in native C/C++ node modules.
+segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
+  pid.remove();  // This does not work..
+
+  log.error(util.format("Crash in native module (signal %s, address %s)", signal, address));
+  log.error(stack);
+  process.exit(1);
+});
 
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;
