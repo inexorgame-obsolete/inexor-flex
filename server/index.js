@@ -70,11 +70,10 @@ process.on('SIGHUP', () => {
     case 'win32':
       // Different behavior on windows: closing a CMD window
       log.info('Got signal SIGHUP. Graceful shutdown');
-      pid.remove();
       process.exit();
       break;
     default:
-      log.info('Got signal SIGHUP. Graceful reloading the server');
+      log.info('Got signal SIGHUP. Graceful reloading the server' + os.platform);
       require('@inexor-game/plugins').then((router) => {
         app.use('/plugins', router);
       });
@@ -84,13 +83,11 @@ process.on('SIGHUP', () => {
 
 process.on('SIGINT', () => {
   log.info('Got signal SIGINT. Graceful shutdown');
-  pid.remove();
   process.exit();
 });
 
 process.on('SIGTERM', () => {
   log.info('Got signal SIGTERM. Graceful shutdown');
-  pid.remove();
   process.exit();
 });
 
@@ -100,21 +97,12 @@ process.on('exit', (code, signal) => {
   } else if (signal != null) {
     log.info(util.format('Inexor Flex process exited with signal %s', signal));
   }
-  pid.remove();
-});
-
-// We override the default handler since we want our pid file removed in any case.
-process.on('uncaughtException', function(err) {
-  log.error(util.format("%s uncaughtException: %s", (new Date()).toUTCString(), err.message));
-  log.error(err.stack);
-  pid.remove();
-  process.exit(1);
+  if(!pid.remove())
+      log.error("Exit: Not been able to remove the PID file, remove it manually: " + inexor_path.pid_path);
 });
 
 // segfaultHandler is used for handling crashes in native C/C++ node modules.
 segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
-  pid.remove();  // This does not work..
-
   log.error(util.format("Crash in native module (signal %s, address %s)", signal, address));
   log.error(stack);
   process.exit(1);
