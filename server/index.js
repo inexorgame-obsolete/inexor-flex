@@ -5,6 +5,7 @@ const path = require('path');
 const process = require('process');
 const segfaultHandler = require('segfault-handler');
 const util = require('util');
+const fs = require('fs');
 const argv = require('yargs')
   .commandDir('commands')
   .demandCommand(1)
@@ -45,11 +46,21 @@ app.use((err, req, res, next) => {
 var pid = null;
 
 try {
-  pid = npid.create(inexor_path.pid_path);
-  // This does not sanely work
-  pid.removeOnExit();
+  if(fs.existsSync(inexor_path.pid_path))
+  {
+    var current_pid = new Buffer(process.pid + '\n');
+    var pid_file_contents = fs.readFileSync(inexor_path.pid_path,'utf8');
+    if(current_pid != pid_file_contents)
+    {
+      log.warn('PID file had existed already but no fitting process has been found. Continuing..');
+      log.warn('(old PID: ' + pid_file_contents + 'current PID: ' + current_pid + ')');
+      pid = npid.create(inexor_path.pid_path, true);
+    }
+    else throw new Error('Another instance of Flex is already running.');
+  }
+  else pid = npid.create(inexor_path.pid_path);
 } catch (err) {
-  log.error('Could not create pid file');
+  log.error('Could not create pid file ' + inexor_path.pid_path);
   log.error(err.message);
   process.exit(1);
 }
