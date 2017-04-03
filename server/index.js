@@ -66,7 +66,7 @@ try {
 }
 
 process.on('SIGHUP', () => {
-  switch (os.platform) {
+  switch(os.platform()) {
     case 'win32':
       // Different behavior on windows: closing a CMD window
       log.info('Got signal SIGHUP. Graceful shutdown');
