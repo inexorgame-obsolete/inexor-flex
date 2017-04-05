@@ -659,7 +659,7 @@ class MediaRepositoryManager {
     this.fetchCoreRepository();
 
     // Print scan result
-    log.info(this.repositories_node.toString());
+    log.info(util.format('Repository scan result:\n', this.repositories_node.toJson()));
   }
 
   /**
