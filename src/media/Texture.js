@@ -3,7 +3,10 @@ const path = require('path');
 const git = require("nodegit");
 const util = require('util');
 const tree = require('@inexor-game/tree');
-const log = require('@inexor-game/logger')();
+
+const inexor_log = require('@inexor-game/logger');
+
+const log = inexor_log('@inexor-game/flex/media/texture')
 
 
 /**

@@ -3,9 +3,12 @@ const path = require('path');
 const git = require('nodegit');
 const util = require('util');
 const tree = require('@inexor-game/tree');
-const inexor_path = require('@inexor-game/path');
-const log = require('@inexor-game/logger')();
 const mkdirp = require('mkdirp');
+
+const inexor_path = require('@inexor-game/path');
+const inexor_log = require('@inexor-game/logger');
+
+const log = inexor_log('@inexor-game/flex/media/repository')
 
 /**
  * The media repository types.
@@ -36,32 +39,36 @@ class FilesystemRepositoryManager {
    * @return An array containing the created repository nodes.
    */
   scan(media_path = null) {
-    try {
-      var _media_path = media_path;
-      if (_media_path == null) {
-        _media_path = inexor_path.media_path;
-      }
-      log.info(util.format('Scaning media path %s for FS media repositories', _media_path));
-      var nodes = [];
-      var self = this;
-      this.get_sub_directories(_media_path).forEach(function(repository_name) {
-        var repository_dir = path.join(_media_path, repository_name);
-        if (!self.exists(repository_name)) {
-          try {
-            let node = self.addRepository(repository_name, repository_dir);
-            nodes.push(node);
-            log.info(util.format('Added FS media repository %s: %s', repository_name, repository_dir));
-          } catch (err) {
-            log.warn(err.message);
-          }
-        } else {
-          log.info(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
-        }
-      });
-      return nodes;
-    } catch (err) {
-      log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+    var nodes = [];
+    var _media_path = media_path;
+    if (_media_path == null) {
+      _media_path = inexor_path.media_path;
     }
+    if (fs.existsSync(_media_path)) {
+      try {
+        log.debug(util.format('Scaning media path %s for FS media repositories', _media_path));
+        var self = this;
+        this.get_sub_directories(_media_path).forEach(function(repository_name) {
+          var repository_dir = path.join(_media_path, repository_name);
+          if (!self.exists(repository_name)) {
+            try {
+              let node = self.addRepository(repository_name, repository_dir);
+              nodes.push(node);
+              log.info(util.format('Added FS media repository %s: %s', repository_name, repository_dir));
+            } catch (err) {
+              log.warn(err.message);
+            }
+          } else {
+            log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
+          }
+        });
+      } catch (err) {
+        log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+      }
+    } else {
+      log.debug(util.format('Path does not exist: %s ', _media_path));
+    }
+    return nodes;
   }
 
   /**
@@ -181,32 +188,36 @@ class GitRepositoryManager {
    * @return An array containing the created repository nodes.
    */
   scan(media_path = null) {
-    try {
-      var _media_path = media_path;
-      if (_media_path == null) {
-        _media_path = inexor_path.media_path;
-      }
-      log.info(util.format('Scaning media path %s for GIT media repositories', _media_path));
-      var nodes = [];
-      var self = this;
-      this.get_sub_directories(_media_path).forEach(function(repository_name) {
-        var repository_dir = path.join(_media_path, repository_name);
-        if (!self.exists(repository_name)) {
-          try {
-            let node = self.addRepository(repository_name, repository_dir);
-            nodes.push(node);
-            log.info(util.format('Added GIT media repository %s: %s', repository_name, repository_dir));
-          } catch (err) {
-            log.warn(err.message);
-          }
-        } else {
-          log.info(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
-        }
-      });
-      return nodes;
-    } catch (err) {
-      log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+    var nodes = [];
+    var _media_path = media_path;
+    if (_media_path == null) {
+      _media_path = inexor_path.media_path;
     }
+    if (fs.existsSync(_media_path)) {
+      try {
+        log.debug(util.format('Scaning media path %s for GIT media repositories', _media_path));
+        var self = this;
+        this.get_sub_directories(_media_path).forEach(function(repository_name) {
+          var repository_dir = path.join(_media_path, repository_name);
+          if (!self.exists(repository_name)) {
+            try {
+              let node = self.addRepository(repository_name, repository_dir);
+              nodes.push(node);
+              log.info(util.format('Added GIT media repository %s: %s', repository_name, repository_dir));
+            } catch (err) {
+              log.warn(err.message);
+            }
+          } else {
+            log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
+          }
+        });
+      } catch (err) {
+        log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+      }
+    } else {
+      log.debug(util.format('Path does not exist: %s ', _media_path));
+    }
+    return nodes;
   }
 
   /**
@@ -362,29 +373,29 @@ class GitRepositoryManager {
     } else {
       // git pull
       // TODO: Resolve the repository url first!
-      log.info(util.format('[%s] Updating media repository (url: %s local: %s)', name, repository_node.url, repository_node.path));
+      log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repository_node.url, repository_node.path));
       var repository;
       git.Repository
         .open(repository_path)
         .then(function(repo) {
           repository = repo;
-          log.info(util.format('[%s] Opened media repository', name));
+          log.debug(util.format('[%s] Opened media repository', name));
           return self.getBranches(name, repository);
         })
         .then(function(repository) {
-          log.info(util.format('[%s] Got branches', name));
+          log.debug(util.format('[%s] Got branches', name));
           return self.getCurrentBranch(name, repository);
         })
         .then(function(repository) {
-          log.info(util.format('[%s] Got current branch', name));
+          log.debug(util.format('[%s] Got current branch', name));
           return self.fetchAll(name, repository);
         })
         .then(function(repository) {
-          log.info(util.format('[%s] Fetched changes from remote', name));
+          log.debug(util.format('[%s] Fetched changes from remote', name));
           return self.mergeBranches(name, repository);
         })
         .then(function(repository) {
-          log.info(util.format('[%s] Merged changes into local branch', name));
+          log.debug(util.format('[%s] Merged changes into local branch', name));
           if (branch_name != null) {
             return self.checkoutBranch(name, repository, branch_name);
           } else {
@@ -479,18 +490,18 @@ class GitRepositoryManager {
             return repository
               .checkoutRef(reference)
               .then(function(commit) {
-                log.info("creating local branch");
+                log.debug("creating local branch");
                 return repository
                   .getHeadCommit()
                   .then(function(commit) {
                     return repository
                       .createBranch(branch_name, commit, true)
                       .then(function(reference) {
-                        log.info(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
+                        log.debug(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
                         return repository
                           .checkoutBranch(branch_name)
                           .then(function() {
-                            log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+                            log.debug(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
                             return repository;
                           })
                           .catch(function() {
@@ -532,7 +543,7 @@ class GitRepositoryManager {
           let branch_name = reference.toString().substr(11);
           if (branch_name != '') {
             branch_node = branch_name;
-            log.info(util.format('[%s] Current branch is %s', name, branch_name));
+            log.debug(util.format('[%s] Current branch is %s', name, branch_name));
           } else {
             branch_node = 'master';
             log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
@@ -580,7 +591,7 @@ class GitRepositoryManager {
               } else {
                 branch_node.addChild('local', 'string', reference_name);
               }
-              log.info(util.format('[%s] Found local branch %s', name, branch_name));
+              log.debug(util.format('[%s] Found local branch %s', name, branch_name));
             } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
               // remote branch
               var branch_name = reference_name.substr(20);
@@ -595,7 +606,7 @@ class GitRepositoryManager {
               } else {
                 branch_node.addChild('remote', 'string', reference_name);
               }
-              log.info(util.format('[%s] Found remote branch %s', name, branch_name));
+              log.debug(util.format('[%s] Found remote branch %s', name, branch_name));
             }
           }
           log.debug(branches_node.toString());
