@@ -649,7 +649,7 @@ class MediaRepositoryManager {
     for (var i = 0; i < media_paths.length; i++) {
       paths_node.addChild(String(i), 'string', media_paths[i]);
     }
-    log.info(paths_node.toString());
+    log.info(util.format('Repository paths: %s', paths_node.toJson()));
 
     // Create the manager instances for the repository types
     this.fs = new FilesystemRepositoryManager(this.repositories_node);
@@ -659,7 +659,7 @@ class MediaRepositoryManager {
     this.fetchCoreRepository();
 
     // Print scan result
-    log.info(util.format('Repository scan result:\n', this.repositories_node.toJson()));
+    log.info(util.format('Repository scan result: %s', this.repositories_node.toJson()));
   }
 
   /**
