@@ -1,9 +1,10 @@
-// Configuration for the webserver
-exports.command = 'flex <port> [host] <webdir> [binary]'
-exports.describe = 'Configures the Inexor Flex server'
+// Configuration for the Inexor Flex webserver
+exports.command = 'flex';
+exports.describe = 'Configures the webserver of Inexor Flex';
 
 exports.builder = {
   port: {
+    default: 31416,
     type: 'number',
     describe: 'The server port to use.'
   },
@@ -12,14 +13,25 @@ exports.builder = {
     type: 'string',
     describe: 'The hostname to listen on.'
   },
+  // TODO: make this able to handle multiple user interfaces
   webdir: {
-    default: 'interface/', // will be essential in further versions
+    default: 'interfaces/', // will be essential in further versions
     type: 'string',
-    describe: 'The path to the Inexor user interface.'
+    describe: 'The path to the Inexor user interfaces.'
   },
-  binary: {
+  console: {
+    default: true,
+    type: 'boolean',
+    describe: 'If true, the Inexor Flex webserver logs to console'
+  },
+  file: {
     default: null,
     type: 'string',
-    describe: 'The path to the Inexor Core binary.'
+    describe: 'Sets the log file of the Inexor Flex webserver.'
+  },
+  level: {
+    default: 'info',
+    type: 'string',
+    describe: 'Sets the log level of the Inexor Flex webserver.'
   }
 }

@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "start": "node server/index.js log --port 31416 --webdir assets/",
+    "start": "node server/index.js",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
     "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
