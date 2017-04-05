@@ -458,7 +458,7 @@ class Node extends EventEmitter {
      * @return {string}
      */
     toJson(recursion_limit = -1) {
-      return JSON.stringify(toObject(recursion_limit), null, 2);
+      return JSON.stringify(this.toObject(recursion_limit), null, 2);
     }
 
     /**
