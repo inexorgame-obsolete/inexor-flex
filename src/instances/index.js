@@ -56,14 +56,14 @@ const instance_states = [
  * @constant {array}
  */
 const instance_transitions = [
-  { 'name': 'create',     'old_state': null,      'new_state': 'stopped' },
-  { 'name': 'start',      'old_state': 'stopped', 'new_state': 'started' },
-  { 'name': 'connect',    'old_state': 'started', 'new_state': 'running' },
-  { 'name': 'pause',      'old_state': 'running', 'new_state': 'paused'  },
-  { 'name': 'resume',     'old_state': 'paused',  'new_state': 'running' },
-  { 'name': 'disconnect', 'old_state': 'running', 'new_state': 'started' },
-  { 'name': 'stop',       'old_state': 'started', 'new_state': 'stopped' },
-  { 'name': 'destroy',    'old_state': 'stopped', 'new_state': null      }
+  { 'name': 'create',     'oldState': null,      'newState': 'stopped' },
+  { 'name': 'start',      'oldState': 'stopped', 'newState': 'started' },
+  { 'name': 'connect',    'oldState': 'started', 'newState': 'running' },
+  { 'name': 'pause',      'oldState': 'running', 'newState': 'paused'  },
+  { 'name': 'resume',     'oldState': 'paused',  'newState': 'running' },
+  { 'name': 'disconnect', 'oldState': 'running', 'newState': 'started' },
+  { 'name': 'stop',       'oldState': 'started', 'newState': 'stopped' },
+  { 'name': 'destroy',    'oldState': 'stopped', 'newState': null      }
 ];
 
 /**
@@ -100,8 +100,10 @@ class InstanceManager extends EventEmitter {
 
     var root = application_context.get('tree');
 
+    this.consoleManager = application_context.get('consoleManager');
+
     /** @private */
-    this._instances_node = root.getOrCreateNode('instances');
+    this.instancesNode = root.getOrCreateNode('instances');
 
     // Load instances.toml
     this.loadInstances();
@@ -110,11 +112,11 @@ class InstanceManager extends EventEmitter {
   /**
    * Returns if an instance with the given identifier exists.
    * @function
-   * @param {number} [instance_id] - the instance identifier
+   * @param {number} [instanceId] - the instance identifier
    * @return {boolean} - True, if the instance exists.
    */
-  exists(instance_id) {
-    return this._instances_node.hasChild(instance_id);
+  exists(instanceId) {
+    return this.instancesNode.hasChild(instanceId);
   }
 
   /**
@@ -132,30 +134,30 @@ class InstanceManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       if (identifier == null) {
         reject(new Error('Failed to create instance: No identifier'));
-      } else if (this._instances_node.hasChild(String(identifier))) {
+      } else if (this.instancesNode.hasChild(String(identifier))) {
         reject(new Error('Failed to create instance: Instance already exists'));
       }
 
       // Create the instance sub tree
-      let instance_node = this._instances_node.addNode(String(identifier));
+      let instanceNode = this.instancesNode.addNode(String(identifier));
 
       // Start with state 'stopped'
-      instance_node.addChild('state', 'string', default_instance_state);
+      instanceNode.addChild('state', 'string', default_instance_state);
 
       // The instance type, e.g. 'client', 'server', ...
-      instance_node.addChild('type', 'string', type);
+      instanceNode.addChild('type', 'string', type);
 
       // The name of the instance, e.g. 'Client 1'
-      instance_node.addChild('name', 'string', name);
+      instanceNode.addChild('name', 'string', name);
 
       // The description of the instance, e.g. 'The default client'
-      instance_node.addChild('description', 'string', description);
+      instanceNode.addChild('description', 'string', description);
 
       // The port of the GRPC server
-      instance_node.addChild('port', 'int64', identifier);
+      instanceNode.addChild('port', 'int64', identifier);
 
       // The port of the GRPC server
-      instance_node.addChild('autostart', 'bool', autostart);
+      instanceNode.addChild('autostart', 'bool', autostart);
 
       // Save instances.toml
       if (persistent) {
@@ -163,17 +165,17 @@ class InstanceManager extends EventEmitter {
         this.saveInstances();
       }
 
-      resolve(instance_node);
+      resolve(instanceNode);
     });
   }
 
   /**
    * Removes an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance to start.
+   * @param {tree.Node} [instanceNode] - The instance to start.
    * @return {Promise<instance>}
    */
-  remove(instance_node) {
+  remove(instanceNode) {
     return new Promise((resolve, reject) => {
       // TODO: only if state is
     });
@@ -182,14 +184,14 @@ class InstanceManager extends EventEmitter {
   /**
    * Starts an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance to start.
+   * @param {tree.Node} [instanceNode] - The instance to start.
    * @return {Promise<instance>}
    */
-  start(instance_node) {
-    let instance_id = instance_node.getName();
-    let instance_port = instance_node.port;
-    let instance_type = instance_node.type;
-  	log.info('Starting instance ' + instance_node.name + ' (id: ' + instance_id + ', type: ' + instance_type + ', port: ' + instance_port + ')');
+  start(instanceNode) {
+    let instanceId = instanceNode.getName();
+    let instance_port = instanceNode.port;
+    let instance_type = instanceNode.type;
+  	log.info('Starting instance ' + instanceNode.name + ' (id: ' + instanceId + ', type: ' + instance_type + ', port: ' + instance_port + ')');
   
     return new Promise((resolve, reject) => {
       
@@ -200,7 +202,7 @@ class InstanceManager extends EventEmitter {
       }
 
       // Starting a new process with the instance id as only argument
-      let args = [ instance_id ];
+      let args = [ instanceId ];
       let options = {
         cwd: path.resolve(inexor_path.getBasePath()),
         env: process.env
@@ -208,37 +210,43 @@ class InstanceManager extends EventEmitter {
       log.info(util.format('Starting %s %s', executable_path, args.join(' ')));
       
       // Spawn process
-      let instance_process = spawn(executable_path, args, options);
-      instance_process.stdout.on('data', (data) => { this.mapStreamToLog(instance_node, data) });
-      instance_process.stderr.on('data', (data) => { this.mapStreamToLog(instance_node, data) });
-      instance_process.on('error', (err) => {
-        instance_node.removeChild('process');
-        this.transist(instance_node, 'running', 'started');
-        this.transist(instance_node, 'started', 'stopped');
+      let instanceProcess = spawn(executable_path, args, options);
+      log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
+
+      instanceProcess.on('error', (err) => {
+        instanceNode.removeChild('process');
+        this.transist(instanceNode, 'running', 'started');
+        this.transist(instanceNode, 'started', 'stopped');
         if (err != null) {
-          log.error(util.format('Error in %s: %s', this.getInstanceName(instance_node), err.message));
+          log.error(util.format('Error in %s: %s', this.getInstanceName(instanceNode), err.message));
         }
       });
-      instance_process.on('exit', (code, signal) => {
-        instance_node.removeChild('process');
-        this.transist(instance_node, 'running', 'started');
-        this.transist(instance_node, 'started', 'stopped');
+      instanceProcess.on('exit', (code, signal) => {
+        instanceNode.removeChild('process');
+        this.transist(instanceNode, 'running', 'started');
+        this.transist(instanceNode, 'started', 'stopped');
         if (code != null) {
-          log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instance_node), code));
+          log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instanceNode), code));
         } else if (signal != null) {
-          log.info(util.format('%s process exited with signal %s', this.getInstanceName(instance_node), signal));
+          log.info(util.format('%s process exited with signal %s', this.getInstanceName(instanceNode), signal));
         }
       });
 
-      // Store the PID and the process handle
-      instance_node.addChild('pid', 'int64', instance_process.pid);
-      instance_node.addChild('process', 'object', instance_process);
-      instance_node.addChild('log', 'object', inexor_log(util.format('@inexor-game/core(%s)', instance_id), true, null, 'debug'));
+      // Store the instance PID
+      instanceNode.addChild('pid', 'int64', instanceProcess.pid);
 
-      log.info(util.format('%s process started with PID %d', this.getInstanceName(instance_node), instance_process.pid));
+      // Store the process handle of the instance
+      instanceNode.addChild('process', 'object', instanceProcess);
+      
+      // Create a logger for the instance
+      this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
+        resolve(instanceNode);
+      }).catch((err) => {
+        reject('Failed to create instance console');
+      });
 
-      this.transist(instance_node, 'stopped', 'started');
-      resolve(instance_node);
+      this.transist(instanceNode, 'stopped', 'started');
+      resolve(instanceNode);
 
     });
   }
@@ -246,18 +254,18 @@ class InstanceManager extends EventEmitter {
   /**
    * Stops an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance to stop.
+   * @param {tree.Node} [instanceNode] - The instance to stop.
    * @return {Promise<tree.Node>}
    */
-  stop(instance_node) {
+  stop(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        log.info(util.format('Stopping instance %s', this.getInstanceName(instance_node)));
+        log.info(util.format('Stopping instance %s', this.getInstanceName(instanceNode)));
         // SIGTERM
-        instance_node.getChild('process').get().kill();
-        resolve(instance_node);
+        instanceNode.getChild('process').get().kill();
+        resolve(instanceNode);
       } catch (err) {
-        reject(util.format('Failed to stop instance %s', this.getInstanceName(instance_node)));
+        reject(util.format('Failed to stop instance %s', this.getInstanceName(instanceNode)));
       }
     });
   }
@@ -265,24 +273,24 @@ class InstanceManager extends EventEmitter {
   /**
    * Connects to an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance to connect to.
+   * @param {tree.Node} [instanceNode] - The instance to connect to.
    * @return {Promise<tree.Node>}
    */
-  connect(instance_node) {
+  connect(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        let connector = new Connector(instance_node);
+        let connector = new Connector(instanceNode);
         // Store the connector as private child of the instance node
-        instance_node.addChild('connector', 'object', connector, false, true);
-        connector.connect().then((instance_node) => {
-          this.transist(instance_node, 'started', 'running');
-          resolve(instance_node);
+        instanceNode.addChild('connector', 'object', connector, false, true);
+        connector.connect().then((instanceNode) => {
+          this.transist(instanceNode, 'started', 'running');
+          resolve(instanceNode);
         }).catch((err) => {
-          reject(util.format('Failed to connect to instance %s', this.getInstanceName(instance_node)));
+          reject(util.format('Failed to connect to instance %s', this.getInstanceName(instanceNode)));
         });
       } catch (err) {
         log.error(err);
-        reject(util.format('Failed to connect to instance %s', this.getInstanceName(instance_node)));
+        reject(util.format('Failed to connect to instance %s', this.getInstanceName(instanceNode)));
       }
     });
   }
@@ -290,20 +298,20 @@ class InstanceManager extends EventEmitter {
   /**
    * Disconnects from an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance to disconnect from.
+   * @param {tree.Node} [instanceNode] - The instance to disconnect from.
    * @return {Promise<tree.Node>}
    */
-  disconnect(instance_node) {
+  disconnect(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        let connector = instance_node.connector.get();
+        let connector = instanceNode.connector.get();
         connector.disconnect();
-        instance_node.removeChild('connector');
-        this.transist(instance_node, 'running', 'started');
-        resolve(instance_node);
+        instanceNode.removeChild('connector');
+        this.transist(instanceNode, 'running', 'started');
+        resolve(instanceNode);
       } catch (err) {
         log.error(err);
-        reject(util.format('Failed to disconnect from instance %s', this.getInstanceName(instance_node)));
+        reject(util.format('Failed to disconnect from instance %s', this.getInstanceName(instanceNode)));
       }
     });
   }
@@ -311,26 +319,26 @@ class InstanceManager extends EventEmitter {
   /**
    * Pauses a running instance.
    * @function
-   * @param {tree.Node} instance_node - The instance to stop.
+   * @param {tree.Node} instanceNode - The instance to stop.
    * @return {Promise<tree.Node>}
    */
-  pause(instance_node) {
+  pause(instanceNode) {
     return new Promise((resolve, reject) => {
-      this.transist(instance_node, 'running', 'paused');
-      resolve(instance_node);
+      this.transist(instanceNode, 'running', 'paused');
+      resolve(instanceNode);
     });
   }
 
   /**
    * Resumes a paused instance.
    * @function
-   * @param {tree.Node} instance_node - The instance to stop.
+   * @param {tree.Node} instanceNode - The instance to stop.
    * @return {Promise<tree.Node>}
    */
-  resume(instance_node) {
+  resume(instanceNode) {
     return new Promise((resolve, reject) => {
-      this.transist(instance_node, 'paused', 'running');
-      resolve(instance_node);
+      this.transist(instanceNode, 'paused', 'running');
+      resolve(instanceNode);
     });
   }
 
@@ -341,9 +349,9 @@ class InstanceManager extends EventEmitter {
    */
   startAll() {
     return new Promise((resolve, reject) => {
-      let instance_ids = this._instances_node.getChildNames();
-      instance_ids.forEach(function(instance_id) {
-        this.start(this._instances_node.getChild(instance_id));
+      let instanceIds = this.instancesNode.getChildNames();
+      instanceIds.forEach(function(instanceId) {
+        this.start(this.instancesNode.getChild(instanceId));
       });
       resolve(true);
     });
@@ -356,9 +364,9 @@ class InstanceManager extends EventEmitter {
    */
   stopAll() {
     return new Promise((resolve, reject) => {
-      let instance_ids = this._instances_node.getChildNames();
-      instance_ids.forEach(function(instance_id) {
-        this.stop(this._instances_node.getChild(instance_id));
+      let instanceIds = this.instancesNode.getChildNames();
+      instanceIds.forEach(function(instanceId) {
+        this.stop(this.instancesNode.getChild(instanceId));
       });
       resolve(true);
     });
@@ -380,17 +388,17 @@ class InstanceManager extends EventEmitter {
           reject(util.format('Failed to load instances from %s: %s', config_path, err.message));
         } else {
           let config = toml.parse(data.toString());
-          for (let instance_id of Object.keys(config['instances'])) {
+          for (let instanceId of Object.keys(config['instances'])) {
             this.create(
-              instance_id,
-              config['instances'][instance_id]['type'],
-              config['instances'][instance_id]['name'],
-              config['instances'][instance_id]['description'],
+              instanceId,
+              config['instances'][instanceId]['type'],
+              config['instances'][instanceId]['name'],
+              config['instances'][instanceId]['description'],
               false,
-              config['instances'][instance_id]['autostart']
-            ).then((instance_node) => {
-              if (instance_node.autostart) {
-                this.start(instance_node);
+              config['instances'][instanceId]['autostart']
+            ).then((instanceNode) => {
+              if (instanceNode.autostart) {
+                this.start(instanceNode);
               }
             }).catch((err) => {
             });
@@ -404,25 +412,25 @@ class InstanceManager extends EventEmitter {
   /**
    * Saves an instance to a TOML file.
    * @function
-   * @param {tree.Node} instance_node - The instance to save.
+   * @param {tree.Node} instanceNode - The instance to save.
    * @param {string} [filename] - The filename.
    * @return {Promise<bool>}
    */
   saveInstances(filename = 'instances.toml') {
     return new Promise((resolve, reject) => {
       let config_path = this.getConfigPath(filename);
-      let instance_ids = this._instances_node.getChildNames();
+      let instanceIds = this.instancesNode.getChildNames();
       let config = {
         instances: {}
       };
-      for (var i = 0; i < instance_ids.length; i++) {
-        let instance_id = instance_ids[i];
-        let instance_node = this._instances_node.getChild(instance_id);
-        config['instances'][instance_id] = {
-          'type': instance_node.type,
-          'name': instance_node.name,
-          'description': instance_node.description,
-          'autostart': instance_node.autostart
+      for (var i = 0; i < instanceIds.length; i++) {
+        let instanceId = instanceIds[i];
+        let instanceNode = this.instancesNode.getChild(instanceId);
+        config['instances'][instanceId] = {
+          'type': instanceNode.type,
+          'name': instanceNode.name,
+          'description': instanceNode.description,
+          'autostart': instanceNode.autostart
         };
       }
       var toml = tomlify(config, {delims: false});
@@ -468,33 +476,33 @@ class InstanceManager extends EventEmitter {
   /**
    * Applies a state transition on an instance.
    * @function
-   * @param {tree.Node} [instance_node] - The instance on which the transition should apply.
-   * @param {string} [old_state] - The old state.
-   * @param {string} [new_state] - The new state.
+   * @param {tree.Node} [instanceNode] - The instance on which the transition should apply.
+   * @param {string} [oldState] - The old state.
+   * @param {string} [newState] - The new state.
    * @return {boolean} - True if the given state transition is valid.
    */
-  transist(instance_node, old_state, new_state) {
-    if (instance_states.includes(old_state)) {
-      if (instance_states.includes(new_state)) {
-        if (instance_node.state == old_state) {
-          if (this.isValidTransition(old_state, new_state)) {
-            instance_node.state = new_state;
-            log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instance_node), old_state, new_state));
+  transist(instanceNode, oldState, newState) {
+    if (instance_states.includes(oldState)) {
+      if (instance_states.includes(newState)) {
+        if (instanceNode.state == oldState) {
+          if (this.isValidTransition(oldState, newState)) {
+            instanceNode.state = newState;
+            log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
             return true;
           } else {
-            log.error(util.format('%s ---> %s is not a valid transition', old_state, new_state));
+            log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
             return false;
           }
         } else {
-          log.error(util.format('Source state of %s is not %s', this.getInstanceName(instance_node), old_state));
+          log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
           return false;
         }
       } else {
-        log.error(util.format('%s is not a valid state', old_state));
+        log.error(util.format('%s is not a valid state', oldState));
         return false;
       }
     } else {
-      log.error(util.format('%s is not a valid state', new_state));
+      log.error(util.format('%s is not a valid state', newState));
       return false;
     }
   }
@@ -502,13 +510,13 @@ class InstanceManager extends EventEmitter {
   /**
    * Returns true if the given state transition is valid.
    * @function
-   * @param {string} [old_state] - The old state.
-   * @param {string} [new_state] - The new state.
+   * @param {string} [oldState] - The old state.
+   * @param {string} [newState] - The new state.
    * @return {boolean} - True if the given state transition is valid.
    */
-  isValidTransition(old_state, new_state) {
+  isValidTransition(oldState, newState) {
     for (var i = 0; i < instance_transitions.length; i++) {
-      if (instance_transitions[i].old_state == old_state && instance_transitions[i].new_state == new_state) {
+      if (instance_transitions[i].oldState == oldState && instance_transitions[i].newState == newState) {
         return true;
       }
     }
@@ -522,14 +530,14 @@ class InstanceManager extends EventEmitter {
    * @return {array} - The list of instance ids.
    */
   getInstancesByType(type) {
-    let instance_ids_of_type = [];
-    let instance_ids = this._instances_node.getChildNames();
-    instance_ids.forEach(function(instance_id) {
-      if (this._instances_node.getChild(instance_id).type == type) {
-        instance_ids_of_type.push(instance_id);
+    let instanceIdsOfType = [];
+    let instanceIds = this.instancesNode.getChildNames();
+    instanceIds.forEach(function(instanceId) {
+      if (this.instancesNode.getChild(instanceId).type == type) {
+        instanceIdsOfType.push(instanceId);
       }
     });
-    return instance_ids_of_type;
+    return instanceIdsOfType;
   }
 
   /**
@@ -539,41 +547,18 @@ class InstanceManager extends EventEmitter {
    * @return {array} - The list of instance ids.
    */
   getInstancesByState(state) {
-    let instance_ids_with_state = [];
-    let instance_ids = this._instances_node.getChildNames();
-    instance_ids.forEach(function(instance_id) {
-      if (this._instances_node.getChild(instance_id).state == state) {
-        instance_ids_with_state.push(instance_id);
+    let instanceIdsWithState = [];
+    let instanceIds = this.instancesNode.getChildNames();
+    instanceIds.forEach(function(instanceId) {
+      if (this.instancesNode.getChild(instanceId).state == state) {
+        instanceIdsWithState.push(instanceId);
       }
     });
-    return instance_ids_with_state;
+    return instanceIdsWithState;
   }
 
-  /**
-   * Redirects stdout / stderr streams to logging.
-   * @function
-   * @param {stream} data - The stream data.
-   * @return {Promise<bool>}
-   */
-  mapStreamToLog(instance_node, data) {
-    let log = instance_node.log;
-    for (var line of data.toString('utf8').split("\n")) {
-      if (line.includes('[info]')) {
-        log.info(line);
-      } else if (line.includes('[warning]')) {
-        log.warn(line);
-      } else if (line.includes('[error]')) {
-        log.error(line);
-      } else if (line.includes('[critical]')) {
-        log.fatal(line);
-      } else if (line.includes('[debug]')) {
-        log.debug(line);
-      }
-    }
-  }
-
-  getInstanceName(instance_node) {
-    return util.format('%s instance %s', instance_node.type, instance_node.getName());
+  getInstanceName(instanceNode) {
+    return util.format('%s instance %s', instanceNode.type, instanceNode.getName());
   }
 
 }

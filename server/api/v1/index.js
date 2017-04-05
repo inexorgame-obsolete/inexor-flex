@@ -14,6 +14,7 @@ const util = require('util');
 const debuglog = util.debuglog('api/v1');
 
 // Pull the inexor dependencies
+const console = require('@inexor-game/console');
 const context = require('@inexor-game/context');
 const inexor_path = require('@inexor-game/path');
 const interfaces = require('@inexor-game/interfaces');
@@ -22,12 +23,13 @@ const media = require('@inexor-game/media');
 const tree = require('@inexor-game/tree');
 // const configurator = require('@inexor-game/configurator');
 
-// Build the application context and contruct components
+// Build the application context and construct components
 let application_context = new context.ApplicationContext();
 let router = application_context.register('router', express.Router());
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
+let consoleManager = application_context.construct('consoleManager', function() { return new console.ConsoleManager(application_context); });
 let instance_manager = application_context.construct('instance_manager', function() { return new instances.InstanceManager(application_context); });
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 //let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });

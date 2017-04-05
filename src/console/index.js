@@ -28,54 +28,122 @@ class ConsoleManager extends EventEmitter {
     var root = application_context.get('tree');
 
     /** @private */
-    this._instances_node = root.getOrCreateNode('instances');
+    this.instancesNode = root.getOrCreateNode('instances');
   }
 
   /**
-   * Create a new console for the given instance.
+   * Creates a new console for the given Inexor Core instance.
+   * @function
+   * @param {tree.Node} [instanceNode] The instance tree node.
+   * @param {process} [instanceProcess] The instance process.
+   * @return {Promise<tree.Node>} The console tree node.
    */
-  createConsole(instance_id, maxRecords = 100) {
-    let buffer = new bunyan.RingBuffer({ limit: maxRecords });
-    let stdout_stream = {
-      level: 'info',
-      stream: process.stdout
-    };
-    let buffer_stream = {
-      level: 'trace',
+  createConsole(instanceNode, instanceProcess, maxRecords = 100) {
+    return new Promise((resolve, reject) => {
+      let instanceId = instanceNode.getName();
+      let instanceType = instanceNode.type;
+      
+      // Create ring buffer for the instance console
+      let instanceConsoleBuffer = new bunyan.RingBuffer({ limit: maxRecords });
+      
+      // Create streams for stdout and ring buffer
+      let stdoutStream = {
+        level: 'info',
+        stream: process.stdout
+      };
       // use 'raw' to get raw log record objects
-      type: 'raw',    
-      stream: buffer
-    };
-    let console_name = 'instance-' + instance_id;
-    let instance_logger = bunyan.createLogger({
-      name: console_name,
-      streams: [ stdout_stream, buffer_stream ]
+      let bufferStream = {
+        level: 'trace',
+        type: 'raw',
+        stream: instanceConsoleBuffer
+      };
+      
+      // Create the instance logger
+      let loggerName = util.format('@inexor-game/core/%s/%s', instanceType, instanceId);
+      let instanceLogger = bunyan.createLogger({
+        name: loggerName,
+        streams: [
+          stdoutStream,
+          bufferStream
+        ]
+      });
+
+      // Redirect the instance stdout and stderr to the instance logger
+      instanceProcess.stdout.on('data', (data) => { this.mapStreamToLog(instanceLogger, data) });
+      instanceProcess.stderr.on('data', (data) => { this.mapStreamToLog(instanceLogger, data) });
+
+      // Create a tree node containing the instance logger and the ring buffer
+      let consoleNode = instanceNode.getOrCreateNode('console');
+      consoleNode.addChild('logger', 'object', instanceLogger, false);
+      consoleNode.addChild('buffer', 'object', instanceConsoleBuffer, false);
+
+      resolve(consoleNode);
     });
-    let console_node = this._instances_node.getChild(instance_id).getOrCreateNode('console');
-    console_node.addChild('logger', 'object', instance_logger, false);
-    console_node.addChild('buffer', 'object', buffer, false);
-    
-    // either:
-    // a) read from stdout and stderr => write into buffer
-    // b) add a new datatype to the tree: stream
-    //    stream doesn't store any data
-    //    but Node.set() still fires preSet and postSet events 
-    //    so you can subscribe on the tree node and receive the stream data
-    //    + create a spdlogger sink for streaming to a tree node
   }
 
   /**
    * Returns the logger for the given instance.
    */
-  getInstanceLogger(instance_id) {
-    return this._instances_node.getChild(instance_id).console.logger.get();
+  getInstanceLogger(instanceId) {
+    return this.instancesNode.getChild(instanceId).console.logger.get();
+  }
+
+  /**
+   * Redirects stdout / stderr streams to logging.
+   * @function
+   * @param {stream} data - The stream data.
+   * @return {Promise<bool>}
+   */
+  mapStreamToLog(instanceLogger, data) {
+    // TODO: remove the log level and date from the log message
+    for (var line of data.toString('utf8').split("\n")) {
+      if (line.includes('[trace]')) {
+        instanceLogger.trace(line);
+      } else if (line.includes('[debug]')) {
+        instanceLogger.debug(line);
+      } else if (line.includes('[info]')) {
+        instanceLogger.info(line);
+      } else if (line.includes('[warning]')) {
+        instanceLogger.warn(line);
+      } else if (line.includes('[error]')) {
+        instanceLogger.error(line);
+      } else if (line.includes('[critical]')) {
+        instanceLogger.fatal(line);
+      } else if (line.includes('[debug]')) {
+        instanceLogger.debug(line);
+      }
+    }
   }
 
   /**
    * Writes to the console buffer.
+   * @function
+   * @param {number} instanceId The instance id.
+   * @param {string} message The log message.
+   * @param {string} level The log level.
    */
-  writeBuffer(instance_id, message) {
-    this._instances_node.getChild(instance_id).console.logger.get().info(message);
+  writeBuffer(instanceId, message, level = 'info') {
+    let logger = this.instancesNode.getChild(instanceId).console.logger.get();
+    switch (level) {
+      case 'trace':
+        logger.trace(message);
+        break;
+      case 'debug':
+        logger.debug(message);
+        break;
+      case 'info':
+        logger.info(message);
+        break;
+      case 'warn':
+        logger.warn(message);
+        break;
+      case 'error':
+        logger.error(message);
+        break;
+      case 'fatal':
+        logger.fatal(message);
+        break;
+    }
   }
 
   /**
@@ -88,10 +156,12 @@ class ConsoleManager extends EventEmitter {
    * TODO: create a CLI command which tails on a specific console.
    * TODO: create a simple web app which shows 
    */
-  getBuffer(instance_id) {
-    return this._instances_node.getChild(instance_id).console.buffer.get().records;
+  getBuffer(instanceId) {
+    return this.instancesNode.getChild(instanceId).console.buffer.get().records;
   }
 
 }
 
-module.exports = ConsoleManager
+module.exports = {
+  ConsoleManager: ConsoleManager
+}
