@@ -50,6 +50,9 @@ const argv = require('yargs')
   .epilogue('https://inexor.org/')
   .argv;
 
+// Set process title
+process.title = 'inexor';
+
 // Returns a logger instance
 var log = inexor_logger('@inexor-game/flex/server', argv.console, argv.file, argv.level);
 
@@ -103,6 +106,7 @@ if (!argv.ignorepid) {
 // - on SIGHUP a reload is triggered (excluding win32, which exits)
 // - on SIGINT and SIGTERM the process is killed and the PID file is removed
 // - on exiting, a message is printed about the exit code or signal
+// - we cannot handle SIGKILL, in this case the PID file cannot be removed cleanly
 
 process.on('SIGHUP', () => {
   switch(os.platform()) {
