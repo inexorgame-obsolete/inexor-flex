@@ -42,3 +42,4 @@ jspm_packages
 # Eclipse
 /.project
 /.settings
+/.tern-project
