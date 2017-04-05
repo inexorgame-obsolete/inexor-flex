@@ -41,6 +41,11 @@ const argv = require('yargs')
     type: 'string',
     describe: 'Sets the log level of the Inexor Flex webserver.'
   })
+  .option('ignorepid', {
+    default: false,
+    type: 'boolean',
+    describe: 'Ignores the PID file.'
+  })
   .help()
   .epilogue('https://inexor.org/')
   .argv;
@@ -78,29 +83,34 @@ app.use((err, req, res, next) => {
 
 // Manages startup of Inexor Flex
 // - only a single instance is allowed
-// - on SIGHUP a reload should be triggered (excluding win32)
-// - on SIGINT and SIGTERM process is killed
+// - a PID file is created or the application refuses to start
 
 var pid = null;
-
-try {
-  log.debug(util.format('Trying to create PID file: %s', inexor_path.pid_path));
-  pid = npid.create(inexor_path.pid_path);
-  // We also remove the PID file on SIGHUP, SIGINT and SIGTERM
-  pid.removeOnExit();
-  log.debug(util.format('PID file %s has been created successfully!', inexor_path.pid_path));
-} catch (err) {
-  log.fatal(util.format('Could not create pid file %s: %s', inexor_path.pid_path, err.message));
-  process.exit(1);
+if (!argv.ignorepid) {
+  try {
+    log.debug(util.format('Trying to create PID file: %s', inexor_path.pid_path));
+    pid = npid.create(inexor_path.pid_path);
+    // We also remove the PID file on SIGHUP, SIGINT and SIGTERM
+    pid.removeOnExit();
+    log.debug(util.format('PID file %s has been created successfully!', inexor_path.pid_path));
+  } catch (err) {
+    log.fatal(util.format('Could not create pid file %s: %s', inexor_path.pid_path, err.message));
+    process.exit(1);
+  }
 }
+
+// Exit handlers
+// - on SIGHUP a reload is triggered (excluding win32, which exits)
+// - on SIGINT and SIGTERM the process is killed and the PID file is removed
+// - on exiting, a message is printed about the exit code or signal
 
 process.on('SIGHUP', () => {
   switch(os.platform()) {
     case 'win32':
       // Different behavior on windows: closing a CMD window
       log.info('Got signal SIGHUP. Graceful shutdown');
-      if(!pid.remove()) {
-        log.error("Exit: Not been able to remove the PID file, remove it manually: " + inexor_path.pid_path);
+      if (pid != null && !pid.remove()) {
+        log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
       }
       process.exit();
       break;
@@ -115,16 +125,16 @@ process.on('SIGHUP', () => {
 
 process.on('SIGINT', () => {
   log.info('Got signal SIGINT. Graceful shutdown');
-  if(!pid.remove()) {
-    log.error("Exit: Not been able to remove the PID file, remove it manually: " + inexor_path.pid_path);
+  if (pid != null && !pid.remove()) {
+    log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
   }
   process.exit();
 });
 
 process.on('SIGTERM', () => {
   log.info('Got signal SIGTERM. Graceful shutdown');
-  if(!pid.remove()) {
-    log.error("Exit: Not been able to remove the PID file, remove it manually: " + inexor_path.pid_path);
+  if (pid != null && !pid.remove()) {
+    log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
   }
   process.exit();
 });
@@ -139,10 +149,10 @@ process.on('exit', (code, signal) => {
 
 // segfaultHandler is used for handling crashes in native C/C++ node modules.
 segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
-  log.error(util.format("Crash in native module (signal %s, address %s)", signal, address));
-  log.error(stack);
-  if(!pid.remove()) {
-    log.error("Exit: Not been able to remove the PID file, remove it manually: " + inexor_path.pid_path);
+  log.fatal(util.format("Crash in native module (signal %s, address %s)", signal, address));
+  log.fatal(stack);
+  if (pid != null && !pid.remove()) {
+    log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
   }
   process.exit(1);
 });
@@ -163,7 +173,9 @@ app.use('/api/v1/', api);
 var server = app.listen(argv.port, (err) => {
   if (err) {
     log.error(err, 'Failed to start Inexor Flex');
-    pid.remove();
+    if (pid != null && !pid.remove()) {
+      log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+    }
     process.exit();
   } else {
     log.info('Inexor Flex is listening on ' + argv.port);
