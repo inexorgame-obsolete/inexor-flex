@@ -8,7 +8,9 @@
     "restart": "./inexor flex restart",
     "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js')",
     "docs": "jsdoc -c .jsdoc.json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "dev": "node server/index.js --level=debug",
+    "postinstall": "npm install @inexor-game/api @inexor-game/connector @inexor-game/console @inexor-game/context @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/media @inexor-game/path @inexor-game/plugins @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
   },
   "repository": {
     "type": "git",
