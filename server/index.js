@@ -74,7 +74,7 @@ try {
 
 // Handle logging
 app.use((req, res, next) => {
-  log.info('Called route ' + req.path);
+  log.info(util.format('[%s] %s -- %s (%s)', req.method, req.originalUrl, req.hostname, req.ip));
   next();
 });
 
