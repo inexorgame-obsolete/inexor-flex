@@ -115,6 +115,8 @@ process.on('SIGHUP', () => {
       log.info('Got signal SIGHUP. Graceful shutdown');
       if (pid != null && !pid.remove()) {
         log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+      } else {
+        log.debug(util.format('PID file %s has been removed successfully', inexor_path.pid_path));
       }
       process.exit();
       break;
@@ -131,6 +133,8 @@ process.on('SIGINT', () => {
   log.info('Got signal SIGINT. Graceful shutdown');
   if (pid != null && !pid.remove()) {
     log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+  } else {
+    log.debug(util.format('PID file %s has been removed successfully', inexor_path.pid_path));
   }
   process.exit();
 });
@@ -139,6 +143,8 @@ process.on('SIGTERM', () => {
   log.info('Got signal SIGTERM. Graceful shutdown');
   if (pid != null && !pid.remove()) {
     log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+  } else {
+    log.debug(util.format('PID file %s has been removed successfully', inexor_path.pid_path));
   }
   process.exit();
 });
@@ -157,6 +163,8 @@ segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
   log.fatal(stack);
   if (pid != null && !pid.remove()) {
     log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+  } else {
+    log.debug(util.format('PID file %s has been removed successfully', inexor_path.pid_path));
   }
   process.exit(1);
 });
@@ -179,9 +187,11 @@ var server = app.listen(argv.port, (err) => {
     log.error(err, 'Failed to start Inexor Flex');
     if (pid != null && !pid.remove()) {
       log.error(util.format('Exit: Not been able to remove the PID file, remove it manually: %s', inexor_path.pid_path));
+    } else {
+      log.debug(util.format('PID file %s has been removed successfully', inexor_path.pid_path));
     }
     process.exit();
   } else {
-    log.info('Inexor Flex is listening on ' + argv.port);
+    log.info(util.format('Inexor Flex is listening on http://%s:%s', argv.host, argv.port));
   }
 });
