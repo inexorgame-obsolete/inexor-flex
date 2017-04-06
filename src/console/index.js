@@ -95,8 +95,12 @@ class ConsoleManager extends EventEmitter {
    * @return {Promise<bool>}
    */
   mapStreamToLog(instanceLogger, data) {
-    // TODO: remove the log level and date from the log message
-    for (var line of data.toString('utf8').split("\n")) {
+    // TODO: write a custom sink for spdlog in Inexor Core which produces
+    //       a JSON formatted string, which can be parsed easily here
+    //       for example:
+    //       { "name": "global", "level": "info", "msg": "the log message text", "time": "2016-07-03T16:07:10.754Z" }
+    let lines = data.toString('utf8').split("\n");
+    for (var line of lines) {
       if (line.includes('[trace]')) {
         instanceLogger.trace(line);
       } else if (line.includes('[debug]')) {
@@ -109,7 +113,7 @@ class ConsoleManager extends EventEmitter {
         instanceLogger.error(line);
       } else if (line.includes('[critical]')) {
         instanceLogger.fatal(line);
-      } else if (line.includes('[debug]')) {
+      } else {
         instanceLogger.debug(line);
       }
     }
