@@ -1,8 +1,9 @@
 /**
- * @module api
  * The RESTful API that drives flex.
- * 
  * TODO: swagger documentation, see https://www.npmjs.com/package/swagger-jsdoc
+ * 
+ * @module api
+ * 
  */
 
 const express = require('express');
