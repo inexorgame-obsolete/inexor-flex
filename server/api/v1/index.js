@@ -30,7 +30,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 let root = application_context.construct('tree', function() { return new tree.Root(application_context); });
 let consoleManager = application_context.construct('consoleManager', function() { return new console.ConsoleManager(application_context); });
-let instance_manager = application_context.construct('instance_manager', function() { return new instances.InstanceManager(application_context); });
+let instanceManager = application_context.construct('instanceManager', function() { return new instances.Instances.InstanceManager(application_context); });
 let media_repository_manager = application_context.construct('media_repository_manager', function() { return new media.Repository.MediaRepositoryManager(application_context); });
 //let media_manager = application_context.construct('media_manager', function() { return new media.Media.MediaManager(application_context); });
 let webUserInterfaceManager = application_context.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(application_context); });
@@ -64,7 +64,7 @@ router.get('/instances/:id', (req, res) => {
 // Returns HTTP status code 500 if the instance couldn't be created
 router.post('/instances/:id', (req, res) => {
   if (!instances_node.hasChild(req.params.id)) {
-    instance_manager
+    instanceManager
       .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart)
       .then((instance_node) => {
         res.status(201).json(instance_node.get());
@@ -99,7 +99,7 @@ router.delete('/instances/:id', (req, res) => {
 router.get('/instances/:id/start', (req, res)  => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    instance_manager.start(instance_node).then((instance_node) => {
+    instanceManager.start(instance_node).then((instance_node) => {
       // res.json(instance_node);
       res.status(200).send({});
     }).catch((err) => {
@@ -114,7 +114,7 @@ router.get('/instances/:id/start', (req, res)  => {
 
 // Starts all existing instances.
 router.get('/instances/start', (req, res)  => {
-  instance_manager.startAll().then(() => {
+  instanceManager.startAll().then(() => {
     res.status(200).send({});
   }).catch((err) => {
     debuglog(err);
@@ -129,7 +129,7 @@ router.get('/instances/start', (req, res)  => {
 router.get('/instances/:id/stop', (req, res)  => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    instance_manager.stop(instance_node).then((instance_node) => {
+    instanceManager.stop(instance_node).then((instance_node) => {
       // instance_node.set(instance);
       // instance_node.getParent().getChild('state').set('stopped');
       // res.json(instance);
@@ -145,7 +145,7 @@ router.get('/instances/:id/stop', (req, res)  => {
 
 // Stops all existing instances.
 router.get('/instances/stop', (req, res)  => {
-  instance_manager.stopAll().then(() => {
+  instanceManager.stopAll().then(() => {
     res.status(200).send({});
   }).catch((err) => {
     debuglog(err);
@@ -160,7 +160,7 @@ router.get('/instances/stop', (req, res)  => {
 router.get('/instances/:id/connect', (req, res) => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    instance_manager.connect(instance_node).then((instance_node) => {
+    instanceManager.connect(instance_node).then((instance_node) => {
       res.status(200).send({});
     }).catch((err) => {
       debuglog(err);
@@ -175,7 +175,7 @@ router.get('/instances/:id/connect', (req, res) => {
 router.get('/instances/:id/disconnect', (req, res) => {
   if (instances_node.hasChild(req.params.id)) {
     let instance_node = instances_node.getChild(req.params.id);
-    instance_manager.disconnect(instance_node).then((instance_node) => {
+    instanceManager.disconnect(instance_node).then((instance_node) => {
       res.status(200).send({});
     }).catch((err) => {
       debuglog(err);

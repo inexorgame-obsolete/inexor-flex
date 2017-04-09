@@ -10,7 +10,7 @@
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint .",
     "dev": "node server/index.js --level=debug",
-    "postinstall": "npm install @inexor-game/api @inexor-game/connector @inexor-game/console @inexor-game/context @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/media @inexor-game/path @inexor-game/plugins @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
+    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/media @inexor-game/path @inexor-game/plugins @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
   },
   "repository": {
     "type": "git",
@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@inexor-game/api": "file:server/api",
-    "@inexor-game/connector": "file:src/connector",
     "@inexor-game/console": "file:src/console",
     "@inexor-game/context": "file:src/context",
     "@inexor-game/instances": "file:src/instances",
