@@ -1,6 +1,6 @@
 /**
+ * The Inexor Tree.
  * @module tree
- * Provides generic methods to work trees
  */
 
 const Node = require('./Node');

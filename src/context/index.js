@@ -1,6 +1,6 @@
 /**
+ * The application context.
  * @module context
- * Provides an application context.
  */
 
 class ApplicationContext {

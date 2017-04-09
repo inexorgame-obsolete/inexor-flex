@@ -1,4 +1,5 @@
 /**
+ * Management of consoles.
  * @module console
  */
 

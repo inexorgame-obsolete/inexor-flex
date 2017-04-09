@@ -3,9 +3,9 @@ const debuglog = util.debuglog('types');
 const tree = require('@inexor-game/tree');
 
 /**
- * @module types
  * Converts Core types to JavaScript
- * NOTE: Requires --harmony flag on Node < 7.2.1 
+ * NOTE: Requires --harmony flag on Node < 7.2.1
+ * @module types
  */
 
 /**

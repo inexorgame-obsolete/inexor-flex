@@ -1,4 +1,5 @@
 /**
+ * Management of Inexor Core instances.
  * @module instances
  */
 

@@ -1,6 +1,6 @@
 /**
+ * Management of media repositories and media items.
  * @module media
- * Provides media management functionalities.
  */
 
 const Repository = require('./Repository');
