@@ -77,8 +77,22 @@ class InstancesRestAPI {
   }
 
   /**
-   * Lists information about a given instance.
-   * Returns HTTP status code 404 if there is no instance with the given id.
+   * @swagger
+   * /api/v1/instances/
+   *   get:
+   *     description: Lists information about a given instance.
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: id
+   *         description: The instance id
+   *         required: true
+   *         type: string
+   *     responses:
+   *       200:
+   *         description: The instance node
+   *       404:
+   *         description: No instance with the given id.
    */
   getInstance(req, res) {
     if (this.instancesNode.hasChild(req.params.id)) {
