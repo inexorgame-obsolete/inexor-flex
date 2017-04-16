@@ -1,5 +1,6 @@
 const express = require('express');
 const process = require('process');
+const util = require('util');
 
 const inexor_log = require('@inexor-game/logger');
 const log = inexor_log('@inexor-game/flex/api/v1/instances');
@@ -250,9 +251,9 @@ class InstancesRestAPI {
 
   /**
    * Synchronizes an instance with Inexor Core.
-   * 
+   *
    * TODO: remove (we are synchronizing with events)
-   * 
+   *
    * Returns HTTP status code 200 and the instance object if the synchronization was performed successfully.
    * Returns HTTP status code 404 if there is no instance with the given id.
    * Returns HTTP status code 500 if the synchronization failed.
