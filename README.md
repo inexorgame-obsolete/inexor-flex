@@ -83,10 +83,17 @@ Since those components tightly couple each other, and *must* work in order to st
 
 ## The RESTfull API
 Documentation shall be done via swagger as soon as the `v3 spec` is released, which brings `AnyOf` support.
-In the meantime please have a look at [api/v1](https://github.com/OAI/OpenAPI-Specification/pull/741).The comments should be sufficient.
+Please track the following [pull request](https://github.com/OAI/OpenAPI-Specification/pull/741) for updates.
 
-## Writing plugins
-Have a look at the [plugin documentation](/plugins/README.md).
+## Extending flex - extensions and plugins
+
+You can extend flex by adding either extensions or plugins.
+An extension is basically a [Express router](http://expressjs.com/de/4x/api.html#router) object that you can (un)load at runtime, while
+plugins can generally be considered as customization to the game, such as custom game scripts (...).
+
+### Writing Extensions
+An extension is at it's core just a [express router](http://expressjs.com/de/4x/api.html#router) instance, that you should return via `module.exports`
+Afterwards either add it to the list of extensions in  `server/extensions.json` or use the `extensions API` to (un)load your extension at runtime.
 
 ## Flex won't start, resolving conflicts with the module manager
 If Inexor Flex won't start for strange reasons the most likely reason is that you've worked with a earlier revision in which the dependencies weren't at all ready.
@@ -99,9 +106,10 @@ By that case you'll most likely get the `master` branch running again following 
 # TODO
 Following is still undone:
 
- - [x] complete the [plugin framework](/plugins/index.js)
- - [ ] complete the [TOML configurator](/src/configurator/index.js)
- - [ ] add extensive command line arguments to `./flex` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - [ ] add extensions loading and `API`
+ - [ ] add `TOML/HJSON` readers as `extensions`
+ - [ ] add an example plugin and the new plugin system via Node.js Sandbox
+ - [ ] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
  - [x] fix the documentation
  - [ ] add a task to automagically reinstall modules once they are changed (for development)
  - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)

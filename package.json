@@ -38,7 +38,6 @@
     "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/media": "file:src/media",
     "@inexor-game/path": "file:server/util/path",
-    "@inexor-game/plugins": "file:plugins",
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
     "@inexor-game/types": "file:src/types",

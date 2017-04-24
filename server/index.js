@@ -171,12 +171,6 @@ segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
 
 // Require the router from the rest module
 var api = require('@inexor-game/api').v1;
-// Require the router from the plugins module
-require('@inexor-game/plugins').then((router) => {
-  app.use('/plugins/', router);
-}).catch((err) => {
-  log.error(err);
-});
 
 // Fire in the hole!
 // This is assembled before runtime
