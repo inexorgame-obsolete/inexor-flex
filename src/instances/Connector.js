@@ -42,7 +42,7 @@ class Connector extends EventEmitter {
 
     /** @private */
     this._client = null;
-    
+
     /** @private */
     this._protoPath = this.getProtoPath(instanceNode.type);
     log.info('Path to the .proto file: %s', this._protoPath);
@@ -156,7 +156,7 @@ class Connector extends EventEmitter {
           });
         }
       });
-      
+
       // TODO: on('connected')
       // see: https://github.com/grpc/grpc/issues/8117
       grpc.waitForClientReady(this._client, Infinity, (err) => {
@@ -167,9 +167,7 @@ class Connector extends EventEmitter {
           self.populateInstanceTreeFromDefaults();
 
           // Set package dir
-          // TODO: improve
-          self.instanceNode.package_dir = 'media/core';
-          // self.instanceNode.package_dir = inexor_path.media_path;
+          self.instanceNode.package_dir = inexor_path.media_path;
 
           // Populate tree with instance values
           // TODO: Populate tree with instance values
@@ -235,7 +233,7 @@ class Connector extends EventEmitter {
   /**
    * Sends an event to Inexor Core which signals that the tree initialization
    * has been finished.
-   * 
+   *
    * @function
    */
   sendFinishedTreeIntro() {
@@ -251,7 +249,7 @@ class Connector extends EventEmitter {
   /**
    * Returns the path of the field by proto key. The path is prefixed with the
    * path of instance node.
-   * 
+   *
    * @function
    * @param {string} protoKey The proto key.
    * @return {string} The path to the node.
@@ -268,7 +266,7 @@ class Connector extends EventEmitter {
 
   /**
    * Returns the datatype of the field by proto key.
-   * 
+   *
    * @function
    * @param {string}
    *          protoKey
@@ -280,7 +278,7 @@ class Connector extends EventEmitter {
 
   /**
    * Returns the default value of the field by proto key.
-   * 
+   *
    * @function
    * @param {string} protoKey The proto key.
    * @return {string}
@@ -308,7 +306,7 @@ class Connector extends EventEmitter {
 
   /**
    * Returns the id of the field by proto key.
-   * 
+   *
    * @function
    * @param {string} protoKey The proto key.
    * @return {number}
@@ -319,7 +317,7 @@ class Connector extends EventEmitter {
 
   /**
    * Returns the event type of the field by proto key.
-   * 
+   *
    * @function
    * @param {string} protoKey The proto key.
    * @return {string}

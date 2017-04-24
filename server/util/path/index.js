@@ -62,7 +62,7 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : (xdgBa
  * environment variable MEDIA_PATH (absolute path). If both are not set
  * the fallback is a relative path to the flex directory.
  */
-const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH: (xdgBasedir.data ? path.join(xdgBasedir.data, 'inexor/media') : 'media');
+const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : (xdgBasedir.data ? path.join(xdgBasedir.data, 'inexor/media') : 'media');
 
 /**
  * Returns the base directory of an Inexor installation (which is the parent
@@ -83,12 +83,12 @@ function getBinaryPath() {
 
 /**
  * Returns the path of the executable.
- * 
+ *
  * TODO: use naming scheme for executables: inexor-[instance_type]-[platform][.extension]
  *       examples:
  *       - inexor-client-win32.exe
  *       - inexor-server-linux
- * 
+ *
  * @return {string}
  */
 function getExecutablePath(instance_type) {
