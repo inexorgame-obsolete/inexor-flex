@@ -142,16 +142,25 @@ function getMediaPaths() {
 }
 
 /**
+ * Returns a preference-ordered array of base directories to search for texture
+ * folders in addition to the default media path.
+ * @return {string}
+ */
+function getTexturePaths() {
+  var media_paths = [];
+  for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
+    media_paths.push(path.join(standardPaths.appDataLocation[i], 'media', 'textures'));
+  }
+  return media_paths;
+}
+
+/**
  * Returns a preference-ordered array of base directories to search for
  * configuration files in addition to the default config path.
  * @return {string}
  */
 function getConfigPaths() {
-  var config_paths = [];
-  for (var i = 0; i < standardPaths.appConfigLocation.length; i++) {
-    config_paths.push(standardPaths.appConfigLocation[i], 'inexor');
-  }
-  return config_paths;
+  return standardPaths.appConfigLocation;
 }
 
 /**
@@ -171,6 +180,7 @@ module.exports = {
   getBinaryPath: getBinaryPath,
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
+  getTexturePaths: getTexturePaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
 };
