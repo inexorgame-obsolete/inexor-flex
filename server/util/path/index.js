@@ -6,7 +6,7 @@
 const os = require('os');
 const process = require('process');
 const path = require('path');
-const xdgBasedir = require('xdg-basedir');
+const standardPaths = require('./standardpaths');
 
 /**
  * The path of the flex folder
@@ -45,7 +45,7 @@ if (process.env.BINARY) {
  * The pid file that Inexor Flex uses
  * NOTE: Might be prefixed with /inexor in the future
  */
-const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(os.tmpdir() + '/flex.pid');
+const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(path.join(standardPaths.tempLocation, 'flex.pid'));
 
 /**
  * The config folder of flex
@@ -54,7 +54,7 @@ const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : 
  * the fallback is a relative path to the flex directory.
  * @property {string} config_path
  */
-const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : (xdgBasedir.config ? path.join(xdgBasedir.config, 'inexor') : 'config');
+const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : standardPaths.appConfigLocation[0];
 
 /**
  * The media directory of inexor
@@ -62,7 +62,7 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : (xdgBa
  * environment variable MEDIA_PATH (absolute path). If both are not set
  * the fallback is a relative path to the flex directory.
  */
-const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : (xdgBasedir.data ? path.join(xdgBasedir.data, 'inexor/media') : 'media');
+const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join(standardPaths.appDataLocation[0], 'media');
 
 /**
  * Returns the base directory of an Inexor installation (which is the parent
@@ -135,8 +135,8 @@ function getExecutablePath(instance_type) {
  */
 function getMediaPaths() {
   var media_paths = [];
-  for (var i = 0; i < xdgBasedir.dataDirs.length; i++) {
-    media_paths.push(path.join(xdgBasedir.dataDirs[i], 'inexor/media'));
+  for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
+    media_paths.push(path.join(standardPaths.appDataLocation[i], 'media'));
   }
   return media_paths;
 }
@@ -148,8 +148,8 @@ function getMediaPaths() {
  */
 function getConfigPaths() {
   var config_paths = [];
-  for (var i = 0; i < xdgBasedir.configDirs.length; i++) {
-    config_paths.push(path.join(xdgBasedir.configDirs[i], 'inexor'));
+  for (var i = 0; i < standardPaths.appConfigLocation.length; i++) {
+    config_paths.push(standardPaths.appConfigLocation[i], 'inexor');
   }
   return config_paths;
 }
@@ -161,6 +161,7 @@ function getConfigPaths() {
 const DEFAULT_PORT = 31416;
 
 module.exports = {
+  standardPaths: standardPaths,
   flex_path: flex_path,
   binary_path: binary_path,
   pid_path: pid_path,
@@ -173,3 +174,4 @@ module.exports = {
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
 };
+
