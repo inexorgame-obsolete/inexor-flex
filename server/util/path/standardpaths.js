@@ -6,7 +6,6 @@ const os = require('os');
 const path = require('path');
 const process = require('process');
 const util = require('util');
-const xdgBasedir = require('xdg-basedir');
 const env = process.env;
 
 let homeDir = os.homedir();
