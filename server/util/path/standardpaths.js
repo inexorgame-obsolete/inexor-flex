@@ -7,6 +7,7 @@ const path = require('path');
 const process = require('process');
 const util = require('util');
 const xdgBasedir = require('xdg-basedir');
+const env = process.env;
 
 let homeDir = os.homedir();
 let tmpDir = os.tmpdir();
@@ -18,17 +19,31 @@ if (process.platform == 'win32') {
   appDir = process.cwd()
 }
 
+/**
+ * Returns the XDG location (localized) from the environment variable.
+ * @param envVar The name of the environment variable.
+ * @param defaultValue The default value to use if the environment variable doesn't exist.
+ * @returns The location.-
+ */
+function getXdgLocationFromEnvironmentVariable(envVar, defaultValue) {
+  if (env.hasOwnProperty(envVar)) {
+    return env[envVar].replace('$HOME', homeDir);
+  } else {
+    return defaultValue;
+  }
+}
+
 switch(os.platform()) {
   case 'linux':
     module.exports = {
 
       // Returns the user's desktop directory. This is a generic value. On
       // systems with no concept of a desktop.
-      'desktopLocation': path.join(homeDir, 'Desktop'),
+      'desktopLocation': getXdgLocationFromEnvironmentVariable('XDG_DESKTOP_DIR', path.join(homeDir, 'Desktop')),
 
       // Returns the directory containing user document files. This is a
       // generic value. The returned path is never empty.
-      'documentsLocation': path.join(homeDir, 'Documents'),
+      'documentsLocation': getXdgLocationFromEnvironmentVariable('XDG_DOCUMENTS_DIR', path.join(homeDir, 'Documents')),
 
       // Returns the directory containing user's fonts. This is a generic
       // value. Note that installing fonts may require additional,
@@ -50,17 +65,17 @@ switch(os.platform()) {
       // files. This is a generic value. If no directory specific for
       // music files exists, a sensible fallback for storing user documents
       // is returned.
-      'musicLocation': path.join(homeDir, 'Music'),
+      'musicLocation': getXdgLocationFromEnvironmentVariable('XDG_MUSIC_DIR', path.join(homeDir, 'Music')),
 
       // Returns the directory containing the user's movies and videos. This
       // is a generic value. If no directory specific for movie files exists,
       // a sensible fallback for storing user documents is returned.
-      'moviesLocation': path.join(homeDir, 'Videos'),
+      'moviesLocation': getXdgLocationFromEnvironmentVariable('XDG_VIDEOS_DIR', path.join(homeDir, 'Videos')),
 
       // Returns the directory containing the user's movies and videos. This
       // is a generic value. If no directory specific for movie files exists,
       // a sensible fallback for storing user documents is returned.
-      'picturesLocation': path.join(homeDir, 'Pictures'),
+      'picturesLocation': getXdgLocationFromEnvironmentVariable('XDG_PICTURES_DIR', path.join(homeDir, 'Pictures')),
 
       // Returns a directory where temporary files can be stored. The returned
       // value might be application-specific, shared among other applications
