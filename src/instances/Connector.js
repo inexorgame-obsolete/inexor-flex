@@ -167,7 +167,7 @@ class Connector extends EventEmitter {
           self.populateInstanceTreeFromDefaults();
 
           // Set package dir
-          self.instanceNode.package_dir = inexor_path.media_path;
+          self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
 
           // Populate tree with instance values
           // TODO: Populate tree with instance values
@@ -207,7 +207,7 @@ class Connector extends EventEmitter {
    */
   populateInstanceTreeFromDefaults() {
     log.info('Populating tree');
-    for (let protoKey in this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName) {
+    for (let protoKey in this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName) {
       try {
         var path = this.getPath(protoKey);
         var dataType = this.getDataType(protoKey);
@@ -255,7 +255,7 @@ class Connector extends EventEmitter {
    * @return {string} The path to the node.
    */
   getPath(protoKey) {
-    var subPath = this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(path)'];
+    var subPath = this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(path)'];
     if (typeof subPath != 'undefined') {
       // Prefix with the path of the instance node
       return this.instanceNode.getPath() + subPath;
@@ -273,7 +273,7 @@ class Connector extends EventEmitter {
    * @return {datatype}
    */
   getDataType(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].type.name;
+    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].type.name;
   }
 
   /**
@@ -288,7 +288,7 @@ class Connector extends EventEmitter {
       if (dataType == null) {
         dataType = this.getDataType(protoKey);
       }
-      var defaultValueAsString = this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(default_value)'];
+      var defaultValueAsString = this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(default_value)'];
       switch (dataType) {
         case 'int32':
         case 'int64':
@@ -312,7 +312,7 @@ class Connector extends EventEmitter {
    * @return {number}
    */
   getId(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].id;
+    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].id;
   }
 
   /**
@@ -323,7 +323,7 @@ class Connector extends EventEmitter {
    * @return {string}
    */
   getEventType(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeService.service.children[0].resolvedRequestType._fieldsByName[protoKey].options['(event_type)'];
+    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(event_type)'];
   }
 
   /**
