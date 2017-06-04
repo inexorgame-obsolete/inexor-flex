@@ -1,0 +1,9 @@
+# Please configure your servers and clients here
+
+[interfaces]
+
+[interfaces.ui-console]
+name = "Inexor Web Console"
+description = "The Inexor Web Console is a web interface for the Inexor Flex command line API. Within the game client the Inexor Web Console rendered on a transparent layer in front of the game."
+path = console
+repository = https://github.com/inexor-game/ui-console.git

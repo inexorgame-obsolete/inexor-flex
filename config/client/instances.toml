@@ -1,0 +1,18 @@
+# Please configure your servers and clients here
+
+[instances]
+
+[instances.31414]
+type = "server"
+name = "Default production server"
+description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
+autostart = false
+autorestart = false
+enet_port = 31415
+
+[instances.31417]
+type = "client"
+name = "Default production client"
+description = "Badly Configurated Clients Inc. proudly presents your first Inexor Client"
+autostart = true
+autorestart = true
