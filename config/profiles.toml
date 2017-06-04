@@ -6,19 +6,16 @@
 default = "client"
 
 [profiles.client]
-name = "Default production client"
 description = "Production ready client and optional local server"
 hostname = "localhost"
 port = 31416
 
 [profiles.server]
-name = "Default production server"
 description = "Production ready server"
 hostname = "localhost"
 port = 31416
 
 [profiles.devenv]
-name = "Development environment"
 description = "Local development environment"
 hostname = "localhost"
 port = 31416
