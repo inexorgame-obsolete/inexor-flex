@@ -12,32 +12,41 @@ const inexor_path = require('@inexor-game/path');
 const inexor_logger = require('@inexor-game/logger');
 
 const argv = require('yargs')
-  .option('port', {
-    default: 31416,
-    type: 'number',
-    describe: 'The server port to use.'
-  })
-  .option('host', {
-    default: 'localhost',
+  .option('profile', {
+    default: null,
     type: 'string',
-    describe: 'The hostname to listen on.'
+    describe: 'Sets the profile to use.'
   })
+  .option('hostname', {
+    default: null,
+    type: 'string',
+    describe: 'The hostname to listen on. Overwrites the profile value.'
+  })
+  .option('port', {
+    default: null,
+    type: 'number',
+    describe: 'The server port to use. Overwrites the profile value.'
+  })
+  // TODO: remove and use InterfaceManager
   .option('webdir', {
     // TODO: handle multiple user interfaces
     default: 'interfaces/',
     type: 'string',
     describe: 'The path to the Inexor user interfaces.'
   })
+  // TODO: manage logging by LogManager (uses profiles)
   .option('console', {
     default: true,
     type: 'boolean',
     describe: 'If true, the Inexor Flex webserver logs to console'
   })
+  // TODO: manage logging by LogManager (uses profiles)
   .option('file', {
     default: null,
     type: 'string',
     describe: 'Sets the log file of the Inexor Flex webserver.'
   })
+  // TODO: manage logging by LogManager (uses profiles)
   .option('level', {
     default: 'info',
     type: 'string',
@@ -172,13 +181,20 @@ segfaultHandler.registerHandler('crash.log', function(signal, address, stack) {
 });
 
 // Require the router from the rest module
-var api = require('@inexor-game/api').v1;
+var api = require('@inexor-game/api').v1(argv);
 
 // Fire in the hole!
 // This is assembled before runtime
-app.use('/api/v1/', api);
+app.use('/api/v1/', api.get('router'));
 
-var server = app.listen(argv.port, (err) => {
+let profileManager = api.get('profileManager');
+// profileManager.setCurrentProfile(argv.profile);
+
+let currentProfile = profileManager.getCurrentProfile();
+let hostname = argv.hostname != null ? argv.hostname : currentProfile.hostname;
+let port = argv.port != null ? argv.port : currentProfile.port;
+
+var server = app.listen(port, hostname, (err) => {
   if (err) {
     log.error(err, 'Failed to start Inexor Flex');
     if (pid != null && !pid.remove()) {
@@ -188,6 +204,9 @@ var server = app.listen(argv.port, (err) => {
     }
     process.exit();
   } else {
-    log.info(util.format('Inexor Flex is listening on http://%s:%s', argv.host, argv.port));
+    // The webserver and the service level are ready
+    log.info(util.format('Inexor Flex is listening on http://%s:%s', hostname, port));
+    // Finally load and start the Inexor Core instances
+    api.get('instanceManager').loadInstances();
   }
 });

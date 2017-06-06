@@ -25,7 +25,7 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.tree.set(argv.instance, argv.path, argv.value, argv.nosync, function(data, response) {
     if (response.statusCode == 200) {
       log.info('200');

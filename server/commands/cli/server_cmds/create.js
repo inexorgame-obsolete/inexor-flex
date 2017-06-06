@@ -22,12 +22,17 @@ exports.builder = {
   },
   persistent: {
     type: 'boolean',
-    descibe: 'True, if the instance should be persisted',
+    describe: 'True, if the instance should be persisted',
     default: false
   },
   autostart: {
     type: 'boolean',
-    descibe: 'If the instance should be started automatically on startup',
+    describe: 'If the instance should be started automatically on startup',
+    default: false
+  },
+  autorestart: {
+    type: 'boolean',
+    descibe: 'If the instance should be restarted automatically on startup',
     default: false
   },
   start: {
@@ -39,8 +44,8 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('Creating a server with instance id ' + argv.instance);
-  var client = new TreeClient('localhost', 31416);
-  client.flex.instances.create(argv.instance, 'server', argv.name, argv.description, argv.persistent, argv.autostart, function(data, response) {
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
+  client.flex.instances.create(argv.instance, 'server', argv.name, argv.description, argv.persistent, argv.autostart, argv.autorestart, function(data, response) {
     if (response.statusCode == 201) {
       log.info('Server with instance id ' + argv.instance + ' created');
     } else if (response.statusCode == 409) {

@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
 const git = require('nodegit');
@@ -6,9 +7,6 @@ const tree = require('@inexor-game/tree');
 const mkdirp = require('mkdirp');
 
 const inexor_path = require('@inexor-game/path');
-const inexor_log = require('@inexor-game/logger');
-
-const log = inexor_log('@inexor-game/flex/media/repository')
 
 /**
  * The media repository types.
@@ -19,54 +17,87 @@ const repository_types = [
   'git'
 ];
 
-class FilesystemRepositoryManager {
+class FilesystemRepositoryManager extends EventEmitter {
 
   /**
    * Constructs the FilesystemRepositoryManager.
    * @constructor
-   * @param {string} media_path - The path to a folder which contains the media repositories.
+   * @param {tree.Node} repositoriesNode - The repositories tree node.
    */
-  constructor(repositories_node, media_path = null) {
-    this.repositories_node = repositories_node;
-    this.scanAll();
+  constructor(applicationContext) {
+    super();
+  }
+
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing media
+    this.mediaNode = this.root.getOrCreateNode('media');
+
+    /// Creating a tree node containing the media repositories
+    this.repositoriesNode = this.mediaNode.getOrCreateNode('repositories');
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.media.repository.FilesystemRepositoryManager');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
+
+    /// Scan for filesystem repositories
+    /// this.scanAll();
+
   }
 
   /**
    * Scans the file system for media repositories starting at the base dir.
    * @function
    * @name FilesystemRepositoryManager.scan
-   * @param {string} media_path - The starting point for scanning.
+   * @param {string} mediaPath - The starting point for scanning.
    * @return An array containing the created repository nodes.
    */
-  scan(media_path = null) {
+  scan(mediaPath = null) {
     var nodes = [];
-    var _media_path = media_path;
-    if (_media_path == null) {
-      _media_path = inexor_path.media_path;
+    var _mediaPath = mediaPath;
+    if (_mediaPath == null) {
+      _mediaPath = inexor_path.media_path;
     }
-    if (fs.existsSync(_media_path)) {
+    var self = this;
+    if (fs.existsSync(_mediaPath)) {
       try {
-        log.debug(util.format('Scaning media path %s for FS media repositories', _media_path));
-        var self = this;
-        this.get_sub_directories(_media_path).forEach(function(repository_name) {
-          var repository_dir = path.join(_media_path, repository_name);
-          if (!self.exists(repository_name)) {
+        this.log.debug(util.format('Scaning media path %s for FS media repositories', _mediaPath));
+        let subDirs = this.get_sub_directories(_mediaPath);
+        for (let i = 0; i < subDirs.length; i++) {
+          let repository_name = subDirs[i];
+          var repository_dir = path.join(_mediaPath, repository_name);
+          if (!this.exists(repository_name)) {
             try {
-              let node = self.addRepository(repository_name, repository_dir);
-              nodes.push(node);
-              log.info(util.format('Added FS media repository %s: %s', repository_name, repository_dir));
+              let node = this.addRepository(repository_name, repository_dir);
+              if (node != null) {
+                nodes.push(node);
+                this.log.info(util.format('Added FS media repository %s: %s', repository_name, repository_dir));
+              }
             } catch (err) {
-              log.warn(err.message);
+              this.log.warn(err.message);
             }
           } else {
-            log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
+            this.log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
           }
-        });
+        }
       } catch (err) {
-        log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+        this.log.warn(util.format('Failed to scan media path %s: %s', _mediaPath, err.message));
       }
     } else {
-      log.debug(util.format('Path does not exist: %s ', _media_path));
+      this.log.debug(util.format('Path does not exist: %s ', _mediaPath));
     }
     return nodes;
   }
@@ -78,9 +109,9 @@ class FilesystemRepositoryManager {
    * @name FilesystemRepositoryManager.scanAll
    */
   scanAll() {
-    var media_paths = inexor_path.getMediaPaths();
-    for (var i = 0; i < media_paths.length; i++) {
-      this.scan(media_paths[i]);
+    var mediaPaths = inexor_path.getMediaPaths();
+    for (var i = 0; i < mediaPaths.length; i++) {
+      this.scan(mediaPaths[i]);
     }
   }
 
@@ -91,7 +122,7 @@ class FilesystemRepositoryManager {
    * @return {boolean}
    */
   exists(name) {
-    return this.repositories_node.hasChild(name);
+    return this.repositoriesNode.hasChild(name);
   }
 
   /**
@@ -111,23 +142,24 @@ class FilesystemRepositoryManager {
    * @function
    * @name FilesystemRepositoryManager.addRepository
    * @param {string} name - The name of the media repository
-   * @param {string} repository_path - The absolute path to the base folder of the media repository.
+   * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * @return {Node} The repository node.
    */
-  addRepository(name, repository_path) {
-    if (name != null && repository_path != null) {
+  addRepository(name, repositoryPath) {
+    if (name != null && repositoryPath != null) {
       if (!this.exists(name)) {
-        if (fs.existsSync(repository_path)) {
-          if (!fs.existsSync(path.join(repository_path, '.git'))) {
-            let node = this.repositories_node.addNode(name);
+        if (fs.existsSync(repositoryPath)) {
+          if (!fs.existsSync(path.join(repositoryPath, '.git'))) {
+            let node = this.repositoriesNode.addNode(name);
             node.addChild('type', 'string', 'filesystem');
-            node.addChild('path', 'string', repository_path);
+            node.addChild('path', 'string', repositoryPath);
             return node;
           } else {
-            throw new Error('Can\'t add a repository of type GIT');
+            // Prevent registering a repository of type GIT as a FS repository;
+            return null;
           }
         } else {
-          throw new Error('Directory doesn\'t exist: ' + repository_path);
+          throw new Error('Directory doesn\'t exist: ' + repositoryPath);
         }
       } else {
         throw new Error('A repository with name ' + name + ' already exists!');
@@ -143,20 +175,20 @@ class FilesystemRepositoryManager {
    * @function
    * @name FilesystemRepositoryManager.createRepository
    * @param {string} name - The name of the media repository
-   * @param {string} repository_path - The absolute path to the base folder of the media repository.
+   * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * @return {Node} The repository node.
    */
-  createRepository(name, repository_path) {
-    if (name != null && repository_path != null) {
+  createRepository(name, repositoryPath) {
+    if (name != null && repositoryPath != null) {
       if (!this.exists(name)) {
-        if (!fs.existsSync(repository_path)) {
-          let node = this.repositories_node.addNode(name);
+        if (!fs.existsSync(repositoryPath)) {
+          let node = this.repositoriesNode.addNode(name);
           node.addChild('type', 'string', 'filesystem');
-          node.addChild('path', 'string', repository_path);
-          fs.mkdirSync(repository_path);
+          node.addChild('path', 'string', repositoryPath);
+          fs.mkdirSync(repositoryPath);
           return node;
         } else {
-          throw new Error('The given path already exists: ' + repository_path);
+          throw new Error('The given path already exists: ' + repositoryPath);
         }
       } else {
         throw new Error('A repository with name ' + name + ' already exists!');
@@ -168,54 +200,84 @@ class FilesystemRepositoryManager {
 
 }
 
-class GitRepositoryManager {
+class GitRepositoryManager extends EventEmitter {
 
   /**
-   * Constructs the GitRepositoryManager.
+   * Constructs the FilesystemRepositoryManager.
    * @constructor
-   * @param {Node} repositories_node - The node which contains the repositories.
+   * @param {tree.Node} repositoriesNode - The repositories tree node.
    */
-  constructor(repositories_node) {
-    this.repositories_node = repositories_node;
-    this.scanAll();
+  constructor(applicationContext) {
+    super();
+  }
+
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing media
+    this.mediaNode = this.root.getOrCreateNode('media');
+
+    /// Creating a tree node containing the media repositories
+    this.repositoriesNode = this.mediaNode.getOrCreateNode('repositories');
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.media.repository.GitRepositoryManager');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
+
+    /// Scan for filesystem repositories
+    /// this.scanAll();
+
   }
 
   /**
    * Scans the file system for media repositories starting at the base dir.
    * @function
    * @name GitRepositoryManager.scan
-   * @param {string} media_path - The starting point for scanning.
+   * @param {string} mediaPath - The starting point for scanning.
    * @return An array containing the created repository nodes.
    */
-  scan(media_path = null) {
+  scan(mediaPath = null) {
     var nodes = [];
-    var _media_path = media_path;
-    if (_media_path == null) {
-      _media_path = inexor_path.media_path;
+    var _mediaPath = mediaPath;
+    if (_mediaPath == null) {
+      _mediaPath = inexor_path.media_path;
     }
-    if (fs.existsSync(_media_path)) {
+    if (fs.existsSync(_mediaPath)) {
       try {
-        log.debug(util.format('Scaning media path %s for GIT media repositories', _media_path));
-        var self = this;
-        this.get_sub_directories(_media_path).forEach(function(repository_name) {
-          var repository_dir = path.join(_media_path, repository_name);
-          if (!self.exists(repository_name)) {
+        this.log.debug(util.format('Scaning media path %s for GIT media repositories', _mediaPath));
+        let subDirs = this.get_sub_directories(_mediaPath);
+        for (let i = 0; i < subDirs.length; i++) {
+          let repository_name = subDirs[i];
+          var repository_dir = path.join(_mediaPath, repository_name);
+          if (!this.exists(repository_name)) {
             try {
-              let node = self.addRepository(repository_name, repository_dir);
+              let node = this.addRepository(repository_name, repository_dir);
               nodes.push(node);
-              log.info(util.format('Added GIT media repository %s: %s', repository_name, repository_dir));
+              this.log.info(util.format('Added GIT media repository %s: %s', repository_name, repository_dir));
             } catch (err) {
-              log.warn(err.message);
+              this.log.warn(err.message);
             }
           } else {
-            log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
+            this.log.debug(util.format('Skipping known media repository %s: %s', repository_name, repository_dir));
           }
-        });
+        }
       } catch (err) {
-        log.warn(util.format('Failed to scan media path %s: %s', _media_path, err.message));
+        this.log.warn(util.format('Failed to scan media path %s: %s', _mediaPath, err.message));
       }
     } else {
-      log.debug(util.format('Path does not exist: %s ', _media_path));
+      this.log.debug(util.format('Path does not exist: %s ', _mediaPath));
     }
     return nodes;
   }
@@ -227,9 +289,9 @@ class GitRepositoryManager {
    * @name GitRepositoryManager.scanAll
    */
   scanAll() {
-    var media_paths = inexor_path.getMediaPaths();
-    for (var i = 0; i < media_paths.length; i++) {
-      this.scan(media_paths[i]);
+    var mediaPaths = inexor_path.getMediaPaths();
+    for (var i = 0; i < mediaPaths.length; i++) {
+      this.scan(mediaPaths[i]);
     }
   }
 
@@ -240,7 +302,7 @@ class GitRepositoryManager {
    * @return {boolean}
    */
   exists(name) {
-    return this.repositories_node.hasChild(name);
+    return this.repositoriesNode.hasChild(name);
   }
 
   /**
@@ -259,18 +321,18 @@ class GitRepositoryManager {
    * @function
    * @name GitRepositoryManager.addRepository
    * @param {string} name - The name of the media repository
-   * @param {string} repository_path - The absolute path to the base folder of the media repository.
+   * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * --------- @param {string} url - The url of the remote GIT repository. ---------
    * @return {Node} The repository node.
    */
-  addRepository(name, repository_path /*, url */) {
-    if (name != null && repository_path != null) {
+  addRepository(name, repositoryPath /*, url */) {
+    if (name != null && repositoryPath != null) {
       if (!this.exists(name)) {
-        if (fs.existsSync(repository_path)) {
-          if (this.isGitRepository(repository_path)) {
-            let node = this.repositories_node.addNode(name);
+        if (fs.existsSync(repositoryPath)) {
+          if (this.isGitRepository(repositoryPath)) {
+            let node = this.repositoriesNode.addNode(name);
             node.addChild('type', 'string', 'git');
-            node.addChild('path', 'string', repository_path);
+            node.addChild('path', 'string', repositoryPath);
             node.addChild('url', 'string', '');
             node.addChild('branch', 'string', 'master');
             node.addNode('branches');
@@ -281,7 +343,7 @@ class GitRepositoryManager {
             throw new Error('The repository is not of type GIT');
           }
         } else {
-          throw new Error('Directory doesn\'t exist: ' + repository_path);
+          throw new Error('Directory doesn\'t exist: ' + repositoryPath);
         }
       } else {
         throw new Error('A repository with name ' + name + ' already exists!');
@@ -295,11 +357,11 @@ class GitRepositoryManager {
    * Returns true, if the media repository is a git repository.
    * @function
    * @name GitRepositoryManager.isGitRepository
-   * @param {string} repository_path - The absolute path to the base folder of the media repository.
+   * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * @return {boolean} The repository node.
    */
-  isGitRepository(repository_path) {
-    return fs.existsSync(path.join(repository_path, '.git'))
+  isGitRepository(repositoryPath) {
+    return fs.existsSync(path.join(repositoryPath, '.git'))
   }
 
   /**
@@ -307,19 +369,19 @@ class GitRepositoryManager {
    * @function
    * @name GitRepositoryManager.createRepository
    * @param {string} name - The name of the media repository
-   * @param {string} repository_path - The absolute path to the base folder of the media repository.
+   * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * @param {string} url - The url of the remote GIT repository.
    * @return {Node} The repository node.
    */
-  createRepository(name, repository_path, url) {
-    if (name != null && repository_path != null) {
+  createRepository(name, repositoryPath, url) {
+    if (name != null && repositoryPath != null) {
       if (!this.exists(name)) {
-        if (!fs.existsSync(repository_path)) {
-          let node = this.repositories_node.addNode(name);
+        if (!fs.existsSync(repositoryPath)) {
+          let node = this.repositoriesNode.addNode(name);
           // TODO: use the javascript getter/setter magic!
           // node.type = 'git';
           node.addChild('type', 'string', 'git');
-          node.addChild('path', 'string', repository_path);
+          node.addChild('path', 'string', repositoryPath);
           node.addChild('url', 'string', url);
           node.addChild('branch', 'string', 'master');
           node.addNode('branches');
@@ -327,7 +389,7 @@ class GitRepositoryManager {
           this.update(name, null, true);
           return node;
         } else {
-          throw new Error('Directory already exist: ' + repository_path);
+          throw new Error('Directory already exist: ' + repositoryPath);
         }
       } else {
         throw new Error('A repository with name ' + name + ' already exists!');
@@ -346,14 +408,15 @@ class GitRepositoryManager {
    * @param {boolean} clone - If true, the repository will be cloned.
    */
   update(name, branch_name = null, clone = false) {
-    let repository_node = this.repositories_node.getChild(name);
-    let repository_path = this.repositories_node.getChild(name).path;
+    let repositoryNode = this.repositoriesNode.getChild(name);
+    let repositoryPath = this.repositoriesNode.getChild(name).path;
     var self = this;
     if (clone) {
       // git clone
-      log.info(util.format('Cloning media repository %s from %s to local path %s', name, repository_node.url, repository_node.path));
+      this.log.info(util.format('Cloning media repository %s from %s to local path %s', name, repositoryNode.url, repositoryNode.path));
+      var self = this;
       var repository;
-      git.Clone(repository_node.url, repository_node.path, {
+      git.Clone(repositoryNode.url, repositoryNode.path, {
         fetchOpts: {
           callbacks: {
             certificateCheck: function() {
@@ -363,39 +426,40 @@ class GitRepositoryManager {
         }
       }).then(function(repo) {
         repository = repo;
-        log.info(util.format('Successfully cloned media repository %s', name));
+        self.log.info(util.format('Successfully cloned media repository %s', name));
         return self.getBranches(name, repository);
       }).then(function(repository) {
         return self.getCurrentBranch(name, repository);
       }).catch(function(err) {
-        log.error(err);
+        self.log.error(err);
       });
     } else {
       // git pull
       // TODO: Resolve the repository url first!
-      log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repository_node.url, repository_node.path));
+      this.log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repositoryNode.url, repositoryNode.path));
+      var self = this;
       var repository;
       git.Repository
-        .open(repository_path)
+        .open(repositoryPath)
         .then(function(repo) {
           repository = repo;
-          log.debug(util.format('[%s] Opened media repository', name));
+          self.log.debug(util.format('[%s] Opened media repository', name));
           return self.getBranches(name, repository);
         })
         .then(function(repository) {
-          log.debug(util.format('[%s] Got branches', name));
+          self.log.debug(util.format('[%s] Got branches', name));
           return self.getCurrentBranch(name, repository);
         })
         .then(function(repository) {
-          log.debug(util.format('[%s] Got current branch', name));
+          self.log.debug(util.format('[%s] Got current branch', name));
           return self.fetchAll(name, repository);
         })
         .then(function(repository) {
-          log.debug(util.format('[%s] Fetched changes from remote', name));
+          self.log.debug(util.format('[%s] Fetched changes from remote', name));
           return self.mergeBranches(name, repository);
         })
         .then(function(repository) {
-          log.debug(util.format('[%s] Merged changes into local branch', name));
+          self.log.debug(util.format('[%s] Merged changes into local branch', name));
           if (branch_name != null) {
             return self.checkoutBranch(name, repository, branch_name);
           } else {
@@ -403,7 +467,7 @@ class GitRepositoryManager {
           }
         })
         .done(function() {
-          log.info(util.format('[%s] Successfully updated media repository', name));
+          self.log.info(util.format('[%s] Successfully updated media repository', name));
         });
     }
   }
@@ -416,7 +480,8 @@ class GitRepositoryManager {
    * @param {Repository} repository - The git repository.
    */
   fetchAll(name, repository) {
-    log.debug(util.format('[%s] Fetching new data from remote', name));
+    this.log.debug(util.format('[%s] Fetching new data from remote', name));
+    var self = this;
     return repository
       .fetchAll({
         callbacks: {
@@ -426,7 +491,7 @@ class GitRepositoryManager {
         }
       })
       .then(function() {
-        log.debug(util.format('[%s] Successfully fetched data', name));
+        self.log.debug(util.format('[%s] Successfully fetched data', name));
         return repository;
       })
       .catch(function() {
@@ -442,17 +507,18 @@ class GitRepositoryManager {
    * @param {Repository} repository - The git repository.
    */
   mergeBranches(name, repository) {
-    let branch_node = this.repositories_node.getChild(name).branch;
-    let branches_node = this.repositories_node.getChild(name).branches;
-    let local_branch = branches_node.getChild(branch_node).local;
+    let branchNode = this.repositoriesNode.getChild(name).branch;
+    let branchesNode = this.repositoriesNode.getChild(name).branches;
+    let local_branch = branchesNode.getChild(branchNode).local;
     let local = local_branch.substr(11);
-    let remote_branch = branches_node.getChild(branch_node).remote;
+    let remote_branch = branchesNode.getChild(branchNode).remote;
     let remote = remote_branch.substr(13);
-    log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remote, local));
+    this.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remote, local));
+    var self = this;
     return repository
       .mergeBranches(local, remote)
       .then(function() {
-        log.debug(util.format('[%s] Successfully merged new data', name));
+        self.log.debug(util.format('[%s] Successfully merged new data', name));
         return repository;
       })
       .catch(function() {
@@ -469,7 +535,8 @@ class GitRepositoryManager {
    * @param {string} branch_name - If true, the repository will be cloned.
    */
   checkoutBranch(name, repository, branch_name) {
-    let branch_node = this.repositories_node.getChild(name).branch;
+    let branchNode = this.repositoriesNode.getChild(name).branch;
+    var self = this;
     return repository
       .getBranch('refs/remotes/origin/' + branch_name)
       .then(function(reference) {
@@ -477,31 +544,31 @@ class GitRepositoryManager {
         if (branch_name == '') {
           branch_name = 'master';
         }
-        log.info(util.format('[%s] Checking out branch %s (%s)', name, branch_name, reference.toString()));
-        branch_node = branch_name;
+        self.log.info(util.format('[%s] Checking out branch %s (%s)', name, branch_name, reference.toString()));
+        branchNode = branch_name;
         return repository
           .checkoutBranch(branch_name)
           .then(function() {
-            log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+            this.log.info(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
             return repository;
           })
           .catch(function(err) {
-            log.info(err);
+            self.log.info(err);
             return repository
               .checkoutRef(reference)
               .then(function(commit) {
-                log.debug("creating local branch");
+                self.log.debug("creating local branch");
                 return repository
                   .getHeadCommit()
                   .then(function(commit) {
                     return repository
                       .createBranch(branch_name, commit, true)
                       .then(function(reference) {
-                        log.debug(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
+                        self.log.debug(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
                         return repository
                           .checkoutBranch(branch_name)
                           .then(function() {
-                            log.debug(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+                            self.log.debug(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
                             return repository;
                           })
                           .catch(function() {
@@ -535,28 +602,29 @@ class GitRepositoryManager {
    */
   getCurrentBranch(name, repository) {
     // TODO: update branch node
-    let branch_node = this.repositories_node.getChild(name).branch;
+    let branchNode = this.repositoriesNode.getChild(name).branch;
+    var self = this;
     return repository
       .getCurrentBranch()
       .then(function(reference) {
         try {
           let branch_name = reference.toString().substr(11);
           if (branch_name != '') {
-            branch_node = branch_name;
-            log.debug(util.format('[%s] Current branch is %s', name, branch_name));
+            branchNode = branch_name;
+            self.log.debug(util.format('[%s] Current branch is %s', name, branch_name));
           } else {
-            branch_node = 'master';
-            log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
+            branchNode = 'master';
+            self.log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
           }
         } catch (err) {
-          branch_node = 'master';
-          log.error(util.format('[%s] Failed to get current branch', name));
+          branchNode = 'master';
+          self.log.error(util.format('[%s] Failed to get current branch', name));
         }
         return repository;
       })
       .catch(function(reference) {
-        log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
-        branch_node = 'master';
+        self.log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
+        branchNode = 'master';
         return repository;
       });
   }
@@ -569,8 +637,9 @@ class GitRepositoryManager {
    * @param {Repository} repository - The git repository.
    */
   getBranches(name, repository) {
-    let repository_node = this.repositories_node.getChild(name);
-    let branches_node = this.repositories_node.getChild(name).branches;
+    let repositoryNode = this.repositoriesNode.getChild(name);
+    let branchesNode = this.repositoriesNode.getChild(name).branches;
+    var self = this;
     return repository
       .getReferenceNames(git.Reference.TYPE.LISTALL)
       .then(function(reference_names) {
@@ -580,38 +649,38 @@ class GitRepositoryManager {
             if (reference_name.substr(0, 11) == 'refs/heads/') {
               // local branch
               var branch_name = reference_name.substr(11);
-              var branch_node;
-              if (branches_node.hasChild(branch_name)) {
-                branch_node = branches_node.getChild(branch_name);
+              var branchNode;
+              if (branchesNode.hasChild(branch_name)) {
+                branchNode = branchesNode.getChild(branch_name);
               } else {
-                branch_node = branches_node.addNode(branch_name);
+                branchNode = branchesNode.addNode(branch_name);
               }
-              if (branch_node.hasChild('local')) {
-                branch_node.getChild('local').set(reference_name);
+              if (branchNode.hasChild('local')) {
+                branchNode.getChild('local').set(reference_name);
               } else {
-                branch_node.addChild('local', 'string', reference_name);
+                branchNode.addChild('local', 'string', reference_name);
               }
-              log.debug(util.format('[%s] Found local branch %s', name, branch_name));
+              self.log.debug(util.format('[%s] Found local branch %s', name, branch_name));
             } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
               // remote branch
               var branch_name = reference_name.substr(20);
-              var branch_node;
-              if (branches_node.hasChild(branch_name)) {
-                branch_node = branches_node.getChild(branch_name);
+              var branchNode;
+              if (branchesNode.hasChild(branch_name)) {
+                branchNode = branchesNode.getChild(branch_name);
               } else {
-                branch_node = branches_node.addNode(branch_name);
+                branchNode = branchesNode.addNode(branch_name);
               }
-              if (branch_node.hasChild('remote')) {
-                branch_node.getChild('remote').set(reference_name);
+              if (branchNode.hasChild('remote')) {
+                branchNode.getChild('remote').set(reference_name);
               } else {
-                branch_node.addChild('remote', 'string', reference_name);
+                branchNode.addChild('remote', 'string', reference_name);
               }
-              log.debug(util.format('[%s] Found remote branch %s', name, branch_name));
+              self.log.debug(util.format('[%s] Found remote branch %s', name, branch_name));
             }
           }
-          log.debug(branches_node.toString());
+          self.log.debug(branchesNode.toString());
         } catch (err) {
-          log.error(util.format('[%s] Failed to get available branches', name));
+          self.log.error(util.format('[%s] Failed to get available branches: %s', name, err));
         }
         return repository;
       })
@@ -626,7 +695,7 @@ class GitRepositoryManager {
  * The MediaRepositoryManager manages the media repositories. The repositories
  * can be repositories in the local file system or public remote repositories.
  */
-class MediaRepositoryManager {
+class MediaRepositoryManager extends EventEmitter {
 
   /**
    * Constructs the MediaRepositoryManager.
@@ -634,32 +703,62 @@ class MediaRepositoryManager {
    * @param {ApplicationContext} application_context - The application context.
    */
   constructor(application_context) {
-    
-    // Create the basic structure in the Inexor Tree
-    var root = application_context.get('tree');
-    var media_node = root.getOrCreateNode('media');
-    this.repositories_node = media_node.getOrCreateNode('repositories');
+    super();
+  }
 
-    // Ensure that the default media path exists
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The file system repository manager
+    this.filesystemRepositoryManager = this.applicationContext.get('filesystemRepositoryManager');
+
+    /// The file system repository manager
+    this.gitRepositoryManager = this.applicationContext.get('gitRepositoryManager');
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing media
+    this.mediaNode = this.root.getOrCreateNode('media');
+
+    /// Creating a tree node containing the media repositories
+    this.repositoriesNode = this.mediaNode.getOrCreateNode('repositories');
+
+    /// Ensure that the default media path exists
     mkdirp.sync(inexor_path.media_path);
 
-    // Publish the media paths on the Inexor Tree
-    var paths_node = media_node.getOrCreateNode('paths');
-    var media_paths = inexor_path.getMediaPaths();
-    for (var i = 0; i < media_paths.length; i++) {
-      paths_node.addChild(String(i), 'string', media_paths[i]);
+    /// Publish the media paths on the Inexor Tree
+    this.pathsNode = this.mediaNode.getOrCreateNode('paths');
+    let mediaPaths = inexor_path.getMediaPaths();
+    for (let i = 0; i < mediaPaths.length; i++) {
+      this.pathsNode.addChild(String(i), 'string', mediaPaths[i]);
     }
-    log.info(util.format('Repository paths: %s', paths_node.toJson()));
 
-    // Create the manager instances for the repository types
-    this.fs = new FilesystemRepositoryManager(this.repositories_node);
-    this.git = new GitRepositoryManager(this.repositories_node);
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.media.repository.MediaRepositoryManager');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
+
+    /// Print the repository paths
+    this.log.info(util.format('Repository paths: %s', this.pathsNode.toJson()));
+
+    /// Scan all media paths
+    this.scanAll();
+
+    /// Print the scan result
+    this.log.info(util.format('Repository scan result: %s', this.repositoriesNode.toJson()));
 
     // If not exist fetch the core repository
     this.fetchCoreRepository();
 
-    // Print scan result
-    log.info(util.format('Repository scan result: %s', this.repositories_node.toJson()));
   }
 
   /**
@@ -669,7 +768,7 @@ class MediaRepositoryManager {
    * @return {Node} - The Inexor Tree node which contains all repository nodes.
    */
   getRepositoriesNode() {
-    return this.repositories_node;
+    return this.repositoriesNode;
   }
 
   /**
@@ -679,7 +778,7 @@ class MediaRepositoryManager {
    * @return {Array<string>}
    */
   getRepositoryNames() {
-    return this.repositories_node.getChildNames();
+    return this.repositoriesNode.getChildNames();
   }
 
   /**
@@ -690,7 +789,7 @@ class MediaRepositoryManager {
    * @return {bool} True, if a repository with the given name exists in the Inexor Tree.
    */
   exists(name) {
-    return this.repositories_node.hasChild(name);
+    return this.repositoriesNode.hasChild(name);
   }
 
   /**
@@ -699,8 +798,8 @@ class MediaRepositoryManager {
    * @name MediaRepositoryManager.scanAll
    */
   scan() {
-    this.fs.scan();
-    this.git.scan();
+    this.filesystemRepositoryManager.scan();
+    this.gitRepositoryManager.scan();
   }
 
   /**
@@ -710,10 +809,10 @@ class MediaRepositoryManager {
    * @name MediaRepositoryManager.scanAll
    */
   scanAll() {
-    var media_paths = inexor_path.getMediaPaths();
-    for (var i = 0; i < media_paths.length; i++) {
-      this.fs.scan(media_paths[i]);
-      this.git.scan(media_paths[i]);
+    let mediaPaths = inexor_path.getMediaPaths();
+    for (var i = 0; i < mediaPaths.length; i++) {
+      this.filesystemRepositoryManager.scan(mediaPaths[i]);
+      this.gitRepositoryManager.scan(mediaPaths[i]);
     }
   }
 
@@ -723,7 +822,7 @@ class MediaRepositoryManager {
    * @name MediaRepositoryManager.getType
    */
   getType(name) {
-    return this.repositories_node.getChild(name).type;
+    return this.repositoriesNode.getChild(name).type;
   }
 
   /**
@@ -736,10 +835,10 @@ class MediaRepositoryManager {
   update(name, branch_name = null) {
     switch (this.getType(name)) {
       case 'fs':
-        this.fs.update(name);
+        this.filesystemRepositoryManager.update(name);
         break;
       case 'git':
-        this.git.update(name, branch_name, false);
+        this.gitRepositoryManager.update(name, branch_name, false);
         break;
     }
   }
@@ -752,7 +851,7 @@ class MediaRepositoryManager {
    */
   remove(name) {
     if (this.exists(name)) {
-      this.repositories_node.removeChild(name);
+      this.repositoriesNode.removeChild(name);
     }
   }
 
@@ -764,11 +863,11 @@ class MediaRepositoryManager {
   fetchCoreRepository() {
     if (!this.exists('core')) {
       // Clones the core media repository
-      this.git.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexor-game/data.git');
+      this.gitRepositoryManager.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexor-game/data.git');
     }
     if (!this.exists('user')) {
       // Creates a personal media repository for the current user
-      this.fs.createRepository('user', this.getRepositoryPath('user'));
+      this.filesystemRepositoryManager.createRepository('user', this.getRepositoryPath('user'));
     }
   }
 

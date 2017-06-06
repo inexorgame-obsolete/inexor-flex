@@ -12,7 +12,7 @@
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
     "shell": "node inexor shell",
-    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
+    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,7 @@
     "@inexor-game/instances": "file:src/instances",
     "@inexor-game/interfaces": "file:src/interfaces",
     "@inexor-game/logger": "file:server/util/logger",
+    "@inexor-game/logging": "file:src/logging",
     "@inexor-game/media": "file:src/media",
     "@inexor-game/path": "file:server/util/path",
     "@inexor-game/profiles": "file:src/profiles",

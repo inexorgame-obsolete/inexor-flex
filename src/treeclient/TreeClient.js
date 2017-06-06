@@ -19,6 +19,11 @@ class TreeClient {
     this.api_version = api_version;
     this.base_url = 'http://' + hostname + ':' + port + '/api/v' + api_version;
     this.flex = {
+      profiles: {
+        create: this.createEndpoint('/profiles/${name}', this.createProfile.name, 'POST'),
+        remove: this.createEndpoint('/profiles/${name}', this.removeProfile.name, 'DELETE'),
+        create: this.createEndpoint('/profiles/${name}/switch', this.switchProfile.name)
+      },
       instances: {
         getAll: this.createEndpoint('/instances', this.getAllInstances.name),
         get: this.createEndpoint('/instances/${id}', this.getInstance.name),
@@ -53,10 +58,6 @@ class TreeClient {
           branch: this.createEndpoint('/media/repositories/${name}/${branch}', this.branchMediaRepository.name, 'PUT'),
           remove: this.createEndpoint('/media/repositories/${name}', this.removeMediaRepository.name, 'DELETE')
         }
-      },
-      plugins: {
-          tomlreader: this.createEndpoint('/plugins/tomlreader/', this.readTOMLConfig.name, 'POST'),
-          hjsonreader: this.createEndpoint('/plugins/hjsonreader', this.readHJsonConfig.name, 'POST')
       },
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
     }
@@ -114,6 +115,38 @@ class TreeClient {
   }
 
   /**
+   * Creates a profile.
+   * @function
+   * @param {string} name - the name of the profile to create.
+   * @param {string} hostname - the hostname.
+   * @param {number} port - the port.
+   * @param {function} callback
+   */
+  createProfile(name, hostname, port, callback) {
+    this.callEndpoint(this.createProfile.name, callback, { name: name }, { hostname: hostname, port: port });
+  }
+
+  /**
+   * Removes a profile.
+   * @function
+   * @param {string} name - the name of the profile to remove.
+   * @param {function} callback
+   */
+  removeProfile(name, callback) {
+    this.callEndpoint(this.removeProfile.name, callback, { name: name });
+  }
+
+  /**
+   * Switches to profile.
+   * @function
+   * @param {string} name - the name of the profile.
+   * @param {function} callback
+   */
+  switchProfile(name, callback) {
+    this.callEndpoint(this.switchProfile.name, callback, { name: name });
+  }
+
+  /**
    * Returns all the instances to the callback
    * @function
    * @param {function} callback
@@ -141,10 +174,11 @@ class TreeClient {
    * @param {string} description - the description of the instance
    * @param {boolean} persistent - True, if the instance should be persisted.
    * @param {boolean} autostart - True, if the instance should be started automatically on startup.
+   * @param {boolean} autorestart - True, if the instance should be restarted automatically after shutdown of the instance.
    * @param {function} callback
    */
-  createInstance(id, type, name, description, autostart, persistent, callback) {
-    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, name: name, description: description, persistent: persistent, autostart: autostart });
+  createInstance(id, type, name, description, persistent, autostart, autorestart, callback) {
+    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, name: name, description: description, persistent: persistent, autostart: autostart, autorestart: autorestart });
   }
 
   /**

@@ -1,8 +1,35 @@
-# Logging configuration...
-# Can be loaded and saved by the LoggingConfigurator
+# Logging configuration
 
-[logging]
+[logging.flex]
 
 level = "debug"
 console = true
-file = false
+file = "null"
+
+[logging.flex.logging.LogManager]
+
+level = "warn"
+
+[logging.flex.instances.InstanceManager]
+
+level = "info"
+
+[logging.flex.profiles.ProfileManager]
+
+level = "warn"
+
+[logging.flex.media.repository]
+
+level = "warn"
+
+[logging.flex.media.repository.MediaRepositoryManager]
+
+level = "warn"
+
+[logging.flex.media.repository.GitRepositoryManager]
+
+level = "warn"
+
+[logging.flex.media.repository.FilesystemRepositoryManager]
+
+level = "warn"

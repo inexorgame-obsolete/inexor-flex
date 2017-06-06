@@ -21,12 +21,7 @@ if (!fs.existsSync(pid_path)) {
   log.warn('Inexor Flex is not running! Starting Inexor Flex...');
   // Starting Inexor Flex detached without stdio
   const child = child_process.spawn(process.argv[0], [
-    'server/index.js',
-    'log',
-    '--port',
-    '31416',
-    '--webdir',
-    'assets/'
+    'server/index.js'
   ], {
     detached: true,
     stdio: 'ignore'
@@ -43,9 +38,10 @@ wait_on({
   timeout: 10000
 }, function (err) {
   if (err) {
-    log.error('Inexor Flex didn\'t came up');
+    log.error('Inexor Flex didn\'t came up:');
+    log.error(err);
   } else {
-    if (process.argv.length == 3 && process.argv[2].trim() == 'shell') {
+    if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
       const argv = yargs
         .commandDir('server/commands')
         .demandCommand(1)

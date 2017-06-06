@@ -1,3 +1,5 @@
+// TODO: remove ?
+
 // Configuration for the Inexor Flex webserver
 exports.command = 'flex';
 exports.describe = 'Configures the webserver of Inexor Flex';
@@ -34,4 +36,4 @@ exports.builder = {
     type: 'string',
     describe: 'Sets the log level of the Inexor Flex webserver.'
   }
-}
+};

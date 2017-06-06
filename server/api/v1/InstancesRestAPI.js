@@ -20,14 +20,12 @@ class InstancesRestAPI {
 
     // The Inexor Tree
     this.root = applicationContext.get('tree');
-    log.info(this.root.toJson());
 
     // The instance manager
     this.instanceManager = applicationContext.get('instanceManager');
 
     // The tree node which contains all instance nodes
     this.instancesNode = this.root.getOrCreateNode('instances');
-    log.info(this.instancesNode.toJson());
 
     // Delivery the web user interfaces
     this.router.use('/interfaces', express.static('interfaces'));
@@ -114,7 +112,7 @@ class InstancesRestAPI {
   createInstance(req, res) {
     if (!this.instancesNode.hasChild(req.params.id)) {
       this.instanceManager
-        .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart)
+        .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart, req.body.autorestart)
         .then((instanceNode) => {
           res.status(201).json(instanceNode.get());
         }).catch((err) => {

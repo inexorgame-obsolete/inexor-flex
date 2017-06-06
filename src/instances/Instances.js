@@ -24,9 +24,9 @@ const util = require('util');
 const Connector = require('./Connector');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
-const inexor_log = require('@inexor-game/logger');
+// const inexor_log = require('@inexor-game/logger');
 
-const log = inexor_log('@inexor-game/flex/InstanceManager');
+// const log = inexor_log('@inexor-game/flex/instances/InstanceManager');
 
 /**
  * The list of instance types.
@@ -95,18 +95,50 @@ class InstanceManager extends EventEmitter {
   /**
    * @constructor
    */
-  constructor(application_context) {
+  constructor(applicationContext) {
     super();
 
-    var root = application_context.get('tree');
+    /// The application context
+    // this.applicationContext = applicationContext;
 
-    this.consoleManager = application_context.get('consoleManager');
+    /// The class logger
+    // this.log = applicationContext.get('logManager').getLogger('instances.InstanceManager');
 
-    /** @private */
-    this.instancesNode = root.getOrCreateNode('instances');
+    /// The Inexor Tree root node
+    // this.root = applicationContext.get('tree');
 
-    // Load instances.toml
-    this.loadInstances();
+  }
+
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing instances
+    this.instancesNode = this.root.getOrCreateNode('instances');
+
+    /// The profile manager service
+    this.profileManager = this.applicationContext.get('profileManager');
+
+    /// The console manager service
+    this.consoleManager = this.applicationContext.get('consoleManager');
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.instances.InstanceManager');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
+
+    // Loading of the instances configuration is deferred until Inexor Flex has been fully initialized
+
   }
 
   /**
@@ -128,9 +160,10 @@ class InstanceManager extends EventEmitter {
    * @param {string} [description] - the description of the instance
    * @param {boolean} persistent - True, if the instance should be persisted.
    * @param {boolean} autostart - True, if the instance should be started automatically on startup.
+   * @param {boolean} autorestart - True, if the instance should be restarted automatically on shutdown of the instance.
    * @return {Promise<tree.Node>} - the tree node which represents the instance
    */
-  create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false) {
+  create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false, autorestart = false) {
     return new Promise((resolve, reject) => {
       if (identifier == null) {
         reject(new Error('Failed to create instance: No identifier'));
@@ -156,8 +189,11 @@ class InstanceManager extends EventEmitter {
       // The port of the GRPC server
       instanceNode.addChild('port', 'int64', identifier);
 
-      // The port of the GRPC server
+      // The instance automatically starts on startup
       instanceNode.addChild('autostart', 'bool', autostart);
+
+      // The instance automatically restarts on shutdown of the instance
+      instanceNode.addChild('autorestart', 'bool', autorestart);
 
       // Save instances.toml
       if (persistent) {
@@ -191,7 +227,7 @@ class InstanceManager extends EventEmitter {
     let instanceId = instanceNode.getName();
     let instance_port = instanceNode.port;
     let instance_type = instanceNode.type;
-  	log.info('Starting instance ' + instanceNode.name + ' (id: ' + instanceId + ', type: ' + instance_type + ', port: ' + instance_port + ')');
+  	this.log.info('Starting instance ' + instanceNode.name + ' (id: ' + instanceId + ', type: ' + instance_type + ', port: ' + instance_port + ')');
   
     return new Promise((resolve, reject) => {
       
@@ -207,18 +243,18 @@ class InstanceManager extends EventEmitter {
         cwd: path.resolve(inexor_path.getBasePath()),
         env: process.env
       };
-      log.info(util.format('Starting %s %s', executable_path, args.join(' ')));
+      this.log.info(util.format('Starting %s %s', executable_path, args.join(' ')));
       
       // Spawn process
       let instanceProcess = spawn(executable_path, args, options);
-      log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
+      this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
 
       instanceProcess.on('error', (err) => {
         instanceNode.removeChild('process');
         this.transist(instanceNode, 'running', 'started');
         this.transist(instanceNode, 'started', 'stopped');
         if (err != null) {
-          log.error(util.format('Error in %s: %s', this.getInstanceName(instanceNode), err.message));
+          this.log.error(util.format('Error in %s: %s', this.getInstanceName(instanceNode), err.message));
         }
       });
       instanceProcess.on('exit', (code, signal) => {
@@ -226,9 +262,9 @@ class InstanceManager extends EventEmitter {
         this.transist(instanceNode, 'running', 'started');
         this.transist(instanceNode, 'started', 'stopped');
         if (code != null) {
-          log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instanceNode), code));
+          this.log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instanceNode), code));
         } else if (signal != null) {
-          log.info(util.format('%s process exited with signal %s', this.getInstanceName(instanceNode), signal));
+          this.log.info(util.format('%s process exited with signal %s', this.getInstanceName(instanceNode), signal));
         }
       });
 
@@ -260,7 +296,7 @@ class InstanceManager extends EventEmitter {
   stop(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        log.info(util.format('Stopping instance %s', this.getInstanceName(instanceNode)));
+        this.log.info(util.format('Stopping instance %s', this.getInstanceName(instanceNode)));
         // SIGTERM
         instanceNode.getChild('process').get().kill();
         resolve(instanceNode);
@@ -289,7 +325,7 @@ class InstanceManager extends EventEmitter {
           reject(util.format('Failed to connect to instance %s', this.getInstanceName(instanceNode)));
         });
       } catch (err) {
-        log.error(err);
+        this.log.error(err);
         reject(util.format('Failed to connect to instance %s', this.getInstanceName(instanceNode)));
       }
     });
@@ -310,7 +346,7 @@ class InstanceManager extends EventEmitter {
         this.transist(instanceNode, 'running', 'started');
         resolve(instanceNode);
       } catch (err) {
-        log.error(err);
+        this.log.error(err);
         reject(util.format('Failed to disconnect from instance %s', this.getInstanceName(instanceNode)));
       }
     });
@@ -380,25 +416,34 @@ class InstanceManager extends EventEmitter {
    */
   loadInstances(filename = 'instances.toml') {
     return new Promise((resolve, reject) => {
-      let config_path = this.getConfigPath(filename);
-      log.info(util.format('Loading instances from %s', config_path));
+      let config_path = this.profileManager.getConfigPath(filename);
+      this.log.info(util.format('Loading instances from %s', config_path));
       fs.readFile(config_path, (err, data) => {
         if (err) {
-          log.error(util.format('Failed to load instances from %s: %s', config_path, err.message));
+          this.log.error(util.format('Failed to load instances from %s: %s', config_path, err.message));
           reject(util.format('Failed to load instances from %s: %s', config_path, err.message));
         } else {
           let config = toml.parse(data.toString());
-          for (let instanceId of Object.keys(config['instances'])) {
+          for (let instanceId of Object.keys(config.instances)) {
             this.create(
               instanceId,
-              config['instances'][instanceId]['type'],
-              config['instances'][instanceId]['name'],
-              config['instances'][instanceId]['description'],
+              config.instances[instanceId].type,
+              config.instances[instanceId].name,
+              config.instances[instanceId].description,
               false,
-              config['instances'][instanceId]['autostart']
+              config.instances[instanceId].autostart,
+              config.instances[instanceId].autorestart
             ).then((instanceNode) => {
               if (instanceNode.autostart) {
-                this.start(instanceNode);
+                this.start(instanceNode).then((instanceNode) => {
+                  this.connect(instanceNode).then((instanceNode) => {
+                    this.log.info(util.format('Instance %s is up and running', instanceNode.getName()));
+                  }).catch((err) => {
+                    this.log.error(util.format('Failed to autoconnect to instance %s', instanceNode.getName()));
+                  });
+                }).catch((err) => {
+                  this.log.error(util.format('Failed to autostart to instance %s', instanceNode.getName()));
+                });
               }
             }).catch((err) => {
             });
@@ -412,13 +457,12 @@ class InstanceManager extends EventEmitter {
   /**
    * Saves an instance to a TOML file.
    * @function
-   * @param {tree.Node} instanceNode - The instance to save.
    * @param {string} [filename] - The filename.
    * @return {Promise<bool>}
    */
   saveInstances(filename = 'instances.toml') {
     return new Promise((resolve, reject) => {
-      let config_path = this.getConfigPath(filename);
+      let config_path = this.profileManager.getConfigPath(filename);
       let instanceIds = this.instancesNode.getChildNames();
       let config = {
         instances: {}
@@ -426,41 +470,26 @@ class InstanceManager extends EventEmitter {
       for (var i = 0; i < instanceIds.length; i++) {
         let instanceId = instanceIds[i];
         let instanceNode = this.instancesNode.getChild(instanceId);
-        config['instances'][instanceId] = {
+        config.instances[instanceId] = {
           'type': instanceNode.type,
           'name': instanceNode.name,
           'description': instanceNode.description,
-          'autostart': instanceNode.autostart
+          'autostart': instanceNode.autostart,
+          'autorestart': instanceNode.autorestart
         };
       }
       var toml = tomlify(config, {delims: false});
-      log.info(toml);
+      this.log.info(toml);
       fs.writeFile(config_path, toml, (err) => {
         if (err) {
-          log.warn(util.format('Failed to write instances to %s: %s', config_path, err.message));
+          this.log.warn(util.format('Failed to write instances to %s: %s', config_path, err.message));
           reject(util.format('Failed to write instances to %s: %s', config_path, err.message));
         } else {
-          log.info(util.format('Wrote instances to %s', config_path));
+          this.log.info(util.format('Wrote instances to %s', config_path));
           resolve(true);
         }
       }); 
     });
-  }
-
-  /**
-   * Returns the config path for the instances configuration file.
-   * @function
-   * @param {string} [filename] - The filename.
-   */
-  getConfigPath(filename = 'instances.toml') {
-    let config_paths = inexor_path.getConfigPaths();
-    for (var i = 0; i < config_paths.length; i++) {
-      let config_path = path.join(config_paths[i], filename);
-      if (fs.existsSync(config_path)) {
-        return config_path;
-      }
-    }
-    return path.join(config_paths[0], filename);
   }
 
   /**
@@ -487,22 +516,22 @@ class InstanceManager extends EventEmitter {
         if (instanceNode.state == oldState) {
           if (this.isValidTransition(oldState, newState)) {
             instanceNode.state = newState;
-            log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
+            this.log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
             return true;
           } else {
-            log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
+            this.log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
             return false;
           }
         } else {
-          log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
+          this.log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
           return false;
         }
       } else {
-        log.error(util.format('%s is not a valid state', oldState));
+        this.log.error(util.format('%s is not a valid state', oldState));
         return false;
       }
     } else {
-      log.error(util.format('%s is not a valid state', newState));
+      this.log.error(util.format('%s is not a valid state', newState));
       return false;
     }
   }

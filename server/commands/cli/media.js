@@ -1,7 +1,6 @@
-// Configuration for managing server instances of Inexor Core
-exports.command = 'media <command>'
-exports.describe = 'Manage media'
+exports.command = 'media <command>';
+exports.describe = 'Management of media and media repositories';
 exports.builder = function (yargs) {
-  return yargs.commandDir('media_cmds')
-}
-exports.handler = function (argv) {}
+  return yargs.commandDir('media_cmds');
+};
+exports.handler = function (argv) {};

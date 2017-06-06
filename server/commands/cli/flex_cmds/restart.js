@@ -10,7 +10,7 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   log.info('Stopping all instances...');
   client.flex.instances.stopAll(function(data, response) {
     log.info('Shutting down Inexor Flex...');

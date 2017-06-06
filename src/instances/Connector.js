@@ -15,7 +15,7 @@ const inexor_log = require('@inexor-game/logger');
 const inexor_path = require('@inexor-game/path');
 
 const debuglog = util.debuglog('connector');
-const log = inexor_log('@inexor-game/flex/Connector');
+const log = inexor_log('@inexor-game/flex/instances/Connector');
 
 /**
  * Connects a {@link Root} with a Inexor Core instance

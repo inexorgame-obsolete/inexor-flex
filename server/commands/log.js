@@ -1,3 +1,5 @@
+// TODO: remove ?
+
 // Configuration for the Inexor Flex logging
 exports.commands = 'log';
 exports.describe = 'Configures the logging of Inexor Flex.';

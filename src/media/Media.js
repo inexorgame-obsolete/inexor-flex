@@ -1,4 +1,6 @@
 
+const EventEmitter = require('events');
+
 /**
  * The media types.
  */
@@ -9,16 +11,46 @@ const media_types = [
   'sound'
 ];
 
-class MediaManager {
+class MediaManager extends EventEmitter {
 
-  constructor(application_context) {
-    var root = application_context.get('tree');
-    var media_repository_manager = application_context.get('media_repository_manager');
-    var media_node = root.getOrCreateNode('media');
-    this.media_type_nodes = {};
-    for (var i = 0; i < media_types.length; i++) {
-      this.media_type_nodes[media_types[i]] = media_node.getOrCreateNode(media_types[i] + 's');
+  /**
+   * @constructor
+   */
+  constructor(applicationContext) {
+    super();
+  }
+
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The media repository manager
+    this.mediaRepositoryManager = application_context.get('mediaRepositoryManager');
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing media
+    this.mediaNode = this.root.getOrCreateNode('media');
+
+    /// Creating tree nodes for each media type
+    this.mediaTypeNodes = {};
+    for (let i = 0; i < media_types.length; i++) {
+      this.mediaTypeNodes[media_types[i]] = this.mediaNode.getOrCreateNode(media_types[i] + 's');
     }
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
+
+    // The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.media.MediaManager');
+
   }
 
   /**
@@ -80,14 +112,14 @@ class MediaManager {
    * "e" for environment maps (skybox), uses the same syntax as "loadsky", and set a custom environment map (overriding the "envmap" entities) to use in environment-mapped shaders ("bumpenv*world")
    * 
    */
-  addMedia(type, name, repository, media_path, dependencies, author = '', license = '') {
-    var media_type_node = this.media_type_nodes[type];
-    var media_node = media_type_node.addNode(name);
-    media_node.addChild('repository', 'string', repository);
-    media_node.addChild('path', 'string', media_path);
-    var dependency_node = media_node.addChild('dependencies', 'string', media_path);
+  addMedia(type, name, repository, mediaPath, dependencies, author = '', license = '') {
+    let mediaTypeNode = this.mediaTypeNodes[type];
+    let mediaNode = mediaTypeNode.addNode(name);
+    mediaNode.addChild('repository', 'string', repository);
+    mediaNode.addChild('path', 'string', mediaPath);
+    var dependencyNode = mediaNode.addChild('dependencies', 'string', mediaPath);
     for (var i = 0; i < dependencies.length; i++) {
-      dependency_node.addChild('path', 'string', media_path);
+      dependencyNode.addChild('path', 'string', mediaPath);
     }
   }
 
@@ -95,20 +127,20 @@ class MediaManager {
     
   }
 
-  addMap(name, repository, media_path, dependencies) {
-    this.addMedia('map', name, repository, media_path, dependencies);
+  addMap(name, repository, mediaPath, dependencies) {
+    this.addMedia('map', name, repository, mediaPath, dependencies);
   }
 
-  addTexture(name, repository, media_path, dependencies) {
-    this.addMedia('texture', name, repository, media_path, dependencies);
+  addTexture(name, repository, mediaPath, dependencies) {
+    this.addMedia('texture', name, repository, mediaPath, dependencies);
   }
 
-  addModel(name, repository, media_path, dependencies) {
-    this.addMedia('model', name, repository, media_path, dependencies);
+  addModel(name, repository, mediaPath, dependencies) {
+    this.addMedia('model', name, repository, mediaPath, dependencies);
   }
 
-  addSound(name, repository, media_path, dependencies) {
-    this.addMedia('sound', name, repository, media_path, dependencies);
+  addSound(name, repository, mediaPath, dependencies) {
+    this.addMedia('sound', name, repository, mediaPath, dependencies);
   }
 
 }

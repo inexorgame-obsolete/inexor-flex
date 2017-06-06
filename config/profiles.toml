@@ -19,3 +19,17 @@ port = 31416
 description = "Local development environment"
 hostname = "localhost"
 port = 31416
+
+# The following profile is for a second instance of Inexor Flex on another port
+
+[profiles.devenv2]
+description = "Inexor Flex on another port"
+hostname = "localhost"
+port = 41416
+
+# Using profiles you can use a local Inexor Shell in order to control a remote instance of Inexor Flex 
+
+[profiles.remote]
+description = "A remote flex server to control"
+hostname = "remote.inexor.org"
+port = 31416

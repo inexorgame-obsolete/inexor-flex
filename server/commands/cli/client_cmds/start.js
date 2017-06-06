@@ -19,7 +19,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('Starting the client with id ' + argv.instance);
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.instances.start(argv.instance, function(data, response) {
     log.info('  Result: ' + response.statusCode + '(' + response.statusMessage + ')');
     if (argv.connect) {

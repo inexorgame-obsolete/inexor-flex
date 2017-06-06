@@ -18,7 +18,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('Switching to branch ' + argv.branch + ' of the media repository ' + argv.name);
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.media.repositories.branch(argv.name, argv.branch, function(data, response) {
     log.info('Response: ' + response.statusCode + ' ' + response.statusMessage);
   });

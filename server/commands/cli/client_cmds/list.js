@@ -10,7 +10,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('List of clients:');
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.instances.getAll(function(data, response) {
     // TODO: filter clients
     log.info(String(data));

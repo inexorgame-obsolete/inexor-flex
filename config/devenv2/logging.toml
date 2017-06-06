@@ -1,0 +1,8 @@
+# Logging configuration...
+# Can be loaded and saved by the LoggingConfigurator
+
+[logging]
+
+level = "debug"
+console = true
+file = false

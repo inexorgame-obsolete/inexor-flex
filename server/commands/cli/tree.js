@@ -1,7 +1,6 @@
-// Configuration for managing server instances of Inexor Core
-exports.command = 'tree <command>'
-exports.describe = 'Inexor Tree manipulation'
+exports.command = 'tree <command>';
+exports.describe = 'Inexor Tree manipulation';
 exports.builder = function (yargs) {
-  return yargs.commandDir('tree_cmds')
-}
-exports.handler = function (argv) {}
+  return yargs.commandDir('tree_cmds');
+};
+exports.handler = function (argv) {};

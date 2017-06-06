@@ -14,7 +14,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('Stopping the client with id ' + argv.instance);
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.instances.stop(argv.instance, function(data, response) {
     if (response.statusCode == 200) {
       log.info('Client with instance id ' + argv.instance + ' stopped');

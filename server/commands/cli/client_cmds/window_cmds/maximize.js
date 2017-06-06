@@ -13,7 +13,7 @@ exports.builder = {
 }
 
 exports.handler = function(argv) {
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.instances.client.window.maximize(argv.instance);
   log.info('Maximized window of client ' + argv.instance);
 }

@@ -14,7 +14,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
   log.info('Removing the media repository ' + argv.name);
-  var client = new TreeClient('localhost', 31416);
+  let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.media.repositories.remove(argv.name, function(data, response) {
     log.info('Response: ' + response.statusCode + ' ' + response.statusMessage);
   });

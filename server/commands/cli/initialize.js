@@ -1,3 +1,5 @@
+// TODO: remove ?
+
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const path = require('@inexor-game/path');
 const log = require('@inexor-game/logger')();
