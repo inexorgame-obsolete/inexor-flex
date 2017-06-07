@@ -7,3 +7,6 @@
 [submodule "interfaces/ui-client-hud"]
 	path = interfaces/ui-client-hud
 	url = https://github.com/inexor-game/ui-client-hud.git
+[submodule "interfaces/ui-flex"]
+	path = interfaces/ui-flex
+	url = https://github.com/inexor-game/ui-flex.git

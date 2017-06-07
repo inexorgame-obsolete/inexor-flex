@@ -3,6 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
+    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types",
     "start": "node server/index.js",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
@@ -11,8 +12,7 @@
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
-    "shell": "node inexor shell",
-    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types"
+    "shell": "node inexor shell"
   },
   "repository": {
     "type": "git",
@@ -46,17 +46,19 @@
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
     "@inexor-game/types": "file:src/types",
+    "@inexor-ui/flex": "file:interfaces/ui-flex",
     "circular-json": "^0.3.1",
     "express": "^4.15.2",
     "figlet": "^1.2.0",
     "npid": "^0.4.0",
     "prettyjson": "^1.2.1",
     "segfault-handler": "^1.0.0",
+    "toml": "^2.3.2",
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
     "xdg-basedir": "^3.0.0",
     "yargs": "^7.0.2",
-    "toml": "^2.3.2"
+    "yarn": "^0.24.5"
   },
   "devDependencies": {
     "chai": "^3.5.0",
