@@ -29,6 +29,6 @@
   },
   "private": true,
   "dependencies": {
-    "nodegit": "^0.16.0"
+    "nodegit": "^0.17.0"
   }
 }
