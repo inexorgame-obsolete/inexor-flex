@@ -199,28 +199,29 @@ class ProfileManager extends EventEmitter {
   saveProfiles(filename = 'profiles.toml') {
     return new Promise((resolve, reject) => {
       let config_path = this.profileManager.getProfilesConfigPath(filename);
-      let instanceIds = this.instancesNode.getChildNames();
+      let profileNames = this.profilesNode.getChildNames();
       let config = {
-        instances: {}
+        profiles: {
+          default: this.getDefaultProfile()
+        }
       };
-      for (var i = 0; i < instanceIds.length; i++) {
-        let instanceId = instanceIds[i];
-        let instanceNode = this.instancesNode.getChild(instanceId);
-        config['instances'][instanceId] = {
-          'type': instanceNode.type,
-          'name': instanceNode.name,
-          'description': instanceNode.description,
-          'autostart': instanceNode.autostart
+      for (var i = 0; i < profileNames.length; i++) {
+        let name = profileNames[i];
+        let profileNode = this.profilesNode.getChild(name);
+        config.profiles[name] = {
+          'hostname': profileNode.hostname,
+          'port': profileNode.port,
+          'description': profileNode.description
         };
       }
       var toml = tomlify(config, {delims: false});
       this.log.info(toml);
       fs.writeFile(config_path, toml, (err) => {
         if (err) {
-          this.log.warn(util.format('Failed to write instances to %s: %s', config_path, err.message));
-          reject(util.format('Failed to write instances to %s: %s', config_path, err.message));
+          this.log.warn(util.format('Failed to write profiles to %s: %s', config_path, err.message));
+          reject(util.format('Failed to write profiles to %s: %s', config_path, err.message));
         } else {
-          this.log.info(util.format('Wrote instances to %s', config_path));
+          this.log.info(util.format('Wrote profiles to %s', config_path));
           resolve(true);
         }
       }); 
