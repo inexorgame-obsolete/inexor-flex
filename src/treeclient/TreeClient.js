@@ -174,11 +174,12 @@ class TreeClient {
    * @param {string} description - the description of the instance
    * @param {boolean} persistent - True, if the instance should be persisted.
    * @param {boolean} autostart - True, if the instance should be started automatically on startup.
+   * @param {boolean} autoconnect - True, if the instance should be connected automatically on startup.
    * @param {boolean} autorestart - True, if the instance should be restarted automatically after shutdown of the instance.
    * @param {function} callback
    */
-  createInstance(id, type, name, description, persistent, autostart, autorestart, callback) {
-    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, name: name, description: description, persistent: persistent, autostart: autostart, autorestart: autorestart });
+  createInstance(id, type, name, description, persistent, autostart, autoconnect, autorestart, callback) {
+    this.callEndpoint(this.createInstance.name, callback, { id: id }, { args: '', type: type, name: name, description: description, persistent: persistent, autostart: autostart, autoconnect: autoconnect, autorestart: autorestart });
   }
 
   /**

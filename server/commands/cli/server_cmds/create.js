@@ -1,9 +1,8 @@
 const TreeClient = require('@inexor-game/treeclient').TreeClient;
 const log = require('@inexor-game/logger')();
 
-// Configuration for starting a server instance of Inexor Core
-exports.command = 'create <instance> [port] [name] [description]'
-exports.describe = 'Creates a server'
+exports.command = 'create <instance> [name] [description] [persistent] [autostart] [autoconnect] [autorestart] [start]';
+exports.describe = 'Creates a server';
 
 exports.builder = {
   instance: {
@@ -30,6 +29,11 @@ exports.builder = {
     describe: 'If the instance should be started automatically on startup',
     default: false
   },
+  autoconnect: {
+    type: 'boolean',
+    describe: 'If the instance should be connected automatically on startup',
+    default: false
+  },
   autorestart: {
     type: 'boolean',
     descibe: 'If the instance should be restarted automatically on startup',
@@ -45,7 +49,7 @@ exports.builder = {
 exports.handler = function(argv) {
   log.info('Creating a server with instance id ' + argv.instance);
   let client = new TreeClient(argv.profileHostname, argv.profilePort);
-  client.flex.instances.create(argv.instance, 'server', argv.name, argv.description, argv.persistent, argv.autostart, argv.autorestart, function(data, response) {
+  client.flex.instances.create(argv.instance, 'server', argv.name, argv.description, argv.persistent, argv.autostart, argv.autoconnect, argv.autorestart, function(data, response) {
     if (response.statusCode == 201) {
       log.info('Server with instance id ' + argv.instance + ' created');
     } else if (response.statusCode == 409) {

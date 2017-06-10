@@ -24,9 +24,6 @@ const util = require('util');
 const Connector = require('./Connector');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
-// const inexor_log = require('@inexor-game/logger');
-
-// const log = inexor_log('@inexor-game/flex/instances/InstanceManager');
 
 /**
  * The list of instance types.
@@ -97,16 +94,6 @@ class InstanceManager extends EventEmitter {
    */
   constructor(applicationContext) {
     super();
-
-    /// The application context
-    // this.applicationContext = applicationContext;
-
-    /// The class logger
-    // this.log = applicationContext.get('logManager').getLogger('instances.InstanceManager');
-
-    /// The Inexor Tree root node
-    // this.root = applicationContext.get('tree');
-
   }
 
   /**
@@ -151,7 +138,11 @@ class InstanceManager extends EventEmitter {
     return this.instancesNode.hasChild(instanceId);
   }
 
-  
+  /**
+   * Clears the list of instances.
+   * @function
+   * @return {Promise<boolean>} - Promise
+   */
   clear() {
     return new Promise((resolve, reject) => {
       this.instancesNode.removeAllChildren();
@@ -168,10 +159,11 @@ class InstanceManager extends EventEmitter {
    * @param {string} [description] - the description of the instance
    * @param {boolean} persistent - True, if the instance should be persisted.
    * @param {boolean} autostart - True, if the instance should be started automatically on startup.
+   * @param {boolean} autoconnect - True, if the instance should be connected automatically on startup.
    * @param {boolean} autorestart - True, if the instance should be restarted automatically on shutdown of the instance.
    * @return {Promise<tree.Node>} - the tree node which represents the instance
    */
-  create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false, autorestart = false) {
+  create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false, autoconnect = false, autorestart = false) {
     return new Promise((resolve, reject) => {
       if (identifier == null) {
         reject(new Error('Failed to create instance: No identifier'));
@@ -199,6 +191,9 @@ class InstanceManager extends EventEmitter {
 
       // The instance automatically starts on startup
       instanceNode.addChild('autostart', 'bool', autostart);
+
+      // The instance automatically connects on startup
+      instanceNode.addChild('autoconnect', 'bool', autoconnect);
 
       // The instance automatically restarts on shutdown of the instance
       instanceNode.addChild('autorestart', 'bool', autorestart);
@@ -440,17 +435,20 @@ class InstanceManager extends EventEmitter {
               config.instances[instanceId].description,
               false,
               config.instances[instanceId].autostart,
+              config.instances[instanceId].autoconnect,
               config.instances[instanceId].autorestart
             ).then((instanceNode) => {
               if (instanceNode.autostart) {
                 this.start(instanceNode).then((instanceNode) => {
-                  this.connect(instanceNode).then((instanceNode) => {
-                    this.log.info(util.format('Instance %s is up and running', instanceNode.getName()));
-                  }).catch((err) => {
-                    this.log.error(util.format('Failed to autoconnect to instance %s', instanceNode.getName()));
-                  });
+                  if (instanceNode.autoconnect) {
+                    this.connect(instanceNode).then((instanceNode) => {
+                      this.log.info(util.format('Instance %s is up and running', instanceNode.getName()));
+                    }).catch((err) => {
+                      this.log.error(util.format('Failed to connect to instance %s automatically', instanceNode.getName()));
+                    });
+                  }
                 }).catch((err) => {
-                  this.log.error(util.format('Failed to autostart to instance %s', instanceNode.getName()));
+                  this.log.error(util.format('Failed to start to instance %s automatically', instanceNode.getName()));
                 });
               }
             }).catch((err) => {
@@ -483,6 +481,7 @@ class InstanceManager extends EventEmitter {
           'name': instanceNode.name,
           'description': instanceNode.description,
           'autostart': instanceNode.autostart,
+          'autoconnect': instanceNode.autoconnect,
           'autorestart': instanceNode.autorestart
         };
       }

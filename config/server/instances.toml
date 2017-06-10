@@ -7,5 +7,6 @@ type = "server"
 name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
 autostart = true
+autoconnect = true
 autorestart = true
 enet_port = 31415

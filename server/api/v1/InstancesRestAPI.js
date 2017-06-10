@@ -112,7 +112,7 @@ class InstancesRestAPI {
   createInstance(req, res) {
     if (!this.instancesNode.hasChild(req.params.id)) {
       this.instanceManager
-        .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart, req.body.autorestart)
+        .create(req.params.id, req.body.type, req.body.name, req.body.description, req.body.persistent, req.body.autostart, req.body.autoconnect, req.body.autorestart)
         .then((instanceNode) => {
           res.status(201).json(instanceNode.get());
         }).catch((err) => {
