@@ -185,8 +185,8 @@ class Node extends EventEmitter {
      * Checks whether the node has specified child or not
      * @function
      * @name Node.hasChild
-     * @param {string} name
-     * @return {boolean}
+     * @param {string} name The name of the child
+     * @return {boolean} True, if there is a child with the given name.
      */
     hasChild(name) {
         return this.isContainer && this._value.has(name);
@@ -194,15 +194,27 @@ class Node extends EventEmitter {
 
     /**
      * Checks whether the node has children
+     * @function
      * @name Node.hasChildren
-     * @return {boolean}
+     * @return {boolean} True, if the node is a container which has child nodes.
      */
     hasChildren() {
       return !this.isContainer || !(this._value.size == 0);
     }
 
     /**
+     * Returns the number of children.
+     * @function
+     * @name Node.size
+     * @return {number} The number of children.
+     */
+    size() {
+      return this.isContainer ? this._value.size : 0;
+    }
+
+    /**
      * Returns true, if the node is a child node (recursive) of other_node.
+     * @function
      * @name Node.isChildOf
      * @return {boolean}
      */
@@ -393,6 +405,17 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Removes all children.
+     * @function
+     * @name Node.removeAllChildren
+     */
+    removeAllChildren() {
+      if (this.isContainer) {
+        this._value.clear();
+      }
+    }
+
+    /**
      * Returns the parent node or null if the tree node is the root node.
      * @function
      * @name Node.getParent
@@ -470,13 +493,13 @@ class Node extends EventEmitter {
       // Hacky slashy
       let self = this;
       let position = 0;
-      let childs = this.getChildNames();
+      let children = this.getChildNames();
 
       return {
         next: function() {
-          if (position < childs.length) {
+          if (position < children.length) {
             position++;
-            return {value: self.getChild(childs[position - 1]), done: false};
+            return {value: self.getChild(children[position - 1]), done: false};
           } else {
             return {done: true};
           }
