@@ -343,7 +343,8 @@ class InstanceManager extends EventEmitter {
   disconnect(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        let connector = instanceNode.connector.get();
+        let connectorNode = instanceNode.getChild('connector');
+        let connector = connectorNode._value;
         connector.disconnect();
         instanceNode.removeChild('connector');
         this.transist(instanceNode, 'running', 'started');

@@ -1,19 +1,18 @@
+const EventEmitter = require('events');
 const express = require('express');
 const process = require('process');
 const util = require('util');
 
-const inexor_log = require('@inexor-game/logger');
-const log = inexor_log('@inexor-game/flex/api/v1/instances');
-
 /**
  * REST API for managing instances of Inexor Core.
  */
-class InstancesRestAPI {
+class InstancesRestAPI extends EventEmitter {
 
   /**
    * Constructs the Instances REST API.
    */
   constructor(applicationContext) {
+    super();
 
     // The express router
     this.router = applicationContext.get('router');
@@ -65,7 +64,23 @@ class InstancesRestAPI {
 
     // Configures the tree from instance :id using the TOML cofigurator module. Returns the configured tree or raises an error.
     this.router.get('/instances/:id/configure', (req, res) => { });
+  }
 
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.api.InstancesRestAPI');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
   }
 
   /**
@@ -117,7 +132,7 @@ class InstancesRestAPI {
           res.status(201).json(instanceNode.get());
         }).catch((err) => {
           // Failed to create the instance
-          log.error(util.format('Failed to create instance %s: %s', req.params.id, err.message));
+          this.log.error(util.format('Failed to create instance %s: %s', req.params.id, err.message));
           res.status(500).send(err);
         });
     } else {
@@ -154,7 +169,7 @@ class InstancesRestAPI {
         // res.json(instanceNode);
         res.status(200).send({});
       }).catch((err) => {
-        log.error(err);
+        this.log.error(err);
         // Failed to start the instance
         res.status(500).send(err);
       })
@@ -170,7 +185,7 @@ class InstancesRestAPI {
     this.instanceManager.startAll().then(() => {
       res.status(200).send({});
     }).catch((err) => {
-      log.error(err);
+      this.log.error(err);
       res.status(500).send(err);
     })
   }
@@ -190,7 +205,7 @@ class InstancesRestAPI {
         // res.json(instance);
         res.status(200).send({});
       }).catch((err) => {
-        log.error(err);
+        this.log.error(err);
         res.status(500).send(err);
       });
     } else {
@@ -205,7 +220,7 @@ class InstancesRestAPI {
     this.instanceManager.stopAll().then(() => {
       res.status(200).send({});
     }).catch((err) => {
-      log.error(err);
+      this.log.error(err);
       res.status(500).send(err);
     });
   }
@@ -222,7 +237,7 @@ class InstancesRestAPI {
       this.instanceManager.connect(instanceNode).then((instanceNode) => {
         res.status(200).send({});
       }).catch((err) => {
-        log.error(err);
+        this.log.error(err);
         res.status(500).send(err);
       });
     } else {
@@ -236,14 +251,15 @@ class InstancesRestAPI {
   disconnectFromInstance(req, res) {
     if (this.instancesNode.hasChild(req.params.id)) {
       let instanceNode = this.instancesNode.getChild(req.params.id);
+      this.log.info(instanceNode.getName());
       this.instanceManager.disconnect(instanceNode).then((instanceNode) => {
         res.status(200).send({});
       }).catch((err) => {
-        log.error(err);
+        this.log.error(err);
         res.status(500).send(err);
       });
     } else {
-      res.status(404).send(util.format('Cannot connect to instance. Instance with id %s was not found', req.params.id));
+      res.status(404).send(util.format('Cannot disconnect from instance. Instance with id %s was not found', req.params.id));
     }
   }
 
