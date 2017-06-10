@@ -30,6 +30,9 @@ class ProfilesRestAPI {
     // Lists all available profiles
     this.router.get('/profiles', this.listProfiles.bind(this));
 
+    // Returns a profile
+    this.router.get('/profiles/:name', this.dumpProfilesTree.bind(this));
+
     // Creates a new profile
     this.router.post('/profiles/:name', this.createProfile.bind(this));
 
@@ -45,7 +48,23 @@ class ProfilesRestAPI {
    * Lists all profiles.
    */
   listProfiles(req, res) {
-    res.status(200).json(this.profilesNode.getChildNames());
+    let profiles = this.profilesNode.getChildNames();
+    profiles.shift();
+    profiles.shift();
+    res.status(200).json(profiles);
+  }
+
+  /**
+   * Dumps the subtree of the instance.
+   */
+  dumpProfilesTree(req, res) {
+    if (this.profilesNode.hasChild(req.params.name)) {
+      let profileNode = this.profilesNode.getChild(req.params.name);
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).json(profileNode.toObject());
+    } else {
+      res.status(404).send(util.format('Profile %s was not found', req.params.name));
+    }
   }
 
   /**
