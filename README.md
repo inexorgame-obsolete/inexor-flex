@@ -85,16 +85,6 @@ Since those components tightly couple each other, and *must* work in order to st
 Documentation shall be done via swagger as soon as the `v3 spec` is released, which brings `AnyOf` support.
 Please track the following [pull request](https://github.com/OAI/OpenAPI-Specification/pull/741) for updates.
 
-## Extending flex - extensions and plugins
-
-You can extend flex by adding either extensions or plugins.
-An extension is basically a [Express router](http://expressjs.com/de/4x/api.html#router) object that you can (un)load at runtime, while
-plugins can generally be considered as customization to the game, such as custom game scripts (...).
-
-### Writing Extensions
-An extension is at it's core just a [express router](http://expressjs.com/de/4x/api.html#router) instance, that you should return via `module.exports`
-Afterwards either add it to the list of extensions in  `server/extensions.json` or use the `extensions API` to (un)load your extension at runtime.
-
 ## Flex won't start, resolving conflicts with the module manager
 If Inexor Flex won't start for strange reasons the most likely reason is that you've worked with a earlier revision in which the dependencies weren't at all ready.
 By that case you'll most likely get the `master` branch running again following down these steps:
@@ -103,15 +93,27 @@ By that case you'll most likely get the `master` branch running again following 
 - delete *all* `node_modules` folders using e,g: `rm -r */node_modules && rm -r */*/node_modules`
 - install the app again after all with `npm install`, which can take some time (the modules are small, but in a central dependency root they're quiet a bummer)
 
+# Adding a user interface
+To add a new user interface to flex, you must adapt the following schema
+
+- The package manager of favour is [yarn](yarnpkg.com).
+- Your interface must expose a `public` folder with all it's assets
+ - `package.json`
+ - `public`
+  - `img`
+  - `js`
+  - `css`
+  - `index.html`
+  - (...)
+- Please indicate that your package is a _inexor-ui_ with the `@inexor-ui` scope on `npm`
+- Your dependencies will be served from `http(s)://flex_url/static`
+- Your interface will be served from `http(s)://flex_url/ui/UINAME`
+- `flex` is a reserved module name that will also be an alias for `http(s)://flex_url/ui`
+
 # TODO
 Following is still undone:
 
- - [ ] add extensions loading and `API`
- - [ ] add `TOML/HJSON` readers as `extensions`
- - [ ] add an example plugin and the new plugin system via Node.js Sandbox
- - [ ] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - [ ] add profiles
+ - [x] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
  - [x] fix the documentation
- - [ ] add a task to automagically reinstall modules once they are changed (for development)
  - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
- - [ ] glue together UI, Flex and Core with submodules, see [this issue](https://github.com/inexor-game/code/issues/360)
- - [ ] add a `snapcraft.yaml` to package flex independently
