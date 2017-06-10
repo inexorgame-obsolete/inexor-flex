@@ -61,6 +61,16 @@ class LogManager extends EventEmitter {
   }
 
   /**
+   * Removes all logging configuration from the tree.
+   */
+  clear() {
+    return new Promise((resolve, reject) => {
+      this.loggingNode.removeAllChildren();
+      resolve(true);
+    });
+  }
+
+  /**
    * Creates a new logger
    * @param {string} name - The logger name.
    * @param {boolean} console - If true the logger logs to stdout.

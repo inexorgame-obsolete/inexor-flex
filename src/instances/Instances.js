@@ -151,6 +151,14 @@ class InstanceManager extends EventEmitter {
     return this.instancesNode.hasChild(instanceId);
   }
 
+  
+  clear() {
+    return new Promise((resolve, reject) => {
+      this.instancesNode.removeAllChildren();
+      resolve(true);
+    });
+  }
+
   /**
    * Creates an instance of Inexor Core. The instance is created but not started!
    * @function
@@ -386,9 +394,9 @@ class InstanceManager extends EventEmitter {
   startAll() {
     return new Promise((resolve, reject) => {
       let instanceIds = this.instancesNode.getChildNames();
-      instanceIds.forEach(function(instanceId) {
-        this.start(this.instancesNode.getChild(instanceId));
-      });
+      for (let i = 0; i < instanceIds.length; i += 1) {
+        this.start(this.instancesNode.getChild(instanceIds[i]));
+      }
       resolve(true);
     });
   }
@@ -401,9 +409,9 @@ class InstanceManager extends EventEmitter {
   stopAll() {
     return new Promise((resolve, reject) => {
       let instanceIds = this.instancesNode.getChildNames();
-      instanceIds.forEach(function(instanceId) {
-        this.stop(this.instancesNode.getChild(instanceId));
-      });
+      for (let i = 0; i < instanceIds.length; i += 1) {
+        this.stop(this.instancesNode.getChild(instanceIds[i]));
+      }
       resolve(true);
     });
   }

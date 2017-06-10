@@ -36,6 +36,12 @@ class ProfileManager extends EventEmitter {
    */
   setDependencies() {
 
+    /// The instance manager
+    this.instanceManager = this.applicationContext.get('instanceManager');
+
+    /// The log manager
+    this.logManager = this.applicationContext.get('logManager');
+
     /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
 
@@ -50,7 +56,7 @@ class ProfileManager extends EventEmitter {
     this.profilesNode.addChild('current', 'string', 'client');
 
     /// The class logger
-    this.log = this.applicationContext.get('logManager').getLogger('flex.profiles.ProfileManager');
+    this.log = this.logManager.getLogger('flex.profiles.ProfileManager');
 
     /// Load profiles.toml at startup
     this.loadProfiles();
@@ -117,6 +123,7 @@ class ProfileManager extends EventEmitter {
   /**
    * Removes the profile with the given name.
    * @function
+   * @param {string} [name] - The name of the profile.
    */
   remove(name) {
     return new Promise((resolve, reject) => {
@@ -127,25 +134,34 @@ class ProfileManager extends EventEmitter {
   /**
    * Switches to the profile with the given name.
    * @function
+   * @param {string} [name] - The name of the profile.
    */
   switchTo(name) {
     return new Promise((resolve, reject) => {
-      // TODO: implement
-      // shutdown instances
-      // remove all instances
-      // remove logging config
-      // Set current profile name
-      this.setCurrentProfile(name);
-      // load instances from new profile
-      // load logging config from new profile
-      // startup instances
-      resolve(profileNode);
+      // Stop all instances
+      this.instanceManager.stopAll().then(() => {
+        // Remove all instances
+        this.instanceManager.clear().then(() => {
+          // Set current profile
+          let profileNode = this.setCurrentProfile(name);
+          // Remove log configuration
+          this.logManager.clear().then(() => {
+            // Reconfigure LogManager
+            this.logManager.loadLogConfiguration();
+            // Load instances
+            this.instanceManager.loadInstances().then(() => {
+              resolve(profileNode);
+            });
+          });
+        });
+      });
     });
   }
 
   /**
    * Loads the list of profiles from profiles.toml.
    * @function
+   * @param {string} [filename] - The filename.
    */
   loadProfiles(filename = 'profiles.toml') {
     if (!this.profilesLoaded) {
@@ -294,13 +310,14 @@ class ProfileManager extends EventEmitter {
    * @param {string} name - The name of the profile.
    */
   setCurrentProfile(name) {
-    if (name != null) {
+    if (name != null && this.profilesNode.hasChild(name)) {
       this.profilesNode.current = name;
       this.log.info(util.format('Using profile %s', this.getCurrentProfileName()));
     } else {
       this.profilesNode.current = this.profilesNode.default;
       this.log.info(util.format('Using default profile %s', this.getCurrentProfileName()));
     }
+    return this.profilesNode.getChild(this.profilesNode.current);
   }
 
   /**
