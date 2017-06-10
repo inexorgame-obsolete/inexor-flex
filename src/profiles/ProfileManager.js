@@ -11,9 +11,6 @@ const util = require('util');
 
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
-// const inexor_log = require('@inexor-game/logger');
-
-// const log = inexor_log('@inexor-game/flex/profiles/ProfileManager');
 
 /**
  * Management service for profiles.
