@@ -17,15 +17,65 @@ class InexorTreeRestAPI {
     // The tree node which contains all instance nodes
     this.instancesNode = this.root.getOrCreateNode('instances');
 
+    // Returns the root tree.
+    this.router.get('/tree/dump', this.dumpRootTree.bind(this));
+
+    // Returns the value of the tree node.
+    this.router.get('/tree/*', this.getRootNode.bind(this));
+
+    // Sets the value of the tree node.
+    this.router.post('/tree/*', this.setRootNode.bind(this));
+
     // Returns the subtree of tree node of an instance tree.
     this.router.get('/instances/:id/dump', this.dumpInstanceTree.bind(this));
 
     // Returns the value of the tree node.
-    this.router.get('/instances/:id/*', this.getNode.bind(this));
+    this.router.get('/instances/:id/*', this.getInstanceNode.bind(this));
 
     // Sets the value of the tree node.
-    this.router.post('/instances/:id/*', this.setNode.bind(this));
+    this.router.post('/instances/:id/*', this.setInstanceNode.bind(this));
 
+  }
+
+  /**
+   * Dumps the subtree of the instance.
+   */
+  dumpRootTree(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(this.root.toObject());
+  }
+
+  /**
+   * Returns the value of the tree node.
+   */
+  getRootNode(req, res) {
+    let path = req.param(0);
+    let node = this.root.findNode('/' + path);
+    if (node != null) {
+      // TODO: handle container nodes
+      if (node.isContainer) {
+        res.status(200).json(node.getChildNames());
+      } else {
+        res.status(200).json(node.get());
+      }
+    } else {
+      res.status(404).send('Key with path ' + path + ' was not found');
+    }
+  }
+
+  /**
+   * Sets the value of the tree node.
+   */
+  setRootNode(req, res) {
+    let path = req.param(0);
+    let node = this.root.findNode('/' + path);
+    if (node != null) {
+      // TODO: handle container nodes
+      node.set(req.body.value, req.body.nosync);
+      res.status(200).json(node.get());
+    } else {
+      res.status(404).send('Key with path ' + path + ' was not found');
+    }
   }
 
   /**
@@ -44,14 +94,17 @@ class InexorTreeRestAPI {
   /**
    * Returns the value of the tree node.
    */
-  getNode(req, res) {
+  getInstanceNode(req, res) {
     if (this.instancesNode.hasChild(req.params.id)) {
       let path = req.param(0);
       let full_path = '/instances/' + req.params.id + '/' + path;
       let node = this.root.findNode(full_path);
       if (node != null) {
-        // TODO: handle container nodes
-        res.status(200).json(node.get());
+        if (node.isContainer) {
+          res.status(200).json(node.getChildNames());
+        } else {
+          res.status(200).json(node.get());
+        }
       } else {
         res.status(404).send('Key with path ' + path + ' was not found');
       }
@@ -63,7 +116,7 @@ class InexorTreeRestAPI {
   /**
    * Sets the value of the tree node.
    */
-  setNode(req, res) {
+  setInstanceNode(req, res) {
     if (this.instancesNode.hasChild(req.params.id)) {
       let path = req.param(0);
       let full_path = '/instances/' + req.params.id + '/' + path;
