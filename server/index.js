@@ -74,6 +74,7 @@ const express = require('express');
 
 // Configures the server to be use-able as a RESTfull API
 var app = express();
+app.use(require('cors')());
 
 // Use the webdir via the --webdir flag
 try {
