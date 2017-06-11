@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "postinstall": "npm update @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types @inexor-game/loader @inexor-ui/ui-flex",
+    "postinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types @inexor-game/loader @inexor-ui/ui-flex",
     "start": "node server/index.js",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
@@ -47,7 +47,6 @@
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
     "@inexor-game/types": "file:src/types",
-    "@inexor-ui/flex": "file:interfaces/ui-flex",
     "@inexor-ui/ui-flex": "file:interfaces/ui-flex",
     "circular-json": "^0.3.1",
     "cors": "^2.8.3",
