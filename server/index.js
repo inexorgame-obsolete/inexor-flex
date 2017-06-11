@@ -161,6 +161,10 @@ process.on('SIGTERM', () => {
   process.exit();
 });
 
+process.on('uncaughtException', (err) => {
+  log.info(err);
+});
+
 process.on('exit', (code, signal) => {
   if (code != null) {
     log.info(util.format('Inexor Flex process exited with exit code %d', code));
