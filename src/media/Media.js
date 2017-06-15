@@ -72,7 +72,7 @@ class MediaManager extends EventEmitter {
    *   name: ':media_name',
    *   description: 'Long text',
    *   tags: [ 'tag1', 'tag2', 'tag3' ],
-   *   repository: 'https://github.com/inexor-game/data',
+   *   repository: 'https://github.com/inexorgame/data',
    *   author: '',
    *   license: '',
    *   // The properties of a media type depends on media type
@@ -83,7 +83,7 @@ class MediaManager extends EventEmitter {
    *   // The dependencies refer to another resource
    *   dependencies: [
    *     {
-   *       repository: 'https://github.com/inexor-game/data',
+   *       repository: 'https://github.com/inexorgame/data',
    *       name: ':media_name',
    *       type: ':media_type'
    *     }

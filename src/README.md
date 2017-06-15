@@ -27,7 +27,7 @@ Following is an example configuration to be used for your `package.json`
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inexor-game/flex.git"
+    "url": "git+https://github.com/inexorgame/flex.git"
   },
   "keywords": [
     "inexor",
@@ -36,9 +36,9 @@ Following is an example configuration to be used for your `package.json`
   "author": "The Inexor Team",
   "license": "Zlib",
   "bugs": {
-    "url": "https://github.com/inexor-game/flex/issues"
+    "url": "https://github.com/inexorgame/flex/issues"
   },
-  "homepage": "https://github.com/inexor-game/flex#readme",
+  "homepage": "https://github.com/inexorgame/flex#readme",
   "engines": {
     "node": ">=6.9.1"
   },

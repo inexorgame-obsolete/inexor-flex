@@ -6,9 +6,9 @@ Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree A
 
 ## Architecture
 
-* https://github.com/inexor-game/code/wiki/Overall-Architecture
-* https://github.com/inexor-game/code/issues/354
-* https://github.com/inexor-game/code/issues/348
+* https://github.com/inexorgame/code/wiki/Overall-Architecture
+* https://github.com/inexorgame/code/issues/354
+* https://github.com/inexorgame/code/issues/348
 
 ## Webserver
 
@@ -114,6 +114,6 @@ To add a new user interface to flex, you must adapt the following schema
 Following is still undone:
 
  - [ ] add profiles
- - [x] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexor-game/code/wiki/Command%20Line%20Options%20And%20Commands)
+ - [x] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexorgame/code/wiki/Command%20Line%20Options%20And%20Commands)
  - [x] fix the documentation
  - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)

@@ -863,7 +863,7 @@ class MediaRepositoryManager extends EventEmitter {
   fetchCoreRepository() {
     if (!this.exists('core')) {
       // Clones the core media repository
-      this.gitRepositoryManager.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexor-game/data.git');
+      this.gitRepositoryManager.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexorgame/data.git');
     }
     if (!this.exists('user')) {
       // Creates a personal media repository for the current user
