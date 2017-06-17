@@ -71,8 +71,15 @@ class InexorTreeRestAPI {
     let node = this.root.findNode('/' + path);
     if (node != null) {
       // TODO: handle container nodes
-      node.set(req.body.value, req.body.nosync);
-      res.status(200).json(node.get());
+      let value = this.convert(node._datatype, req.body.value);
+      if (value != null) {
+        node.set(value, req.body.nosync);
+        res.status(200).json(node.get());
+      } else {
+        res.status(404).send('Invalid data type');
+      }
+      // node.set(req.body.value, req.body.nosync);
+      // res.status(200).json(node.get());
     } else {
       res.status(404).send('Key with path ' + path + ' was not found');
     }
@@ -130,6 +137,29 @@ class InexorTreeRestAPI {
       }
     } else {
       res.status(404).send(util.format('Instance with id %s was not found', req.params.id));
+    }
+  }
+
+  /**
+   * Converts an incoming string value to the target datatype.
+   */
+  convert(datatype, value) {
+    if (typeof value == 'string') {
+      switch (datatype) {
+        case 'int32':
+        case 'int64':
+        case 'enum':
+          return parseInt(value);
+        case 'float':
+          return parseFloat(value);
+        case 'bool':
+          return (value == 'true');
+        case 'string':
+          return value;
+        default:
+          // timestamp, object, node,
+          return null;
+      }
     }
   }
 

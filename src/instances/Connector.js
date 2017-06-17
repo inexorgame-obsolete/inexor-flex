@@ -142,9 +142,11 @@ class Connector extends EventEmitter {
         // self.disconnect();
       });
 
+      // We listen on the ADD event of the root tree node ...
       this.instanceNode.getRoot().on('add', function(node) {
         if (node.isChildOf(self.instanceNode)) {
           log.debug('Adding synchronization event of node ' + node.getPath());
+          // ... and add an sync event on the added tree node
           let handler = node.on('sync', function(oldValue, newValue) {
             log.debug('Synchronizing node ' + node.getPath());
             try {
@@ -153,7 +155,7 @@ class Connector extends EventEmitter {
               log.info('Sending message: ' + JSON.stringify(message));
               self._synchronize.write(message);
             } catch (err) {
-              log.error(err, 'Synchronization of ' + self.getProtoKey(node._path) + ' failed');
+              log.error(err, util.format('Synchronization of %s failed', node._protoKey));
             }
           });
         }
@@ -296,6 +298,8 @@ class Connector extends EventEmitter {
         case 'int64':
           return parseInt(defaultValueAsString);
         case 'float':
+          return parseFloat(defaultValueAsString);
+        case 'bool':
           return parseFloat(defaultValueAsString);
         case 'string':
         default:
