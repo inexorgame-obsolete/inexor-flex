@@ -136,8 +136,10 @@ class Connector extends EventEmitter {
       });
 
       this._synchronize.on('error', function(err) {
-        log.error('Synchronize ERROR\n%s', JSON.stringify(err));
-        self.disconnect();
+        log.error('Synchronize ERROR');
+        log.error(err);
+        // log.error('Synchronize ERROR\n%s', JSON.stringify(err));
+        // self.disconnect();
       });
 
       this.instanceNode.getRoot().on('add', function(node) {
