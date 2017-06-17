@@ -1,0 +1,8 @@
+# Configure the wall clock
+wallclock = 1
+wallclock24 = 1
+wallclocksecs = 1
+
+[rendering.screen]
+fullscreen = 1
+

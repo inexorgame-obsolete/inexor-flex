@@ -391,10 +391,11 @@ class Node extends EventEmitter {
      * @function
      * @name Node.removeChild
      * @param {string} name - The name of the child node.
+     * @param {boolean} force - Forces the removal even if the child node is readOnly.
      * @return {boolean} True if the child node has been deleted. False if there wasn't a child node with the given name or the child node was read only.
      */
-    removeChild(name) {
-        if (this.hasChild(name) && !this.getChild(name)._readOnly) {
+    removeChild(name, force = false) {
+        if (this.hasChild(name) && (!this.getChild(name)._readOnly || force)) {
             this._value.delete(name);
             let self = this;
             delete self[name];

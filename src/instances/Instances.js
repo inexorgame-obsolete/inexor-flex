@@ -233,7 +233,7 @@ class InstanceManager extends EventEmitter {
   	this.log.info('Starting instance ' + instanceNode.name + ' (id: ' + instanceId + ', type: ' + instance_type + ', port: ' + instance_port + ')');
   
     return new Promise((resolve, reject) => {
-      
+
       // Resolve executable
       let executable_path = inexor_path.getExecutablePath(instance_type)
       if (!fs.existsSync(executable_path)) {
@@ -253,22 +253,11 @@ class InstanceManager extends EventEmitter {
       this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
 
       instanceProcess.on('error', (err) => {
-        instanceNode.removeChild('process');
-        this.transist(instanceNode, 'running', 'started');
-        this.transist(instanceNode, 'started', 'stopped');
-        if (err != null) {
-          this.log.error(util.format('Error in %s: %s', this.getInstanceName(instanceNode), err.message));
-        }
+        this.onProcessError(instanceNode, err);
       });
+
       instanceProcess.on('exit', (code, signal) => {
-        instanceNode.removeChild('process');
-        this.transist(instanceNode, 'running', 'started');
-        this.transist(instanceNode, 'started', 'stopped');
-        if (code != null) {
-          this.log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instanceNode), code));
-        } else if (signal != null) {
-          this.log.info(util.format('%s process exited with signal %s', this.getInstanceName(instanceNode), signal));
-        }
+        this.onProcessExited(instanceNode, code, signal);
       });
 
       // Store the instance PID
@@ -300,13 +289,80 @@ class InstanceManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         this.log.info(util.format('Stopping instance %s', this.getInstanceName(instanceNode)));
-        // SIGTERM
-        instanceNode.getChild('process').get().kill();
+        this.shutdownConnection(instanceNode);
+        this.shutdownProcess(instanceNode, true);
         resolve(instanceNode);
       } catch (err) {
         reject(util.format('Failed to stop instance %s', this.getInstanceName(instanceNode)));
       }
     });
+  }
+
+  onProcessError(instanceNode, err) {
+    if (err != null) {
+      this.log.error(err);
+    }
+    this.shutdownConnection(instanceNode);
+    this.shutdownProcess(instanceNode);
+  }
+
+  onProcessExited(instanceNode, code, signal) {
+    if (code != null) {
+      this.log.info(util.format('%s process exited with exit code %d', this.getInstanceName(instanceNode), code));
+    } else if (signal != null) {
+      this.log.info(util.format('%s process exited with signal %s', this.getInstanceName(instanceNode), signal));
+    }
+    this.shutdownConnection(instanceNode);
+    this.shutdownProcess(instanceNode);
+  }
+
+  shutdownConnection(instanceNode) {
+    if (instanceNode.hasChild('connector')) {
+      let connectorNode = instanceNode.getChild('connector');
+      connectorNode._value.disconnect();
+      delete connectorNode._value;
+      instanceNode.removeChild('connector', true);
+      this.log.info(util.format('Removed connector for instance %s', instanceNode.getName()));
+    } else {
+      this.log.info(util.format('No connector found for instance %s', instanceNode.getName()));
+    }
+    this.transist(instanceNode, 'running', 'started');
+  }
+
+  /**
+   * Shutdown the given process. Optionally kills the process.
+   * @function
+   * @param {tree.Node} [instanceNode] - The instance node.
+   */
+  shutdownProcess(instanceNode, killProcess = false) {
+    // TODO: remove process listeners
+    if (instanceNode.hasChild('process')) {
+      if (killProcess) {
+        this.killProcess(instanceNode);
+      }
+      instanceNode.removeChild('process');
+      this.log.info(util.format('Removed process for instance %s', instanceNode.getName()));
+    } else {
+      this.log.info(util.format('No process found for instance %s', instanceNode.getName()));
+    }
+    if (instanceNode.hasChild('pid')) {
+      instanceNode.removeChild('pid');
+    }
+    if (instanceNode.hasChild('initialized')) {
+      instanceNode.removeChild('initialized');
+    }
+    this.transist(instanceNode, 'started', 'stopped');
+  }
+
+  /**
+   * Kills the process of the given instance.
+   * @function
+   * @param {tree.Node} [instanceNode] - The instance node.
+   */
+  killProcess(instanceNode) {
+    // SIGTERM
+    instanceNode.getChild('process').get().kill();
+    this.log.info(util.format('Killed process for instance %s', instanceNode.getName()));
   }
 
   /**
@@ -318,7 +374,8 @@ class InstanceManager extends EventEmitter {
   connect(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        let connector = new Connector(instanceNode);
+        let connector = new Connector(this.applicationContext, instanceNode);
+        this.log.info('Created a new GRPC connector');
         // Store the connector as private child of the instance node
         instanceNode.addChild('connector', 'object', connector, false, true);
         connector.connect().then((instanceNode) => {
@@ -343,11 +400,7 @@ class InstanceManager extends EventEmitter {
   disconnect(instanceNode) {
     return new Promise((resolve, reject) => {
       try {
-        let connectorNode = instanceNode.getChild('connector');
-        let connector = connectorNode._value;
-        connector.disconnect();
-        instanceNode.removeChild('connector');
-        this.transist(instanceNode, 'running', 'started');
+        this.shutdownConnection(instanceNode);
         resolve(instanceNode);
       } catch (err) {
         this.log.error(err);
@@ -462,7 +515,7 @@ class InstanceManager extends EventEmitter {
   }
 
   /**
-   * Saves an instance to a TOML file.
+   * Saves a instances to a TOML file.
    * @function
    * @param {string} [filename] - The filename.
    * @return {Promise<bool>}

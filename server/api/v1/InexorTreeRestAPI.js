@@ -142,6 +142,7 @@ class InexorTreeRestAPI {
 
   /**
    * Converts an incoming string value to the target datatype.
+   * TODO: move to tree utils
    */
   convert(datatype, value) {
     if (typeof value == 'string') {
@@ -160,6 +161,38 @@ class InexorTreeRestAPI {
           // timestamp, object, node,
           return null;
       }
+    } else if (typeof value == 'number') {
+      switch (datatype) {
+        case 'int32':
+        case 'int64':
+        case 'enum':
+        case 'float':
+          return value;
+        case 'bool':
+          return value == 1 ? true : false;
+        case 'string':
+          return value.toString();
+        default:
+          // timestamp, object, node,
+          return null;
+      }
+    } else if (typeof value == 'boolean') {
+      switch (datatype) {
+        case 'int32':
+        case 'int64':
+        case 'enum':
+        case 'float':
+          return value ? 1 : 0;
+        case 'bool':
+          return value;
+        case 'string':
+          return value.toString();
+        default:
+          // timestamp, object, node,
+          return null;
+      }
+    } else {
+      return null;
     }
   }
 

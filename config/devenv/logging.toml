@@ -14,6 +14,10 @@ level = "warn"
 
 level = "info"
 
+[logging.flex.instances.Connector]
+
+level = "debug"
+
 [logging.flex.profiles.ProfileManager]
 
 level = "warn"
