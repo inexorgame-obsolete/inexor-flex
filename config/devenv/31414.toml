@@ -1,0 +1,7 @@
+# The enet server ip and port
+# serverip = 
+serverport = 31415
+
+# Server description
+serverdesc = "Inexor Server"
+servermotd = "Play Inexor!"

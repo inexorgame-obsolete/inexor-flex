@@ -8,7 +8,7 @@ file = "null"
 
 [logging.flex.logging.LogManager]
 
-level = "warn"
+level = "info"
 
 [logging.flex.instances.InstanceManager]
 
@@ -37,3 +37,11 @@ level = "warn"
 [logging.flex.media.repository.FilesystemRepositoryManager]
 
 level = "warn"
+
+[logging.core.client.31414]
+
+level = "debug"
+
+[logging.core.client.31417]
+
+level = "debug"

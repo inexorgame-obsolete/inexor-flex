@@ -1,8 +1,7 @@
 # Make visual that we're using the devenv profile
-crosshairsize = 200
+crosshairsize = 80
 
 [rendering.screen]
 fullscreen = 0
 scr_w = 800
 scr_h = 600
-

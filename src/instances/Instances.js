@@ -113,8 +113,11 @@ class InstanceManager extends EventEmitter {
     /// The console manager service
     this.consoleManager = this.applicationContext.get('consoleManager');
 
+    /// The console manager service
+    this.logManager = this.applicationContext.get('logManager');
+
     /// The class logger
-    this.log = this.applicationContext.get('logManager').getLogger('flex.instances.InstanceManager');
+    this.log = this.logManager.getLogger('flex.instances.InstanceManager');
 
   }
 
@@ -268,13 +271,11 @@ class InstanceManager extends EventEmitter {
       
       // Create a logger for the instance
       this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
+        this.transist(instanceNode, 'stopped', 'started');
         resolve(instanceNode);
       }).catch((err) => {
         reject('Failed to create instance console');
       });
-
-      this.transist(instanceNode, 'stopped', 'started');
-      resolve(instanceNode);
 
     });
   }

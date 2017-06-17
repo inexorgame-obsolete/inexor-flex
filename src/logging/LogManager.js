@@ -78,29 +78,22 @@ class LogManager extends EventEmitter {
    * @param {string} level - The log level.
    */
   createLogger(name, console = true, file = null, level = 'info') {
-    streams = [];
-
-    // TODO: get recursively from 
+    let streams = [];
     if (console) {
      streams.push({
        type: 'raw',
        stream: bunyanDebugStream({ forceColor: true })
      })
     }
-
     if (file != null && file != 'null') {
      streams.push({
        path: file
      })
     }
-/*
-    if (this.log != null) {
-      // this.log.info(name in this.loggers);
-      for (let lname of Object.keys(this.loggers)) {
-      this.log.info(lname);
-      }
-    }
-*/    
+    return this.createStreamLogger(name, console, file, level, streams);
+  }
+
+  createStreamLogger(name, console = true, file = null, level = 'info', streams = []) {
     if (!this.loggers.hasOwnProperty(name)) {
 
       // Create tree structure
@@ -114,7 +107,14 @@ class LogManager extends EventEmitter {
       treeNode.addChild('file', 'string', file == null ? 'null' : file);
 
       // Create new logger
-      this.loggers[name] = bunyan.createLogger({name: name, level: level, streams: streams, serializers: bunyanDebugStream.serializers });
+      this.loggers[name] = bunyan.createLogger({
+        name: name,
+        level: level,
+        streams: streams,
+        serializers: bunyanDebugStream.serializers
+      });
+
+      // Log about loggers
       if (this.log != null) {
         this.log.info(util.format('Created logger %s (level: %s, console: %s, file: %s)', name, level, String(console), String(file)));
       }
@@ -138,15 +138,13 @@ class LogManager extends EventEmitter {
         logger.addStream(streams[i]);
       }
       logger.level(level);
-      // logger.addStream();
-      // logger.streams = streams;
 
+      // Log about loggers
       if (this.log != null) {
         this.log.info(util.format('Reconfigured logger %s (level: %s, console: %s, file: %s)', name, level, String(console), String(file)));
       }
 
     }
-
     return this.loggers[name];
   }
 

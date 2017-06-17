@@ -21,3 +21,11 @@ level = "warn"
 [logging.flex.profiles.ProfileManager]
 
 level = "info"
+
+[logging.core.client.31414]
+
+level = "info"
+
+[logging.core.client.31417]
+
+level = "info"
