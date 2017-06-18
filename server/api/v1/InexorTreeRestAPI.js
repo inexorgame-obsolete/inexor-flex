@@ -20,6 +20,9 @@ class InexorTreeRestAPI {
     // Returns the root tree.
     this.router.get('/tree/dump', this.dumpRootTree.bind(this));
 
+    // Returns the root tree.
+    this.router.get('/tree/*/dump', this.dumpSubTree.bind(this));
+
     // Returns the value of the tree node.
     this.router.get('/tree/*', this.getRootNode.bind(this));
 
@@ -43,6 +46,23 @@ class InexorTreeRestAPI {
   dumpRootTree(req, res) {
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(this.root.toObject());
+  }
+
+  /**
+   * Dumps the subtree of the node by the given path.
+   */
+  dumpSubTree(req, res) {
+    let path = req.param(0);
+    let node = this.root.findNode('/' + path);
+    if (node != null) {
+      if (node.isContainer) {
+        res.status(200).json(node.toObject());
+      } else {
+        res.status(200).json(node.get());
+      }
+    } else {
+      res.status(404).send('Key with path ' + path + ' was not found');
+    }
   }
 
   /**
