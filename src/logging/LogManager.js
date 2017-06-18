@@ -41,7 +41,7 @@ class LogManager extends EventEmitter {
     /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
 
-    /// The Inexor Tree node containing profiles
+    /// The Inexor Tree node containing the logging configuration
     this.loggingNode = this.root.getOrCreateNode('logging');
 
     // The class logger
@@ -102,9 +102,9 @@ class LogManager extends EventEmitter {
       for (let i = 0; i < parts.length; i++) {
         treeNode = treeNode.getOrCreateNode(parts[i]);
       }
-      treeNode.addChild('level', 'string', level);
-      treeNode.addChild('console', 'bool', console);
-      treeNode.addChild('file', 'string', file == null ? 'null' : file);
+      let levelNode = treeNode.addChild('level', 'string', level);
+      let consoleNode = treeNode.addChild('console', 'bool', console);
+      let fileNode = treeNode.addChild('file', 'string', file == null ? 'null' : file);
 
       // Create new logger
       this.loggers[name] = bunyan.createLogger({
@@ -112,6 +112,14 @@ class LogManager extends EventEmitter {
         level: level,
         streams: streams,
         serializers: bunyanDebugStream.serializers
+      });
+
+      // Listen on log level changes in the tree
+      levelNode.on('postSet', (event) => {
+        if (event.oldValue != event.newValue) {
+          this.loggers[name].level(event.newValue);
+          this.log.info(util.format('Reconfigured logger %s (level: %s)', name, event.newValue));
+        }
       });
 
       // Log about loggers
@@ -127,6 +135,8 @@ class LogManager extends EventEmitter {
       for (let i = 0; i < parts.length; i++) {
         treeNode = treeNode.getOrCreateNode(parts[i]);
       }
+      
+      // Update the log level (tree node event)
       treeNode.level = level;
       treeNode.console = console;
       treeNode.file = file == null ? 'null' : file;
@@ -136,12 +146,6 @@ class LogManager extends EventEmitter {
       logger.streams = [];
       for (var i = 0; i < streams.length; i++) {
         logger.addStream(streams[i]);
-      }
-      logger.level(level);
-
-      // Log about loggers
-      if (this.log != null) {
-        this.log.info(util.format('Reconfigured logger %s (level: %s, console: %s, file: %s)', name, level, String(console), String(file)));
       }
 
     }
