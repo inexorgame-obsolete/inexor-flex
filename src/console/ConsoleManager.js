@@ -79,34 +79,10 @@ class ConsoleManager extends EventEmitter {
           stream: instanceConsoleBuffer
         }
       ];
-
-//      // Create streams for stdout and ring buffer
-//      let stdoutStream = {
-//        level: 'info',
-//        stream: process.stdout
-//      };
-//      // use 'raw' to get raw log record objects
-//      let bufferStream = {
-//        level: 'trace',
-//        type: 'raw',
-//        stream: instanceConsoleBuffer
-//      };
-//      streams.push({
-//        type: 'raw',
-//        stream: bunyanDebugStream({ forceColor: true })
-//      })
       
       // Create the instance logger
       let loggerName = util.format('core.%s.%s', instanceType, instanceId);
       let instanceLogger = this.logManager.createStreamLogger(loggerName, true, null, 'trace', streams);
-
-//      let instanceLogger = bunyan.createLogger({
-//        name: loggerName,
-//        streams: [
-//          stdoutStream,
-//          bufferStream
-//        ]
-//      });
 
       // Redirect the instance stdout and stderr to the instance logger
       instanceProcess.stdout.on('data', (data) => { this.mapStreamToLog(instanceLogger, data) });
@@ -141,22 +117,34 @@ class ConsoleManager extends EventEmitter {
     //       { "name": "global", "level": "info", "msg": "the log message text", "time": "2016-07-03T16:07:10.754Z" }
     let lines = data.toString('utf8').split("\n");
     for (var line of lines) {
-      if (line.includes('[trace]')) {
-        instanceLogger.trace(line);
-      } else if (line.includes('[debug]')) {
-        instanceLogger.debug(line);
-      } else if (line.includes('[info]')) {
-        instanceLogger.info(line);
-      } else if (line.includes('[warning]')) {
-        instanceLogger.warn(line);
-      } else if (line.includes('[error]')) {
-        instanceLogger.error(line);
-      } else if (line.includes('[critical]')) {
-        instanceLogger.fatal(line);
-      } else {
-        instanceLogger.debug(line);
+      line = line.trim();
+      if (line.length > 0) {
+        let entry = this.parseLine(line);
+        instanceLogger[entry.level](entry.message);
       }
     }
+  }
+
+  getChildLogger(instanceLogger, name) {
+    let logger = instanceLogger.child({
+      name: name
+    });
+    logger.name = name;
+    return logger;
+  }
+
+  parseLine(line) {
+    let result = {};
+    line = line.trim();
+    result.date = line.substring(0, 8);
+    line = line.substring(9);
+    var regExp = /\[([^\]]+)\].+\[([^\]]+)\]/;
+    var matches = regExp.exec(line);
+    result.name = matches[1];
+    result.level = this.mapLogLevel(matches[2]);
+    result.message = line.substring(this.nthOcurrence(line, ']', 2) + 2);
+    // this.log.info(JSON.stringify(result));
+    return result;
   }
 
   /**
@@ -168,26 +156,7 @@ class ConsoleManager extends EventEmitter {
    */
   writeBuffer(instanceId, message, level = 'info') {
     let logger = this.instancesNode.getChild(instanceId).console.logger.get();
-    switch (level) {
-      case 'trace':
-        logger.trace(message);
-        break;
-      case 'debug':
-        logger.debug(message);
-        break;
-      case 'info':
-        logger.info(message);
-        break;
-      case 'warn':
-        logger.warn(message);
-        break;
-      case 'error':
-        logger.error(message);
-        break;
-      case 'fatal':
-        logger.fatal(message);
-        break;
-    }
+    logger[this.mapLogLevel(level)](message);
   }
 
   /**
@@ -202,6 +171,28 @@ class ConsoleManager extends EventEmitter {
    */
   getBuffer(instanceId) {
     return this.instancesNode.getChild(instanceId).console.buffer.get().records;
+  }
+
+  mapLogLevel(level) {
+    switch (level) {
+      case 'warning':
+        return 'warn';
+      case 'critical':
+        return 'fatal';
+      default:
+        return level;
+    }
+  }
+
+  nthOcurrence(str, search, position) {
+    for (let i = 0; i < str.length; i++) {
+      if (str.charAt(i) == search) {
+        if (!--position) {
+          return i;    
+        }
+      }
+    }
+    return false;
   }
 
 }
