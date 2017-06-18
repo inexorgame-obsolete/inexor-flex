@@ -135,15 +135,18 @@ class ConsoleManager extends EventEmitter {
 
   parseLine(line) {
     let result = {};
-    line = line.trim();
-    result.date = line.substring(0, 8);
-    line = line.substring(9);
     var regExp = /\[([^\]]+)\].+\[([^\]]+)\]/;
     var matches = regExp.exec(line);
-    result.name = matches[1];
-    result.level = this.mapLogLevel(matches[2]);
-    result.message = line.substring(this.nthOcurrence(line, ']', 2) + 2);
-    // this.log.info(JSON.stringify(result));
+    if (matches != null && matches.length >= 3) {
+      result.date = line.substring(0, 8);
+      result.name = matches[1];
+      result.level = this.mapLogLevel(matches[2]);
+      result.message = line.substring(this.nthOcurrence(line, ']', 2) + 2);
+    } else {
+      result.name = '';
+      result.level = 'info';
+      result.message = line;
+    }
     return result;
   }
 
