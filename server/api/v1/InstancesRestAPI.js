@@ -26,9 +26,6 @@ class InstancesRestAPI extends EventEmitter {
     // The tree node which contains all instance nodes
     this.instancesNode = this.root.getOrCreateNode('instances');
 
-    // Delivery the web user interfaces
-    this.router.use('/interfaces', express.static('interfaces'));
-
     // Lists all available instances
     this.router.get('/instances', this.listInstances.bind(this));
 

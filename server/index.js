@@ -27,13 +27,6 @@ const argv = require('yargs')
     type: 'number',
     describe: 'The server port to use. Overwrites the profile value.'
   })
-  // TODO: remove and use InterfaceManager
-  .option('webdir', {
-    // TODO: handle multiple user interfaces
-    default: 'interfaces/',
-    type: 'string',
-    describe: 'The path to the Inexor user interfaces.'
-  })
   // TODO: manage logging by LogManager (uses profiles)
   .option('console', {
     default: true,
@@ -75,14 +68,6 @@ const express = require('express');
 // Configures the server to be use-able as a RESTfull API
 var app = express();
 app.use(require('cors')());
-
-// Use the webdir via the --webdir flag
-try {
-  app.use(express.static(path.resolve(argv.webdir)));
-  log.debug(util.format('Using webdir: %s', argv.webdir));
-} catch (err) {
-  log.warn('Skipped webdir');
-}
 
 // Handle logging
 app.use((req, res, next) => {
@@ -134,6 +119,7 @@ process.on('SIGHUP', () => {
       break;
     default:
       log.info(util.format('Got signal SIGHUP. Graceful reloading the server (%s)', os.platform()));
+      // TODO: remove
       require('@inexor-game/plugins').then((router) => {
         app.use('/plugins', router);
       });

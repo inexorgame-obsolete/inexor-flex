@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
-    "shell": "node inexor shell"
+    "shell": "node inexor shell",
+    "build-ui-flex": "cd interfaces/ui-flex && npm run build"
   },
   "repository": {
     "type": "git",
