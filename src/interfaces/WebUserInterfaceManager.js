@@ -60,7 +60,7 @@ class WebUserInterfaceManager extends EventEmitter {
     this.createInterface('ui-flex', 'Inexor Flex User Interface', 'ui-flex', 'dist', 'https://github.com/inexorgame/ui-flex.git');
 
     /// Inexor Web Console
-    this.createInterface('ui-flex', 'Inexor Web Console', 'ui-console', 'public', 'https://github.com/inexorgame/ui-console.git');
+    this.createInterface('ui-console', 'Inexor Web Console', 'ui-console', 'public', 'https://github.com/inexorgame/ui-console.git');
 
     /// Inexor Core Client HUD
     this.createInterface('ui-client-hud', 'Inexor Core Client HUD', 'ui-client-hud', 'public', 'https://github.com/inexorgame/ui-client-hud.git');
@@ -68,7 +68,7 @@ class WebUserInterfaceManager extends EventEmitter {
     // TODO: menu UI
 
     /// Inexor Core Client Interface
-    this.createInterface('ui-flex', 'Inexor Core Client Interface', 'ui-client-interface', 'public', 'https://github.com/inexorgame/ui-client-interface.git');
+    this.createInterface('ui-client-interface', 'Inexor Core Client Interface', 'ui-client-interface', 'public', 'https://github.com/inexorgame/ui-client-interface.git');
 
   }
 
