@@ -185,6 +185,13 @@ let currentProfile = profileManager.getCurrentProfile();
 let hostname = argv.hostname != null ? argv.hostname : currentProfile.hostname;
 let port = argv.port != null ? argv.port : currentProfile.port;
 
+// set the default interface and static files
+app.get('/', (req, res) => {
+  res.redirect('/api/v1/interfaces/flex')
+})
+
+app.use('/static', express.static('node_modules'))
+
 var server = app.listen(port, hostname, (err) => {
   if (err) {
     log.error(err, 'Failed to start Inexor Flex');
