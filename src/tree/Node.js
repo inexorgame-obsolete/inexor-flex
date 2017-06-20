@@ -486,6 +486,39 @@ class Node extends EventEmitter {
     }
 
     /**
+     * Returns a flat representation of the sub tree.
+     * @param {number} depth - depth.
+     * @return {object}
+     */
+    getFlatRepresentation(depth = 0) {
+      var entries = {};
+      let childNames = this.getChildNames();
+      for (let i = 0; i < childNames.length; i++) {
+        let childNode = this.getChild(childNames[i]);
+        if (childNode.isContainer) {
+          entries[childNode._path] = {
+            dataType: childNode._datatype,
+            value: null
+          };
+        } else {
+          entries[childNode._path] = {
+            dataType: childNode._datatype,
+            value: childNode._value
+          };
+        }
+      }
+      if (depth > 0) {
+        for (let i = 0; i < childNames.length; i++) {
+          let childNode = this.getChild(childNames[i]);
+          if (childNode.isContainer) {
+            entries = Object.assign(entries, childNode.getFlatRepresentationOfNode(depth - 1));
+          }
+        }
+      }
+      return entries;
+    }
+
+    /**
      * Iterates over the node and child nodes
      * @function
      * @return {Node}
