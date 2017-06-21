@@ -187,10 +187,10 @@ let port = argv.port != null ? argv.port : currentProfile.port;
 
 // set the default interface and static files
 app.get('/', (req, res) => {
-  res.redirect('/api/v1/interfaces/flex')
-})
+  res.redirect('/api/v1/interfaces/ui-flex');
+});
 
-app.use('/static', express.static('node_modules'))
+app.use('/static', express.static('node_modules'));
 
 var server = app.listen(port, hostname, (err) => {
   if (err) {
