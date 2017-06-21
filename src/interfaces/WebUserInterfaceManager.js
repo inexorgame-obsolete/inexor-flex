@@ -88,8 +88,27 @@ class WebUserInterfaceManager extends EventEmitter {
     interfaceNode.addChild('path', 'string', path);
     interfaceNode.addChild('folder', 'string', folder);
     interfaceNode.addChild('repository', 'string', repository);
+    interfaceNode.addChild('enabled', 'bool', false);
+    interfaceNode.addChild('relativeFsPath', 'string', '');
+    interfaceNode.addChild('absoluteFsPath', 'string', '');
+    interfaceNode.addChild('relativeUrl', 'string', '');
+    interfaceNode.addChild('fullUrl', 'string', '');
+    this.updateInterfaceNode(name);
     this.updateInterface(name);
     this.enableInterface(name);
+  }
+
+  /**
+   * Updates the tree node values for the given user interface.
+   * @function
+   * @param {string} name The name of the web user interface.
+   */
+  updateInterfaceNode(name) {
+    let interfaceNode = this.interfacesNode.getChild(name);
+    interfaceNode.relativeFsPath = this.getRelativeFsPath(name);
+    interfaceNode.absoluteFsPath = this.getAbsoluteFsPath(name);
+    interfaceNode.relativeUrl = this.getRelativeUrl(name);
+    interfaceNode.fullUrl = this.getFullUrl(name);
   }
 
   /**
@@ -121,6 +140,8 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   removeInterface(name) {
     // TODO: implement
+    let interfaceNode = this.interfacesNode.removeChild(name);
+    
   }
 
   /**
@@ -130,10 +151,9 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   enableInterface(name) {
     let interfaceNode = this.interfacesNode.getChild(name);
-    let fs_path = util.format('interfaces/%s/%s', interfaceNode.path, interfaceNode.folder);
-    let base_url = util.format('/interfaces/%s/', interfaceNode.path);
-    this.router.use(base_url, express.static(path.resolve(fs_path)));
-    this.log.info(util.format('Enabled user interface %s on %s', path.resolve(fs_path), base_url));
+    this.router.use(interfaceNode.relativeUrl, express.static(interfaceNode.absoluteFsPath));
+    this.log.info(util.format('Enabled user interface %s on %s', interfaceNode.absoluteFsPath, interfaceNode.fullUrl));
+    interfaceNode.enabled = true;
   }
 
   /**
@@ -142,7 +162,9 @@ class WebUserInterfaceManager extends EventEmitter {
    * @param {string} name The name of the web user interface.
    */
   disableInterface(name) {
+    this.interfaceNode.enabled = false;
     // TODO: implement
+    // see https://github.com/expressjs/express/issues/2596
   }
 
   /**
@@ -154,6 +176,7 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   updateInterface(name) {
     // TODO: clone or pull/merge repository of the web user interface
+    this.log.warn('Not implemented updating an user interface');
   }
 
   /**
@@ -162,6 +185,7 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   loadInterfaces() {
     // TODO: implement
+    this.log.warn('Not implemented loading user interfaces from TOML');
   }
 
   /**
@@ -170,15 +194,55 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   scanForInterfaces() {
     // TODO: implement
+    this.log.warn('Not implemented scanning for user interfaces');
   }
 
   /**
    * Returns the list of interface names.
    * @function
+   * @return {array} The names of the user interfaces
    */
   getInterfaceNames() {
-    // TODO: implement
-    return [];
+    return this.interfacesNode.getChildNames();
+  }
+
+  /**
+   * Returns the filesystem path relative to Inexor Flex.
+   * @function
+   * @param {string} name The name of the web user interface.
+   */
+  getRelativeFsPath(name) {
+    let interfaceNode = this.interfacesNode.getChild(name);
+    return util.format('interfaces/%s/%s', interfaceNode.path, interfaceNode.folder);
+  }
+
+  /**
+   * Returns the absolute filesystem path.
+   * @function
+   * @param {string} name The name of the web user interface.
+   */
+  getAbsoluteFsPath(name) {
+    return path.resolve(this.getRelativeFsPath(name));
+  }
+
+  /**
+   * Returns the URL
+   * @function
+   * @param {string} name The name of the web user interface.
+   */
+  getRelativeUrl(name) {
+    let interfaceNode = this.interfacesNode.getChild(name);
+    return util.format('/interfaces/%s/', interfaceNode.path);
+  }
+
+  /**
+   * Returns the full URL
+   * @function
+   * @param {string} name The name of the web user interface.
+   */
+  getFullUrl(name) {
+    let interfaceNode = this.interfacesNode.getChild(name);
+    return util.format('/api/v1/interfaces/%s/', interfaceNode.path);
   }
 
 }
