@@ -97,7 +97,7 @@ class Connector extends EventEmitter {
       var id = this.getId(protoKey);
       switch (eventType) {
         case 'TYPE_GLOBAL_VAR_MODIFIED':
-          this.log.info(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
+          this.log.trace(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
           let node = this.instanceNode.getRoot().findNode(path);
           // Set value, but prevent sync
           node.set(value, true);
@@ -133,7 +133,7 @@ class Connector extends EventEmitter {
     this.log.debug(util.format('Synchronizing node %s', node.getPath()));
     try {
       let message = this.getMessage(node);
-      this.log.info('Sending message: ' + JSON.stringify(message));
+      this.log.debug('Sending message: ' + JSON.stringify(message));
       this._synchronize.write(message);
     } catch (err) {
       this.log.error(err, util.format('Synchronization of %s failed', node._protoKey));
@@ -182,14 +182,14 @@ class Connector extends EventEmitter {
   connect() {
     var self = this;
     return new Promise((resolve, reject) => {
-      this.log.info(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
+      this.log.debug(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
 
       // Create a GRPC client
       this._client = new this.protoDescriptor.inexor.tree.TreeService(
         util.format('%s:%d', this.hostname, this.port),
         grpc.credentials.createInsecure()
       );
-      this.log.info('Created a new GRPC client');
+      this.log.debug('Created a new GRPC client');
 
       // Get the ClientWritableStream
       // @see http://www.grpc.io/grpc/node/module-src_client-ClientWritableStream.html
@@ -213,7 +213,6 @@ class Connector extends EventEmitter {
       // TODO: on('connected')
       // see: https://github.com/grpc/grpc/issues/8117
       grpc.waitForClientReady(this._client, Infinity, (err) => {
-        self.log.info(this._client.$channel.getConnectivityState(true));
         if (err != null) {
           self.log.error(err);
           reject('GRPC connection failed');
