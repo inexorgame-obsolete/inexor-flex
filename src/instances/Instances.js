@@ -207,6 +207,8 @@ class InstanceManager extends EventEmitter {
         this.saveInstances();
       }
 
+      this.instancesNode.emit('instanceCreated', instanceNode);
+
       resolve(instanceNode);
     });
   }
