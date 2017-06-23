@@ -1,5 +1,5 @@
 /**
- * @module server
+ * @module gameserver
  */
 
 const EventEmitter = require('events');
@@ -37,8 +37,10 @@ class MapRotationService extends EventEmitter {
    */
   afterPropertiesSet() {
     this.instancesNode.on('instanceCreated', (instanceNode) => {
-      this.loadMapRotation(instanceNode);
-      instanceNode.on('intermission', this.onIntermission.bind(this));
+      if (instanceNode.type == 'server') {
+        this.loadMapRotation(instanceNode);
+        instanceNode.on('intermission', this.onIntermission.bind(this));
+      }
     });
   }
 
@@ -74,3 +76,5 @@ class MapRotationService extends EventEmitter {
   }
 
 }
+
+module.exports = MapRotationService;

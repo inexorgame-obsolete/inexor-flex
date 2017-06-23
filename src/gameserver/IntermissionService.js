@@ -1,5 +1,5 @@
 /**
- * @module server
+ * @module gameserver
  */
 
 const EventEmitter = require('events');
@@ -43,13 +43,13 @@ class IntermissionService extends EventEmitter {
    * If an server instance has been created, listen on intermission
    */
   onInstanceCreated(instanceNode) {
-    if (instanceNode.type == 'server') {
-      instanceNode.gamestate.intermission.on('postSet', (oldValue, newValue) => {
-        if (newValue == 1 && oldValue != 1) {
-          instanceNode.emit('intermission', instanceNode);
-        }
-      });
-    }
+    instanceNode.gamestate.intermission.on('postSet', (oldValue, newValue) => {
+      if (newValue == 1 && oldValue != 1) {
+        instanceNode.emit('intermission', instanceNode);
+      }
+    });
   }
 
 }
+
+module.exports = IntermissionService;

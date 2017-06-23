@@ -1,6 +1,6 @@
 /**
- * Management of inexor servers.
- * @module server
+ * Management of inexor game servers.
+ * @module gameserver
  */
 
 const IntermissionService = require('./IntermissionService');
