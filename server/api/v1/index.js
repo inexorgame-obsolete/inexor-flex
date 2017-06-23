@@ -51,12 +51,12 @@ module.exports = function(argv) {
   let gitRepositoryManager = applicationContext.construct('gitRepositoryManager', function() { return new media.Repository.GitRepositoryManager(applicationContext); });
   //let media_manager = applicationContext.construct('media_manager', function() { return new media.Media.MediaManager(applicationContext); });
   let webUserInterfaceManager = applicationContext.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(applicationContext); });
-  let clientLayerManager = applicationContext.construct('clientLayerManager', function() { return new interfaces.ClientLayerManager(applicationContext); });
 
   let intermissionService = applicationContext.construct('intermissionService', function() { return new gameserver.IntermissionService(applicationContext); });
   let mapRotationService = applicationContext.construct('mapRotationService', function() { return new gameserver.MapRotationService(applicationContext); });
 
   let screenManager = applicationContext.construct('screenManager', function() { return new gameclient.ScreenManager(applicationContext); });
+  let layerManager = applicationContext.construct('layerManager', function() { return new gameclient.LayerManager(applicationContext); });
 
   // Constructing the REST API in a modular way
   let profilesRestAPI = applicationContext.construct('profilesRestAPI', function() { return new ProfilesRestAPI(applicationContext); });

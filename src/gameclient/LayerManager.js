@@ -17,16 +17,36 @@ const log = require('@inexor-game/logger')();
 /**
  * Management service for CEF layers in Inexor Core Client.
  */
-class ClientLayerManager extends EventEmitter {
+class LayerManager extends EventEmitter {
 
   /**
    * @constructor
    */
   constructor(application_context) {
     super();
-    this.webUserInterfaceManager = application_context.get('webUserInterfaceManager');
-    this.root = application_context.get('tree');
+  }
+
+  /**
+   * Sets the dependencies from the application context.
+   */
+  setDependencies() {
+
+    /// The Inexor Tree root node
+    this.root = this.applicationContext.get('tree');
+
+    /// The Inexor Tree node containing instances
     this.instancesNode = this.root.getOrCreateNode('instances');
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.instances.InstanceManager');
+
+  }
+
+  /**
+   * Initialization after the components in the application context have been
+   * constructed.
+   */
+  afterPropertiesSet() {
   }
 
   /**
@@ -125,4 +145,4 @@ class ClientLayerManager extends EventEmitter {
 
 }
 
-module.exports = ClientLayerManager;
+module.exports = LayerManager;

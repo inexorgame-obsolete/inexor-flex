@@ -4,9 +4,7 @@
  */
 
 const WebUserInterfaceManager = require('./WebUserInterfaceManager');
-const ClientLayerManager = require('./ClientLayerManager');
 
 module.exports = {
-  WebUserInterfaceManager: WebUserInterfaceManager,
-  ClientLayerManager: ClientLayerManager
+  WebUserInterfaceManager: WebUserInterfaceManager
 }
