@@ -23,10 +23,14 @@ class IntermissionService extends EventEmitter {
    */
   setDependencies() {
 
-    // The tree root
+    /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
 
+    /// The Inexor Tree node containing instances
     this.instancesNode = this.root.getOrCreateNode('instances');
+
+    /// The class logger
+    this.log = this.applicationContext.get('logManager').getLogger('flex.gameserver.IntermissionService');
 
   }
 
@@ -36,18 +40,34 @@ class IntermissionService extends EventEmitter {
    * @function
    */
   afterPropertiesSet() {
-    this.instancesNode.on('instanceCreated', this.onInstanceCreated.bind(this));
+    this.instancesNode.on('created', this.onInstanceCreated.bind(this));
+  }
+
+  onInstanceCreated(instanceNode) {
+    instanceNode.on('connected', this.onInstanceConnected.bind(this));
+    // For test purposes only
+    instanceNode.on('intermission', this.onIntermission.bind(this));
   }
 
   /**
    * If an server instance has been created, listen on intermission
    */
-  onInstanceCreated(instanceNode) {
-    instanceNode.gamestate.intermission.on('postSet', (oldValue, newValue) => {
-      if (newValue == 1 && oldValue != 1) {
-        instanceNode.emit('intermission', instanceNode);
-      }
-    });
+  onInstanceConnected(instanceNode) {
+    try {
+      instanceNode.gamestate.intermission.on('postSet', (changeSet) => {
+        if (changeSet.newValue == 1 && changeSet.oldValue != 1) {
+          instanceNode.emit('intermission', instanceNode);
+        }
+      });
+    } catch (err) {
+      this.log.error(err);
+    }
+  }
+
+  // For test purposes only
+
+  onIntermission(instanceNode) {
+    this.log.debug(util.format('Instance %s entered intermission', instanceNode.getName()));
   }
 
 }

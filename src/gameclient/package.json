@@ -1,0 +1,25 @@
+{
+  "name": "@inexor-game/gameclient",
+  "version": "1.0.0",
+  "description": "Game client management",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexorgame/flex.git"
+  },
+  "keywords": [
+    "inexor"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexorgame/flex/issues"
+  },
+  "homepage": "https://github.com/inexorgame/flex#readme",
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "private": true,
+  "dependencies": {
+  }
+}

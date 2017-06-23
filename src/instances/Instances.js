@@ -53,14 +53,14 @@ const instance_states = [
  * @constant {array}
  */
 const instance_transitions = [
-  { 'name': 'create',     'oldState': null,      'newState': 'stopped' },
-  { 'name': 'start',      'oldState': 'stopped', 'newState': 'started' },
-  { 'name': 'connect',    'oldState': 'started', 'newState': 'running' },
-  { 'name': 'pause',      'oldState': 'running', 'newState': 'paused'  },
-  { 'name': 'resume',     'oldState': 'paused',  'newState': 'running' },
-  { 'name': 'disconnect', 'oldState': 'running', 'newState': 'started' },
-  { 'name': 'stop',       'oldState': 'started', 'newState': 'stopped' },
-  { 'name': 'destroy',    'oldState': 'stopped', 'newState': null      }
+  { 'name': 'create',     'oldState': null,      'newState': 'stopped', 'eventName': 'created'      },
+  { 'name': 'start',      'oldState': 'stopped', 'newState': 'started', 'eventName': 'started'      },
+  { 'name': 'connect',    'oldState': 'started', 'newState': 'running', 'eventName': 'connected'    },
+  { 'name': 'pause',      'oldState': 'running', 'newState': 'paused',  'eventName': 'paused'       },
+  { 'name': 'resume',     'oldState': 'paused',  'newState': 'running', 'eventName': 'resumed'      },
+  { 'name': 'disconnect', 'oldState': 'running', 'newState': 'started', 'eventName': 'disconnected' },
+  { 'name': 'stop',       'oldState': 'started', 'newState': 'stopped', 'eventName': 'stopped'      },
+  { 'name': 'destroy',    'oldState': 'stopped', 'newState': null,      'eventName': 'destroyed'    }
 ];
 
 /**
@@ -207,7 +207,8 @@ class InstanceManager extends EventEmitter {
         this.saveInstances();
       }
 
-      this.instancesNode.emit('instanceCreated', instanceNode);
+      // Broadcast the existence of a new instance
+      this.instancesNode.emit('created', instanceNode);
 
       resolve(instanceNode);
     });
@@ -578,9 +579,15 @@ class InstanceManager extends EventEmitter {
     if (instance_states.includes(oldState)) {
       if (instance_states.includes(newState)) {
         if (instanceNode.state == oldState) {
-          if (this.isValidTransition(oldState, newState)) {
+          let transition = this.getTransition(oldState, newState);
+          if (transition != null) {
             instanceNode.state = newState;
             this.log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
+            try {
+              instanceNode.emit(transition.eventName, instanceNode);
+            } catch (err) {
+              this.log.error(err);
+            }
             return true;
           } else {
             this.log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
@@ -601,19 +608,19 @@ class InstanceManager extends EventEmitter {
   }
 
   /**
-   * Returns true if the given state transition is valid.
+   * Returns the state transistion.
    * @function
    * @param {string} [oldState] - The old state.
    * @param {string} [newState] - The new state.
-   * @return {boolean} - True if the given state transition is valid.
+   * @return {object} - The state transistion
    */
-  isValidTransition(oldState, newState) {
+  getTransition(oldState, newState) {
     for (var i = 0; i < instance_transitions.length; i++) {
       if (instance_transitions[i].oldState == oldState && instance_transitions[i].newState == newState) {
-        return true;
+        return instance_transitions[i];
       }
     }
-    return false;
+    return null;
   }
 
   /**

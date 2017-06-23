@@ -21,6 +21,7 @@ const instances = require('@inexor-game/instances');
 const logging = require('@inexor-game/logging');
 const media = require('@inexor-game/media');
 const profiles = require('@inexor-game/profiles');
+const gameclient = require('@inexor-game/gameclient');
 const gameserver = require('@inexor-game/gameserver');
 const tree = require('@inexor-game/tree');
 
@@ -51,8 +52,11 @@ module.exports = function(argv) {
   //let media_manager = applicationContext.construct('media_manager', function() { return new media.Media.MediaManager(applicationContext); });
   let webUserInterfaceManager = applicationContext.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(applicationContext); });
   let clientLayerManager = applicationContext.construct('clientLayerManager', function() { return new interfaces.ClientLayerManager(applicationContext); });
+
   let intermissionService = applicationContext.construct('intermissionService', function() { return new gameserver.IntermissionService(applicationContext); });
   let mapRotationService = applicationContext.construct('mapRotationService', function() { return new gameserver.MapRotationService(applicationContext); });
+
+  let screenManager = applicationContext.construct('screenManager', function() { return new gameclient.ScreenManager(applicationContext); });
 
   // Constructing the REST API in a modular way
   let profilesRestAPI = applicationContext.construct('profilesRestAPI', function() { return new ProfilesRestAPI(applicationContext); });
