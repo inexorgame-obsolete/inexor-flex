@@ -201,6 +201,9 @@ class InstanceManager extends EventEmitter {
       // The instance automatically restarts on shutdown of the instance
       instanceNode.addChild('autorestart', 'bool', autorestart);
 
+      // Set the initialized state to false
+      instanceNode.addChild('initialized', 'bool', false);
+
       // Save instances.toml
       if (persistent) {
         // TODO: save only the current instance
@@ -271,7 +274,7 @@ class InstanceManager extends EventEmitter {
 
       // Store the process handle of the instance
       instanceNode.addChild('process', 'object', instanceProcess);
-      
+
       // Create a logger for the instance
       this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
         this.transist(instanceNode, 'stopped', 'started');
@@ -351,9 +354,6 @@ class InstanceManager extends EventEmitter {
     }
     if (instanceNode.hasChild('pid')) {
       instanceNode.removeChild('pid');
-    }
-    if (instanceNode.hasChild('initialized')) {
-      instanceNode.removeChild('initialized');
     }
     this.transist(instanceNode, 'started', 'stopped');
   }

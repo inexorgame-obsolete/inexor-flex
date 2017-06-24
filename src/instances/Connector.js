@@ -147,10 +147,10 @@ class Connector extends EventEmitter {
    * The tree node has been modified and shall be synchronized.
    */
   onTreeNodeSync(node, oldValue, newValue) {
-    this.log.debug(util.format('Synchronizing node %s', node.getPath()));
+    this.log.trace(util.format('Synchronizing node %s', node.getPath()));
     try {
       let message = this.getMessage(node);
-      this.log.debug('Sending message: ' + JSON.stringify(message));
+      this.log.trace('Sending message: ' + JSON.stringify(message));
       this._synchronize.write(message);
     } catch (err) {
       this.log.error(err, util.format('Synchronization of %s failed', node._protoKey));
@@ -176,18 +176,26 @@ class Connector extends EventEmitter {
    */
   onNewTreeNode(node) {
     if (node.isChildOf(this.instanceNode)) {
-      this.log.debug(util.format('Adding synchronization event of node %s', node.getPath()));
-      // ... and add an sync event on the added tree node
-      var self = this;
-      let nodeSyncListener = (oldValue, newValue) => {
-        self.onTreeNodeSync(node, oldValue, newValue)
-      };
-      this.nodeSyncListeners.push({
-        node: node,
-        listener: nodeSyncListener
-      });
-      node.on('sync', nodeSyncListener);
+      this.addTreeNodeSyncListener(node);
     }
+  }
+
+  addTreeNodeSyncListener(node) {
+    this.log.debug(util.format('Adding synchronization event of node %s', node.getPath()));
+    var self = this;
+    /*
+    let nodeSyncListener = (oldValue, newValue) => {
+      self.onTreeNodeSync(node, oldValue, newValue)
+    };
+    */
+    let nodeSyncListener = (changeSet) => {
+      self.onTreeNodeSync(node, changeSet.oldValue, changeSet.newValue)
+    };
+    this.nodeSyncListeners.push({
+      node: node,
+      listener: nodeSyncListener
+    });
+    node.on('sync', nodeSyncListener);
   }
 
   /**
@@ -234,39 +242,62 @@ class Connector extends EventEmitter {
           self.log.error(err);
           reject('GRPC connection failed');
         } else {
-          if (!self.instanceNode.hasChild('initialized') || (self.instanceNode.hasChild('initialized') && !self.instanceNode.initialized)) {
+          try {
+            if (!self.instanceNode.initialized) {
+              self.log.info('Initialize a new instance tree');
 
-            // Populate tree from defaults
-            self.populateInstanceTreeFromDefaults();
+              // Populate instance tree from defaults
+              self.populateInstanceTreeFromDefaults();
 
-            // Populate tree with instance values
-            self.loadInstanceConfiguration();
+              // Overwrite instance tree with instance configuration
+              self.loadInstanceConfiguration();
 
-            // Link tree mounts (like textures)
-            // TODO: Link tree mounts (like textures)
+              // Link tree mounts (like textures)
+              // TODO: Link tree mounts (like textures)
 
-            // Set package dir
-            self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
+              // Set package dir
+              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
 
-            // Send signal that the tree initialization has been finished
-            self.sendFinishedTreeIntro();
-            
-            self.instanceNode.addChild('initialized', 'bool', true);
+              // Send signal that the tree initialization has been finished
+              self.sendFinishedTreeIntro();
 
+              // Remember that the node has been initialized
+              self.instanceNode.initialized = true;
+
+            } else {
+              self.log.info('Using already initialized tree');
+              
+              // Add synchronization listeners for each tree node from defaults
+              self.addTreeNodeSyncListenersFromDefaults();
+
+              // Overwrite instance tree with instance configuration
+              self.loadInstanceConfiguration();
+
+              // Set package dir
+              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
+
+              // Send signal that the tree initialization has been finished
+              self.sendFinishedTreeIntro();
+
+              // Remember that the node has been initialized
+              self.instanceNode.initialized = true;
+
+            }
             self.log.info('Tree for instance successfully initialized');
-          } else {
-            self.log.info('Using already initialized tree');
+
+            // self._synchronize.end();
+
+            // Finally send an event, that the connection has been established
+            // successfully.
+            self.emit('connected', {
+              'instanceNode': self.instanceNode
+            });
+
+            resolve(self.instanceNode);
+          } catch (err) {
+            self.log.error(err);
+            reject(err);
           }
-
-          // self._synchronize.end();
-
-          // Finally send an event, that the connection has been established
-          // successfully.
-          self.emit('connected', {
-            'instanceNode': self.instanceNode
-          });
-
-          resolve(self.instanceNode);
         }
       });
 
@@ -277,6 +308,7 @@ class Connector extends EventEmitter {
     let instanceId = this.instanceNode.getName();
     this.removeListeners();
     this.closeGrpcConnection();
+    // this.instanceNode.initialized = false;
     this.emit('disconnected', {
       'instanceNode': this.instanceNode
     });
@@ -356,15 +388,43 @@ class Connector extends EventEmitter {
           // readOnly = false
           // TODO: Add option "read_only" in proto file!
           this.instanceNode.getRoot().createRecursive(path, dataType, defaultValue, true, false, protoKey);
-          this.log.debug('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+          this.log.trace('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
         } else {
-          this.log.debug('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+          this.log.trace('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
         }
       } catch (err) {
-        this.log.error(err, util.format('[ERROR] Failed to populate %s', protoKey));
+        this.log.error(err, util.format('[ERROR] Failed to populate tree node (protoKey: %s)', protoKey));
       }
     }
-    this.log.info('Tree populated');
+    this.log.debug('Tree nodes and synchronization listeners has been created');
+  }
+
+  /**
+   * Adds synchronization listeners for all tree nodes and sends the current value of the node.
+   * @function
+   */
+  addTreeNodeSyncListenersFromDefaults() {
+    this.log.info('Adding tree node listeners from defaults');
+    for (let protoKey in this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName) {
+      try {
+        var path = this.getPath(protoKey);
+        var dataType = this.getDataType(protoKey);
+        var defaultValue = this.getDefaultValue(protoKey, dataType);
+        var id = this.getId(protoKey);
+        var eventType = this.getEventType(protoKey);
+        if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
+          let node = this.instanceNode.getRoot().findNode(path);
+          this.addTreeNodeSyncListener(node);
+          this.onTreeNodeSync(node);
+          this.log.trace('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+        } else {
+          this.log.trace('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+        }
+      } catch (err) {
+        this.log.error(err, util.format('[ERROR] Failed add tree node listener (protoKey: %s)', protoKey));
+      }
+    }
+    this.log.debug('Tree node listeners has been added');
   }
 
   /**
