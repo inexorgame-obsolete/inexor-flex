@@ -277,7 +277,7 @@ class InstanceManager extends EventEmitter {
         this.transist(instanceNode, 'stopped', 'started');
         resolve(instanceNode);
       }).catch((err) => {
-        reject('Failed to create instance console');
+        reject(new Error('Failed to create instance console'));
       });
 
     });
