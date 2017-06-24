@@ -174,6 +174,7 @@ class LogManager extends EventEmitter {
 
   /**
    * Loads the logging configuration from file.
+   * @function
    * @param {string} filename - The filename of the logging configuration.
    */
   loadLogConfiguration(filename = 'logging.toml') {
@@ -181,26 +182,7 @@ class LogManager extends EventEmitter {
     this.log.info(util.format('Loading logging configuration from %s', configPath));
     let data = fs.readFileSync(configPath);
     let config = toml.parse(data.toString());
-    // this.log.info(config);
     this.createSubLoggersRecursively(config.logging, null);
-    /*
-    for (let name of Object.keys(config.logging)) {
-      if (name == 'default') {
-        this.profilesNode.default = config.profiles.default;
-      } else {
-        this.create(
-          name,
-          config.profiles[name].hostname,
-          config.profiles[name].port,
-          config.profiles[name].description
-        ).then((profileNode) => {
-          // ...
-        }).catch((err) => {
-          // ...
-        });
-      }
-    }
-    */
   }
 
   createSubLoggersRecursively(config, parent) {
