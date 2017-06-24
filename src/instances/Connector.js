@@ -46,8 +46,17 @@ class Connector extends EventEmitter {
     /** @private */
     this._client = null;
 
-    /// The class logger
-    this.log = this.applicationContext.get('logManager').getLogger(util.format('flex.instances.Connector.%s.%s.%s', this.hostname, this.port, Math.random().toString(36).substr(2, 4)));
+    /// Create a random session id
+    this.sessionId = Math.random().toString(36).substr(2, 4);
+
+    /// The log manager
+    this.logManager = this.applicationContext.get('logManager');
+
+    /// Create a child logger for the connector instance
+    this.log = this.logManager.getLogger(this.getLoggerName());
+
+    /// Start with the same log level as the parent logger
+    this.log.level(this.logManager.getLogger('flex.instances.Connector').level());
 
     /** @private */
     this._protoPath = this.getProtoPath(instanceNode.type);
@@ -65,6 +74,14 @@ class Connector extends EventEmitter {
 
     this.nodeSyncListeners = [];
     this.synchronizeListeners = [];
+  }
+
+  /**
+   * Returns the logger name for the connector instance. Uses the hostname,
+   * port and session id as logger name.
+   */
+  getLoggerName() {
+    return util.format('flex.instances.Connector.%s.%s.%s', this.hostname, this.port, this.sessionId);
   }
 
   onSynchronizeEnd() {
