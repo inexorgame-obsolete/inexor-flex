@@ -1,8 +1,6 @@
 # Make visual that we're using the devenv profile
 crosshairsize = 80
 
-name = "unnamed"
-
 # 1 for flightsim mode
 invmouse = 0
 
