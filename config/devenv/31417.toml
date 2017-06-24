@@ -1,7 +1,64 @@
 # Make visual that we're using the devenv profile
 crosshairsize = 80
 
+name = "unnamed"
+
+# 1 for flightsim mode
+invmouse = 0
+
+# similar number to quake
+sensitivity = 3
+
+# 90 is default in other games
+fov = 110
+
+# Make player models a bit easier to see
+fullbrightmodels = 60 
+
+# console is 5 lines
+consize = 5
+# mini-console is 5 lines
+miniconsize = 5
+# mini-console is 40% of screen width
+miniconwidth = 40
+# full console is 75% of screen height
+fullconsize = 75
+# display chat and team chat in mini-console
+# 0x300 = 768
+miniconfilter = 768
+# display all messages in full console
+# 0xFFFF = 65535
+fullconfilter = 65535
+
+
+[game]
+
+# Show the hudgun
+hudgun = 1
+
+[sound]
+
+# Music volume (0..255)
+musicvol = 60       
+
+# Sound effects volume (0..255)
+# Sounds average volume is actually set per sound, average 100
+soundvol = 255      
+
+# Enable Mumble
+mumble = 0
+
+
 [rendering.screen]
+
+# windowed mode = 0, fullscreen mode = 1
 fullscreen = 0
+
+# Screen width
 scr_w = 800
+
+# Screen height
 scr_h = 600
+
+# Gamma set to your liking, 100 = default
+gamma = 100          
