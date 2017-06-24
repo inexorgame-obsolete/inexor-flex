@@ -357,35 +357,39 @@ class Connector extends EventEmitter {
   loadInstanceConfiguration() {
     let instanceId = this.instanceNode.getName();
     let filename = util.format('%s.toml', instanceId);
-    let config_path = this.profileManager.getConfigPath(filename);
-    if (fs.existsSync(config_path)) {
-      this.log.info(util.format('Loading instance configuration from %s', config_path));
-      let data = fs.readFileSync(config_path);
+    let configPath = this.profileManager.getConfigPath(filename);
+    if (fs.existsSync(configPath)) {
+      this.log.info(util.format('Loading instance configuration from %s', configPath));
+      let data = fs.readFileSync(configPath);
       let config = toml.parse(data.toString());
       let basePath = util.format('/instances/%s', instanceId);
-      this.updateTree(config, basePath);
+      this.updateTree(config, basePath, configPath);
       this.log.info('Instance configuration done');
     } else {
-      this.log.info(util.format('Could not find instance configuration (expected file location: %s)', config_path));
+      this.log.info(util.format('Could not find instance configuration (expected file location: %s)', configPath));
     }
   }
 
   /**
    * TODO: move this to the tree root. Could be useful for merging trees and for introducing GraphQL.
    */
-  updateTree(obj, basePath) {
+  updateTree(obj, basePath, configPath = '') {
     for (let property in obj) {
       if (obj.hasOwnProperty(property)) {
         let path = util.format('%s/%s', basePath, property);
         // this.log.info(path);
         if (typeof obj[property] == 'object') {
-          this.updateTree(obj[property], path);
+          this.updateTree(obj[property], path, configPath);
         } else {
           // this.log.info(util.format('set node: %s', obj[property]));
           let node = this.instanceNode.getRoot().findNode(path);
-          let value = this.convert(node._datatype, obj[property]);
-          // this.log.info(util.format('path: %s protoKey: %s datatype: %s value: %s', node.getPath(), node._protoKey, node._datatype, value));
-          node.set(value);
+          if (node != null) {
+            let value = this.convert(node._datatype, obj[property]);
+            // this.log.info(util.format('path: %s protoKey: %s datatype: %s value: %s', node.getPath(), node._protoKey, node._datatype, value));
+            node.set(value);
+          } else {
+            this.log.warn(util.format('Node %s does not exist! Please fix this value in %s', path, configPath));
+          }
         }
       }
     }
