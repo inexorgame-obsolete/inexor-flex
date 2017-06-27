@@ -147,11 +147,11 @@ function getMediaPaths() {
  * @return {string}
  */
 function getTexturePaths() {
-  var media_paths = [];
+  var texturePaths = [];
   for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
-    media_paths.push(path.join(standardPaths.appDataLocation[i], 'media', 'textures'));
+    texturePaths.push(path.join(standardPaths.appDataLocation[i], 'media', 'texture'));
   }
-  return media_paths;
+  return texturePaths;
 }
 
 /**
