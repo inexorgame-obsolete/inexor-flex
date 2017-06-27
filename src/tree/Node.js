@@ -326,8 +326,10 @@ class Node extends EventEmitter {
      */
     addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         if (this.hasChild(name)) {
+            // TODO: we could update the value here, instead of silently returning the node with the previous value
             return this.getChild(name);
         } else if (name.indexOf('/') == 0) {
+            // TODO: the name shouldn't contain a slash at all (name.indexOf('/') >= 0)
             // This is NOT the root leave, don't insert it like this
             throw new Error('Child nodes shall not be prefixed with /');
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
