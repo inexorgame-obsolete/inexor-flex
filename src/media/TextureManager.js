@@ -89,31 +89,31 @@ class TextureManager extends EventEmitter {
       let repositoryPath = repositoryPaths[i];
       let texturePath = path.join(repositoryPath, this.mediaType);
       if (fs.existsSync(texturePath)) {
-        this.log.info(util.format('Scanning repository textures path %s for authors', texturePath));
+        this.log.trace(util.format('Scanning repository textures path %s for authors', texturePath));
         let authors = this.getSubDirs(texturePath);
         for (var j = 0; j < authors.length; j++) {
           let author = authors[j];
           let authorNode = this.texturesNode.getOrCreateNode(author);
           let authorPath = path.join(texturePath, author);
           let authorMedias = this.getSubDirs(authorPath);
-          this.log.info(util.format('Scanning author path %s for media names', authorPath));
+          this.log.trace(util.format('Scanning author path %s for media names', authorPath));
           for (var k = 0; k < authorMedias.length; k++) {
             let mediaName = authorMedias[k];
             let mediaNode = authorNode.getOrCreateNode(mediaName);
             let mediaPath = path.join(authorPath, mediaName);
             let mediaVersions = this.getSubDirs(mediaPath);
-            this.log.info(util.format('Scanning media name path %s for versions', mediaPath));
+            this.log.trace(util.format('Scanning media name path %s for versions', mediaPath));
             for (var l = 0; l < mediaVersions.length; l++) {
               let version = mediaVersions[l];
               let versionNode = mediaNode.getOrCreateNode(version);
               let versionPath = path.join(mediaPath, version);
-              this.log.info(util.format('Scanning version path %s for texture files', versionPath));
+              this.log.trace(util.format('Scanning version path %s for texture files', versionPath));
               this.findTextureFilesByTypes(versionNode, versionPath);
             }
           }
         }
       } else {
-        this.log.info(util.format('Media repository %s does not contain a %s folder', repositoryPath, this.mediaType));
+        this.log.debug(util.format('Media repository %s does not contain a %s folder', repositoryPath, this.mediaType));
       }
     }
   }
@@ -142,7 +142,7 @@ class TextureManager extends EventEmitter {
           } else {
             textureFileNode = versionNode.addChild(textureType, 'string', textureFilePath);
           }
-          this.log.info(util.format('%s = %s', textureFileNode.getPath(), textureFileNode.get()));
+          this.log.debug(util.format('%s = %s', textureFileNode.getPath(), textureFileNode.get()));
           break;
         }
       }
