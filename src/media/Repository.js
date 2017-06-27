@@ -782,6 +782,20 @@ class MediaRepositoryManager extends EventEmitter {
   }
 
   /**
+   * Returns the paths of the repositories.
+   * @function
+   * @name MediaRepositoryManager.getRepositoryPaths
+   * @return {Array<string>}
+   */
+  getRepositoryPaths() {
+    let paths = [];
+    for (let child of this.repositoriesNode) {
+      paths.push(child.path);
+    }
+    return paths;
+  }
+
+  /**
    * Returns true, if a repository with the given name exists in the Inexor Tree.
    * @function
    * @name MediaRepositoryManager.exists

@@ -5,8 +5,12 @@
 
 const Repository = require('./Repository');
 const Media = require('./Media');
+const MapManager = require('./MapManager');
+const TextureManager = require('./TextureManager');
 
 module.exports = {
   Repository: Repository,
-  Media: Media
+  Media: Media,
+  MapManager: MapManager,
+  TextureManager: TextureManager
 }

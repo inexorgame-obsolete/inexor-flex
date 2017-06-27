@@ -50,6 +50,7 @@ module.exports = function(argv) {
   let filesystemRepositoryManager = applicationContext.construct('filesystemRepositoryManager', function() { return new media.Repository.FilesystemRepositoryManager(applicationContext); });
   let gitRepositoryManager = applicationContext.construct('gitRepositoryManager', function() { return new media.Repository.GitRepositoryManager(applicationContext); });
   //let media_manager = applicationContext.construct('media_manager', function() { return new media.Media.MediaManager(applicationContext); });
+  let textureManager = applicationContext.construct('textureManager', function() { return new media.TextureManager(applicationContext); });
   let webUserInterfaceManager = applicationContext.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(applicationContext); });
 
   let intermissionService = applicationContext.construct('intermissionService', function() { return new gameserver.IntermissionService(applicationContext); });

@@ -142,19 +142,6 @@ function getMediaPaths() {
 }
 
 /**
- * Returns a preference-ordered array of base directories to search for texture
- * folders in addition to the default media path.
- * @return {string}
- */
-function getTexturePaths() {
-  var texturePaths = [];
-  for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
-    texturePaths.push(path.join(standardPaths.appDataLocation[i], 'media', 'texture'));
-  }
-  return texturePaths;
-}
-
-/**
  * Returns a preference-ordered array of base directories to search for
  * configuration files in addition to the default config path.
  * @return {string}
@@ -180,7 +167,6 @@ module.exports = {
   getBinaryPath: getBinaryPath,
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
-  getTexturePaths: getTexturePaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
 };
