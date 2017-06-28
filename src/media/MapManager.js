@@ -31,6 +31,12 @@ class MapManager extends EventEmitter {
         }, {
           filename: 'waypoints.wpt',
           node: 'waypoints'
+        }, {
+          filename: 'readme.txt',
+          node: 'readme'
+        }, {
+          filename: 'readme.md',
+          node: 'readme'
         }
     ];
   }
