@@ -146,8 +146,12 @@ class MapManager extends EventEmitter {
     if (fs.existsSync(configPath)) {
       this.log.debug(util.format('Loading map configuration from %s', configPath));
       let data = fs.readFileSync(configPath);
-      let config = toml.parse(data.toString());
-      this.createConfigTree(config, configNode);
+      try {
+        let config = toml.parse(data.toString());
+        this.createConfigTree(config, configNode);
+      } catch (err) {
+        this.log.error(err, util.format('Error in map configuration file: %s', configPath));
+      }
     } else {
       this.log.warn(util.format('Could not find map configuration (expected file location: %s)', configPath));
     }
