@@ -756,8 +756,8 @@ class MediaRepositoryManager extends EventEmitter {
     /// Print the scan result
     this.log.info(util.format('Repository scan result: %s', this.repositoriesNode.toJson()));
 
-    // If not exist fetch the core repository
-    this.fetchCoreRepository();
+    // If not exist fetch the media-essential repository
+    this.fetchMediaEssentialRepository();
 
   }
 
@@ -870,14 +870,14 @@ class MediaRepositoryManager extends EventEmitter {
   }
 
   /**
-   * Fetches the core repository if not already available.
+   * Fetches the media-essential repository if not already available.
    * @function
-   * @name MediaRepositoryManager.fetchCoreRepository
+   * @name MediaRepositoryManager.fetchMediaEssentialRepository
    */
-  fetchCoreRepository() {
-    if (!this.exists('core')) {
-      // Clones the core media repository
-      this.gitRepositoryManager.createRepository('core', this.getRepositoryPath('core'), 'https://github.com/inexorgame/data.git');
+  fetchMediaEssentialRepository() {
+    if (!this.exists('essential')) {
+      // Clones the media-essential repository
+      this.gitRepositoryManager.createRepository('essential', this.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git');
     }
     if (!this.exists('user')) {
       // Creates a personal media repository for the current user
