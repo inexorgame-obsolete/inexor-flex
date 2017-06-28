@@ -40,11 +40,21 @@ class TextureManager extends EventEmitter {
      * "e" for environment maps (skybox), uses the same syntax as "loadsky",
      *     and set a custom environment map (overriding the "envmap" entities) to use in environment-mapped shaders ("bumpenv*world")
      */
-    this.textureTypes = [ 'diffuse', 'secondardy', 'normals', 'specularity', 'depth' ];
+    this.textureTypes = [ 'diffuse', 'secondardy', 'normal', 'specularity', 'depth' ];
 
     /// The file extensions of textures
     this.fileExtensions = [ 'png', 'jpg' ];
 
+    /// Configuration for mapping the file structure into the Inexor Tree
+    this.pathMappings = [
+      {
+        filename: 'readme.txt',
+        node: 'readme'
+      }, {
+        filename: 'readme.md',
+        node: 'readme'
+      }
+    ];
   }
 
   /**

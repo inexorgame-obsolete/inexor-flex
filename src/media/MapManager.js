@@ -25,19 +25,19 @@ class MapManager extends EventEmitter {
 
     /// Configuration for mapping the file structure into the Inexor Tree
     this.pathMappings = [
-        {
-          filename: 'octree.ogz',
-          node: 'octree'
-        }, {
-          filename: 'waypoints.wpt',
-          node: 'waypoints'
-        }, {
-          filename: 'readme.txt',
-          node: 'readme'
-        }, {
-          filename: 'readme.md',
-          node: 'readme'
-        }
+      {
+        filename: 'octree.ogz',
+        node: 'octree'
+      }, {
+        filename: 'waypoints.wpt',
+        node: 'waypoints'
+      }, {
+        filename: 'readme.txt',
+        node: 'readme'
+      }, {
+        filename: 'readme.md',
+        node: 'readme'
+      }
     ];
   }
 
