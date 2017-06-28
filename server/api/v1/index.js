@@ -51,6 +51,7 @@ module.exports = function(argv) {
   let gitRepositoryManager = applicationContext.construct('gitRepositoryManager', function() { return new media.Repository.GitRepositoryManager(applicationContext); });
   //let media_manager = applicationContext.construct('media_manager', function() { return new media.Media.MediaManager(applicationContext); });
   let textureManager = applicationContext.construct('textureManager', function() { return new media.TextureManager(applicationContext); });
+  let mapManager = applicationContext.construct('mapManager', function() { return new media.MapManager(applicationContext); });
   let webUserInterfaceManager = applicationContext.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(applicationContext); });
 
   let intermissionService = applicationContext.construct('intermissionService', function() { return new gameserver.IntermissionService(applicationContext); });

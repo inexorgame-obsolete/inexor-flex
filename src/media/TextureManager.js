@@ -42,7 +42,8 @@ class TextureManager extends EventEmitter {
      */
     this.textureTypes = [ 'diffuse', 'secondardy', 'normals', 'specularity', 'depth' ];
 
-    this.textureFileExtensions = [ 'png', 'jpg' ];
+    /// The file extensions of textures
+    this.fileExtensions = [ 'png', 'jpg' ];
 
   }
 
@@ -79,7 +80,7 @@ class TextureManager extends EventEmitter {
   }
 
   /**
-   * Reads in the textures from filesystem into the inexor tree.
+   * Reads in the textures from filesystem into the Inexor Tree.
    * Tree path: /[repository_name]/[media_type]/[author_name/author_group_name]/[media_name]/v[version]/
    * @function
    */
@@ -125,14 +126,14 @@ class TextureManager extends EventEmitter {
    * For example: diffuse.jpg
    * 
    * @function
-   * @param {Tree.Node} textureNode - The tree node of a texture representing a texture with multiple texture files.
-   * @param {string} texturePath - The path to the directory which contains the texture files.
+   * @param {Tree.Node} versionNode - The tree node of a texture representing a texture with multiple texture files.
+   * @param {string} versionPath - The path to the directory which contains the texture files.
    */
   findTextureFilesByTypes(versionNode, versionPath) {
     for (var i = 0; i < this.textureTypes.length; i++) {
       let textureType = this.textureTypes[i];
-      for (var j = 0; j < this.textureFileExtensions.length; j++) {
-        let textureFileExtension = this.textureFileExtensions[j];
+      for (var j = 0; j < this.fileExtensions.length; j++) {
+        let textureFileExtension = this.fileExtensions[j];
         let textureFilePath = path.join(versionPath, util.format('%s.%s', textureType, textureFileExtension));
         if (fs.existsSync(textureFilePath)) {
           var textureFileNode;
