@@ -58,7 +58,7 @@ const argv = require('yargs')
 process.title = 'inexor';
 
 // Returns a logger instance
-var log = inexor_logger('@inexor-game/flex/server', argv.console, argv.file, argv.level);
+var log = inexor_logger('flex.server', argv.console, argv.file, argv.level);
 
 log.debug(util.format('Using command line options:\n%s', JSON.stringify(argv, undefined, 2)));
 
