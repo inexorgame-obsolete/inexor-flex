@@ -38,6 +38,9 @@ class LogManager extends EventEmitter {
     /// The profile manager service
     this.profileManager = this.applicationContext.get('profileManager');
 
+    // The command line arguments.
+    this.argv = this.applicationContext.get('argv');
+
     /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
 
@@ -77,7 +80,7 @@ class LogManager extends EventEmitter {
    * @param {string} file - The filename to log to or null.
    * @param {string} level - The log level.
    */
-  createLogger(name, console = true, file = null, level = 'info') {
+  createLogger(name, console = true, file = null, level = null) {
     let streams = [];
     if (console) {
      streams.push({
@@ -90,7 +93,11 @@ class LogManager extends EventEmitter {
        path: file
      })
     }
-    return this.createStreamLogger(name, console, file, level, streams);
+    // Prio 1: method parameter
+    // Prio 2: command line argument 'level'
+    // Prio 3: fallback: 'info'
+    let _level = level != null ? level : (this.argv.level != null ? this.argv.level : 'info');
+    return this.createStreamLogger(name, console, file, _level, streams);
   }
 
   createStreamLogger(name, console = true, file = null, level = 'info', streams = []) {
