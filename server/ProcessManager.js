@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const os = require('os');
 const process = require('process');
 const segfaultHandler = require('segfault-handler');
@@ -17,9 +18,10 @@ const inexor_logger = require('@inexor-game/logger');
  * - we cannot handle SIGKILL, in this case the PID file cannot be removed cleanly
  * 
  */
-class ProcessManager {
+class ProcessManager extends EventEmitter {
 
   constructor(argv, pidManager) {
+    super();
     this.argv = argv;
     this.pidManager = pidManager;
     this.log = inexor_logger('flex.server.ProcessManager', argv.console, argv.file, argv.level);
@@ -58,7 +60,7 @@ class ProcessManager {
    */
   onReloadSignal() {
     this.log.info('Got signal SIGHUP. Graceful reloading the server!');
-    // TODO: implement a reload mechanism
+    this.emit('reload');
   }
 
   /**

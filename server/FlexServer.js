@@ -13,29 +13,71 @@ class FlexServer {
     this.argv = argv;
     this.pidManager = pidManager;
     this.processManager = processManager;
+    this.processManager.on('reload', this.restart.bind(this));
 
     this.defaultUserInterfaceUrl = '/api/v1/interfaces/ui-flex';
 
-    this.log = inexor_logger('flex.server.FlexServer', argv.console, argv.file, argv.level);
-
     this.apiNames = [ 'v1' ];
 
+    this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, this.argv.level);
+
+  }
+
+  /**
+   * Starts the Inexor Flex server.
+   */
+  start() {
     this.createApiInstances();
     this.reconfigureLoggers();
     this.createServer();
     this.pidManager.createPid();
-    this.listenServer();
+    this.startListenServer();
   }
 
   /**
-   * Create instances of the APIs.
+   * Shut down the Inexor Flex server.
+   */
+  shutdown() {
+    this.stopListenServer();
+    this.pidManager.removePid();
+    this.destroyServer();
+    this.destroyApiInstances();
+    this.reconfigureLoggers();
+  }
+
+  /**
+   * Restarts the Inexor Flex server.
+   */
+  restart() {
+    this.shutdown();
+    this.start();
+  }
+
+  /**
+   * Create API instances.
    */
   createApiInstances() {
     this.apis = {};
     for (let i = 0; i < this.apiNames.length; i += 1) {
       let apiName = this.apiNames[i];
+      this.log.debug(util.format('Constructing API %s', apiName));
       this.apis[apiName] = inexor_api[apiName](this.argv);
     }
+  }
+
+  /**
+   * Closes and destroys the API instances.
+   */
+  destroyApiInstances() {
+    for (let i = 0; i < this.apiNames.length; i += 1) {
+      let apiName = this.apiNames[i];
+      this.log.debug(util.format('Closing context of API %s', apiName));
+      this.apis[apiName].close();
+      this.log.debug(util.format('Destroying context of API %s', apiName));
+      this.apis[apiName].destroy();
+      delete this.apis[apiName];
+    }
+    this.apis = {};
   }
 
   /**
@@ -63,20 +105,34 @@ class FlexServer {
 
     // Sets the static files
     this.app.use('/static', express.static('node_modules'));
+
+  }
+
+  /**
+   * Destroys the server.
+   */
+  destroyServer() {
+    this.app = null;
   }
 
   /**
    * Start listening the server.
    */
-  listenServer() {
+  startListenServer() {
     this.port = this.getPort();
     this.hostname = this.getHostname();
     this.log.debug(util.format('Start listening on http://%s:%s', this.hostname, this.port));
     this.server = this.app.listen(this.port, this.hostname, this.serverInitializationFinished.bind(this));
   }
 
-  stopServer() {
-    // TODO: express app stop ...
+  /**
+   * Stops listening the server.
+   */
+  stopListenServer() {
+    this.server.close();
+    this.log.debug(util.format('Stopped listening on http://%s:%s', this.hostname, this.port));
+    this.port = null;
+    this.hostname = null;
   }
 
   /**
@@ -136,11 +192,20 @@ class FlexServer {
     res.redirect(this.defaultUserInterfaceUrl);
   }
 
+  /**
+   * Reconfigures the loggers.
+   */
   reconfigureLoggers() {
-    let logManager = this.apis.v1.get('logManager');
-    this.log = logManager.getLogger('flex.server.FlexServer');
-    this.pidManager.log = logManager.getLogger('flex.server.PidManager');
-    this.processManager.log = logManager.getLogger('flex.server.ProcessManager');
+    if (this.apis.hasOwnProperty('v1')) {
+      let logManager = this.apis.v1.get('logManager');
+      this.log = logManager.getLogger('flex.server.FlexServer');
+      this.pidManager.log = logManager.getLogger('flex.server.PidManager');
+      this.processManager.log = logManager.getLogger('flex.server.ProcessManager');
+    } else {
+      this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, this.argv.level);
+      this.pidManager.log = inexor_logger('flex.server.PidManager', this.argv.console, this.argv.file, this.argv.level);
+      this.processManager.log = inexor_logger('flex.server.ProcessManager', this.argv.console, this.argv.file, this.argv.level);
+    }
   }
 
 }

@@ -60,6 +60,24 @@ class ApplicationContext {
     }
   }
 
+  close() {
+    for (let name of Object.keys(this.components)) {
+      if (this.components.hasOwnProperty(name)) {
+        if (this.components[name].close) {
+          this.components[name].close();
+        }
+      }
+    }
+  }
+
+  destroy() {
+    for (let name of Object.keys(this.components)) {
+      if (this.components.hasOwnProperty(name)) {
+        delete this.components[name];
+      }
+    }
+  }
+
 }
 
 module.exports = {

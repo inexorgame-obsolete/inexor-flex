@@ -12,3 +12,4 @@ let flexArgs = new FlexArgs();
 let pidManager = new PidManager(flexArgs.argv);
 let processManager = new ProcessManager(flexArgs.argv, pidManager);
 let flexServer = new FlexServer(flexArgs.argv, pidManager, processManager);
+flexServer.start();
