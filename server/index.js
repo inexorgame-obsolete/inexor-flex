@@ -185,6 +185,9 @@ let currentProfile = profileManager.getCurrentProfile();
 let hostname = argv.hostname != null ? argv.hostname : currentProfile.hostname;
 let port = argv.port != null ? argv.port : currentProfile.port;
 
+let logManager = api.get('logManager');
+log = logManager.getLogger('flex.server');
+
 // set the default interface and static files
 app.get('/', (req, res) => {
   res.redirect('/api/v1/interfaces/ui-flex');
