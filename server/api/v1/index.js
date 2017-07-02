@@ -9,13 +9,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 // TODO: const stringify = require('json-stringify-safe');
-const path = require('path');
-const util = require('util');
 
 // Pull the inexor dependencies
 const console = require('@inexor-game/console');
 const context = require('@inexor-game/context');
-const inexor_path = require('@inexor-game/path');
 const interfaces = require('@inexor-game/interfaces');
 const instances = require('@inexor-game/instances');
 const logging = require('@inexor-game/logging');
@@ -32,15 +29,20 @@ const InexorTreeRestAPI = require('./InexorTreeRestAPI');
 const MediaRepositoryRestAPI = require('./MediaRepositoryRestAPI');
 const FlexRestAPI = require('./FlexRestAPI');
 
+// Import the WS API modules
+const InexorTreeWsAPI = require('./InexorTreeWsAPI');
 
-module.exports = function(argv) {
+module.exports = function(argv, app, websockets) {
 
   // Construct the service layer of the application context
   let applicationContext = new context.ApplicationContext();
   let _argv = applicationContext.register('argv', argv);
+  applicationContext.register('app', app);
+  applicationContext.register('websockets', websockets);
   let router = applicationContext.register('router', express.Router());
   router.use(bodyParser.urlencoded({ extended: true }));
   router.use(bodyParser.json());
+
   let root = applicationContext.construct('tree', function() { return new tree.Root(applicationContext); });
   let logManager = applicationContext.construct('logManager', function() { return new logging.LogManager(applicationContext); });
   let profileManager = applicationContext.construct('profileManager', function() { return new profiles.ProfileManager(applicationContext); });
@@ -66,6 +68,9 @@ module.exports = function(argv) {
   let inexorTreeRestAPI = applicationContext.construct('inexorTreeRestAPI', function() { return new InexorTreeRestAPI(applicationContext); });
   let mediaRepositoryRestAPI = applicationContext.construct('mediaRepositoryRestAPI', function() { return new MediaRepositoryRestAPI(applicationContext); });
   let flexRestAPI = applicationContext.construct('flexRestAPI', function() { return new FlexRestAPI(applicationContext); });
+
+  // Constructing the WS API
+  let inexorTreeWsAPI = applicationContext.construct('inexorTreeWsAPI', function() { return new InexorTreeWsAPI(applicationContext); });
 
   // Calling the setDependencies() method of every component in the application context
   applicationContext.setDependencies();

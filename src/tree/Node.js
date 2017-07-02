@@ -182,6 +182,7 @@ class Node extends EventEmitter {
             // Set the timestamp when the value was last changed
             this._timestamp = Date.now();
             this.emit('postSet', {oldValue: oldValue, newValue: value});
+            this.getRoot().emit('set', { node: this, oldValue: oldValue, newValue: value });
         }
     }
 
