@@ -56,6 +56,7 @@
     "express": "^4.15.2",
     "figlet": "^1.2.0",
     "npid": "^0.4.0",
+    "portscanner": "^2.1.1",
     "prettyjson": "^1.2.1",
     "segfault-handler": "^1.0.0",
     "toml": "^2.3.2",

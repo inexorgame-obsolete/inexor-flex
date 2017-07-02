@@ -30,7 +30,6 @@ class FlexServer {
     this.createApiInstances();
     this.reconfigureLoggers();
     this.createServer();
-    this.pidManager.createPid();
     this.startListenServer();
   }
 
@@ -39,7 +38,6 @@ class FlexServer {
    */
   shutdown() {
     this.stopListenServer();
-    this.pidManager.removePid();
     this.destroyServer();
     this.destroyApiInstances();
     this.reconfigureLoggers();
@@ -119,10 +117,18 @@ class FlexServer {
    * Start listening the server.
    */
   startListenServer() {
-    this.port = this.getPort();
-    this.hostname = this.getHostname();
-    this.log.debug(util.format('Start listening on http://%s:%s', this.hostname, this.port));
-    this.server = this.app.listen(this.port, this.hostname, this.serverInitializationFinished.bind(this));
+    this.pidManager.createPid(this.getHostname(), this.getPort())
+      .then((result) => {
+        this.hostname = result.hostname;
+        this.port = result.port;
+        this.log.debug(util.format('Start listening on http://%s:%s', this.hostname, this.port));
+        this.server = this.app.listen(this.port, this.hostname, this.serverInitializationFinished.bind(this));
+      })
+      .catch((result) => {
+        this.hostname = result.hostname;
+        this.port = result.port;
+        this.log.debug(util.format('Already listening on http://%s:%s', this.hostname, this.port));
+      });
   }
 
   /**
@@ -131,6 +137,7 @@ class FlexServer {
   stopListenServer() {
     this.server.close();
     this.log.debug(util.format('Stopped listening on http://%s:%s', this.hostname, this.port));
+    this.pidManager.removePid();
     this.port = null;
     this.hostname = null;
   }

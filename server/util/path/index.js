@@ -45,7 +45,7 @@ if (process.env.BINARY) {
  * The pid file that Inexor Flex uses
  * NOTE: Might be prefixed with /inexor in the future
  */
-const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(path.join(standardPaths.tempLocation, 'flex.pid'));
+const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(standardPaths.tempLocation);
 
 /**
  * The config folder of flex
