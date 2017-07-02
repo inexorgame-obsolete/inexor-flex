@@ -532,25 +532,67 @@ class GitRepositoryManager extends EventEmitter {
   mergeBranches(name, repository) {
     var self = this;
     try {
-      let branchNode = this.repositoriesNode.getChild(name).branch;
+      // All available branches
       let branchesNode = this.repositoriesNode.getChild(name).branches;
-      let local_branch = branchesNode.getChild(branchNode).local;
-      let local = local_branch.substr(11);
-      let remote_branch = branchesNode.getChild(branchNode).remote;
-      let remote = remote_branch.substr(13);
-      this.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remote, local));
-      return repository
-        .mergeBranches(local, remote)
-        .then(function() {
-          self.log.debug(util.format('[%s] Successfully merged new data', name));
-          return repository;
-        })
-        .catch(function(err) {
-          self.log.error(util.format('[%s] Failed to merge data: %s', name, err.message));
-          return repository;
-        });
+      // The name of the current branch
+      let branchNode = this.repositoriesNode.getChild(name).branch;
+      // The node of the current branch
+      let currentBranchNode = branchesNode.getChild(branchNode);
+      // Get or create the remote reference node
+      let remoteReferenceNode;
+      if (!currentBranchNode.hasChild('remote')) {
+        remoteReferenceNode = currentBranchNode.addChild('remote', 'string', util.format('refs/remotes/origin/%s', branchNode));
+      } else {
+        remoteReferenceNode = currentBranchNode.getChild('remote');
+      }
+      self.log.debug(util.format('[%s] Remote reference: %s', name, remoteReferenceNode.get()));
+      let remoteBranchShorthand = remoteReferenceNode.get().substr(13);
+      // Get or create the local reference node
+      let localReferenceNode;
+      let localReferenceExists;
+      if (!currentBranchNode.hasChild('local')) {
+        localReferenceNode = currentBranchNode.addChild('local', 'string', util.format('refs/heads/%s', branchNode));
+        localReferenceExists = false;
+      } else {
+        localReferenceNode = currentBranchNode.getChild('local');
+        localReferenceExists = true;
+      }
+      self.log.debug(util.format('[%s] Local reference: %s', name, localReferenceNode.get()));
+      let localBranchShorthand = localReferenceNode.get().substr(11);
+      if (localReferenceExists) {
+        self.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remoteBranchShorthand, localBranchShorthand));
+        return repository
+          .mergeBranches(localBranchShorthand, remoteBranchShorthand)
+          .then(function() {
+            self.log.debug(util.format('[%s] Successfully merged new data', name));
+            return repository;
+          })
+          .catch(function(err) {
+            self.log.error(err, util.format('[%s] Failed to merge data: %s', name, err.message));
+            return repository;
+          });
+      } else {
+        return self.checkoutBranch(name, repository, localBranchShorthand)
+          .then(function() {
+            self.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remoteBranchShorthand, localBranchShorthand));
+            return repository
+              .mergeBranches(localBranchShorthand, remoteBranchShorthand)
+              .then(function() {
+                self.log.debug(util.format('[%s] Successfully merged new data', name));
+                return repository;
+              })
+              .catch(function(err) {
+                self.log.error(err, util.format('[%s] Failed to merge data: %s', name, err.message));
+                return repository;
+              });
+          })
+          .catch(function(err) {
+            self.log.error(err, util.format('[%s] Failed checkout branch: %s', name, err.message));
+            return repository;
+          });
+      }
     } catch (err) {
-      self.log.error(util.format('[%s] Failed to merge data: %s', name, err.message));
+      self.log.error(err, util.format('[%s] Failed to merge data: %s', name, err.message));
       return repository;
     }
   }
@@ -582,11 +624,11 @@ class GitRepositoryManager extends EventEmitter {
             return repository;
           })
           .catch(function(err) {
-            self.log.info(err);
+            self.log.error(err, util.format('[%s] Checkout branch %s failed. Need to create local branch.', name, branch_name));
             return repository
               .checkoutRef(reference)
               .then(function(commit) {
-                self.log.debug("creating local branch");
+                self.log.debug(util.format('[%s] Creating local branch %s', name, branch_name));
                 return repository
                   .getHeadCommit()
                   .then(function(commit) {
