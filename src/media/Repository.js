@@ -480,13 +480,35 @@ class GitRepositoryManager extends EventEmitter {
    * @param {Repository} repository - The git repository.
    */
   fetchAll(name, repository) {
-    this.log.debug(util.format('[%s] Fetching new data from remote', name));
     var self = this;
+    this.log.debug(util.format('[%s] Fetching new data from remote', name));
     return repository
       .fetchAll({
         callbacks: {
           certificateCheck: function() {
             return 1;
+          },
+          transferProgress: (stats) => {
+            const received = stats.receivedObjects();
+            const indexed = stats.indexedObjects();
+            const total = stats.totalObjects();
+            const bytes = stats.receivedBytes();
+            var b = bytes;
+            var u = 'bytes';
+            if (b > 4096) {
+              b = b / 1024;
+              u = 'KB';
+            }
+            if (b > 4096) {
+              b = b / 1024;
+              u = 'MB';
+            }
+            if (b > 4096) {
+              b = b / 1024;
+              u = 'GB';
+            }
+            const progress = (100 * (received + indexed)) / (total * 2);
+            self.log.debug(util.format('[%s] Fetching: %s %s, Objects: %d/%d/%d (%s %%)', name, b.toFixed(1), u, received, indexed, total, progress.toFixed(1)));
           }
         }
       })
@@ -494,7 +516,8 @@ class GitRepositoryManager extends EventEmitter {
         self.log.debug(util.format('[%s] Successfully fetched data', name));
         return repository;
       })
-      .catch(function() {
+      .catch(function(err) {
+        self.log.error(util.format('[%s] Failed to fetched data: %s', name, err.message));
         return repository;
       });
   }
@@ -507,23 +530,29 @@ class GitRepositoryManager extends EventEmitter {
    * @param {Repository} repository - The git repository.
    */
   mergeBranches(name, repository) {
-    let branchNode = this.repositoriesNode.getChild(name).branch;
-    let branchesNode = this.repositoriesNode.getChild(name).branches;
-    let local_branch = branchesNode.getChild(branchNode).local;
-    let local = local_branch.substr(11);
-    let remote_branch = branchesNode.getChild(branchNode).remote;
-    let remote = remote_branch.substr(13);
-    this.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remote, local));
     var self = this;
-    return repository
-      .mergeBranches(local, remote)
-      .then(function() {
-        self.log.debug(util.format('[%s] Successfully merged new data', name));
-        return repository;
-      })
-      .catch(function() {
-        return repository;
-      });
+    try {
+      let branchNode = this.repositoriesNode.getChild(name).branch;
+      let branchesNode = this.repositoriesNode.getChild(name).branches;
+      let local_branch = branchesNode.getChild(branchNode).local;
+      let local = local_branch.substr(11);
+      let remote_branch = branchesNode.getChild(branchNode).remote;
+      let remote = remote_branch.substr(13);
+      this.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remote, local));
+      return repository
+        .mergeBranches(local, remote)
+        .then(function() {
+          self.log.debug(util.format('[%s] Successfully merged new data', name));
+          return repository;
+        })
+        .catch(function(err) {
+          self.log.error(util.format('[%s] Failed to merge data: %s', name, err.message));
+          return repository;
+        });
+    } catch (err) {
+      self.log.error(util.format('[%s] Failed to merge data: %s', name, err.message));
+      return repository;
+    }
   }
 
   /**
@@ -607,6 +636,7 @@ class GitRepositoryManager extends EventEmitter {
     return repository
       .getCurrentBranch()
       .then(function(reference) {
+        self.log.debug(util.format('[%s] Current branch reference: %s', name, reference));
         try {
           let branch_name = reference.toString().substr(11);
           if (branch_name != '') {
@@ -622,8 +652,8 @@ class GitRepositoryManager extends EventEmitter {
         }
         return repository;
       })
-      .catch(function(reference) {
-        self.log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
+      .catch(function(err) {
+        self.log.error(util.format('[%s] Failed to get current branch: %s. The repository %s seems to be corrupt', name, err.message, name));
         branchNode = 'master';
         return repository;
       });
