@@ -453,6 +453,7 @@ class Connector extends EventEmitter {
    */
   linkTreeMounts() {
     this.instanceNode.addLink('textures', this.instanceNode.getRoot().getChild('media').getChild('textures'));
+    this.instanceNode.addLink('maps', this.instanceNode.getRoot().getChild('media').getChild('maps'));
   }
 
   /**
