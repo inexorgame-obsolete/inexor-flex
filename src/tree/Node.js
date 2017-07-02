@@ -109,13 +109,17 @@ class Node extends EventEmitter {
          * @property {boolean} _sync
          */
 
-        // Check the node type (either node or a data item)
+        // Check the node type (either node, link or a data item)
         if (datatype == 'node') {
             this.isContainer = true;
             this.isLeaf = false;
             // Initializes the map of child nodes.
 
             this._value = new Map();
+        } else if (datatype == 'link') {
+            this.isContainer = initialValue.isContainer;
+            this.isLeaf = initialValue.isLeaf;
+            this._value = initialValue._value;
         } else {
             this.isContainer = false;
             this.isLeaf = true;
@@ -386,6 +390,18 @@ class Node extends EventEmitter {
      */
     addNode(name) {
         return this.addChild(name, 'node');
+    }
+
+    /**
+     * Adds a child node which is a link to another node in the tree.
+     * @function
+     * @name Node.addLink
+     * @property {string} name - The name of the child node.
+     * @property {Node} targetNode - The target node in the tree.
+     * @alias Node.addLink
+     */
+    addLink(name, targetNode) {
+        return this.addChild(name, 'link', targetNode);
     }
 
     /**

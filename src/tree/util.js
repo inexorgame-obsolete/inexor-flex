@@ -25,7 +25,16 @@ const validName = /^[\w ]+$/;
  * @return {boolean}
  */
 function isValidDataType(datatype) {
-  return datatype == 'node' || datatype == 'int32' || datatype == 'int64' || datatype == 'enum' || datatype == 'string' || datatype == 'float' || datatype == 'bool' || datatype == 'timestamp' || datatype == 'object';
+  return datatype == 'node'
+    || datatype == 'int32'
+    || datatype == 'int64'
+    || datatype == 'enum'
+    || datatype == 'string'
+    || datatype == 'float'
+    || datatype == 'bool'
+    || datatype == 'timestamp'
+    || datatype == 'object'
+    || datatype == 'link';
 }
 
 module.exports = {
