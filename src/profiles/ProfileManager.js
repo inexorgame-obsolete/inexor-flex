@@ -114,7 +114,7 @@ class ProfileManager extends EventEmitter {
       // The description
       profileNode.addChild('description', 'string', description);
       
-      this.log.info(util.format('Added profile %s@%s:%d', profileNode.getName(), profileNode.hostname, profileNode.port));
+      this.log.debug(util.format('Added profile %s@%s:%d', profileNode.getName(), profileNode.hostname, profileNode.port));
 
       resolve(profileNode);
     });
@@ -215,7 +215,7 @@ class ProfileManager extends EventEmitter {
         };
       }
       var toml = tomlify(config, {delims: false});
-      this.log.info(toml);
+      this.log.trace(toml);
       fs.writeFile(config_path, toml, (err) => {
         if (err) {
           this.log.warn(util.format('Failed to write profiles to %s: %s', config_path, err.message));
