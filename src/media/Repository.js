@@ -532,6 +532,7 @@ class GitRepositoryManager extends EventEmitter {
       let branchesNode = this.repositoriesNode.getChild(name).branches;
       // The name of the current branch
       let branchNode = this.repositoriesNode.getChild(name).getChild('branch');
+      self.log.trace(util.format('[%s] Branch Node: %s', name, branchNode.get()));
       // The node of the current branch
       let currentBranchNode = branchesNode.getChild(branchNode.get());
       // Get or create the remote reference node
@@ -607,12 +608,14 @@ class GitRepositoryManager extends EventEmitter {
     return repository
       .getBranch('refs/remotes/origin/' + branch_name)
       .then(function(reference) {
+        self.log.trace(util.format('[%s] Branch %s reference is %s', name, branch_name, reference.toString()));
         let branch_name = reference.toString().substr(20);
         if (branch_name == '') {
           branch_name = 'master';
+          self.log.warn(util.format('[%s] Reference invalid: %s! Using master branch!', name, reference.toString()));
         }
         self.log.info(util.format('[%s] Checking out branch %s (%s)', name, branch_name, reference.toString()));
-        branchNode = branch_name;
+        branchNode.set(branch_name);
         return repository
           .checkoutBranch(branch_name)
           .then(function() {
@@ -677,21 +680,21 @@ class GitRepositoryManager extends EventEmitter {
         try {
           let branch_name = reference.toString().substr(11);
           if (branch_name != '') {
-            branchNode = branch_name;
+            branchNode.set(branch_name);
             self.log.debug(util.format('[%s] Current branch is %s', name, branch_name));
           } else {
-            branchNode = 'master';
+            branchNode.set('master');
             self.log.warn(util.format('[%s] Failed to get current branch, assuming master branch!', name));
           }
         } catch (err) {
-          branchNode = 'master';
+          branchNode.set('master');
           self.log.error(err, util.format('[%s] Failed to get current branch: %s', name, err.message));
         }
         return repository;
       })
       .catch(function(err) {
+        branchNode.set('master');
         self.log.error(util.format('[%s] Failed to get current branch: %s. The repository %s seems to be corrupt', name, err.message, name));
-        branchNode = 'master';
         return repository;
       });
   }
