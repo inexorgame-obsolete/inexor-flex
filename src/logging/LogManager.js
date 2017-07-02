@@ -125,13 +125,13 @@ class LogManager extends EventEmitter {
       levelNode.on('postSet', (event) => {
         if (event.oldValue != event.newValue) {
           this.loggers[name].level(event.newValue);
-          this.log.info(util.format('Reconfigured logger %s (level: %s)', name, event.newValue));
+          this.log.debug(util.format('Reconfigured logger %s (level: %s)', name, event.newValue));
         }
       });
 
       // Log about loggers
       if (this.log != null) {
-        this.log.info(util.format('Created logger %s (level: %s, console: %s, file: %s)', name, level, String(console), String(file)));
+        this.log.debug(util.format('Created logger %s (level: %s, console: %s, file: %s)', name, level, String(console), String(file)));
       }
 
     } else {
