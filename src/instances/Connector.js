@@ -253,7 +253,7 @@ class Connector extends EventEmitter {
               self.loadInstanceConfiguration();
 
               // Link tree mounts (like textures)
-              // TODO: Link tree mounts (like textures)
+              self.linkTreeMounts();
 
               // Set package dir
               self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
@@ -445,6 +445,14 @@ class Connector extends EventEmitter {
     } else {
       this.log.info(util.format('Could not find instance configuration (expected file location: %s)', configPath));
     }
+  }
+
+  /**
+   * Links other nodes in the tree into the instance tree.
+   * @function
+   */
+  linkTreeMounts() {
+    this.instanceNode.addLink('textures', this.instanceNode.getRoot().getChild('media').getChild('textures'));
   }
 
   /**
