@@ -136,7 +136,7 @@ class MapManager extends EventEmitter {
         } else {
           node = versionNode.addChild(pathMapping.node, 'string', filePath);
         }
-        this.log.debug(util.format('%s = %s', node.getPath(), node.get()));
+        this.log.trace(util.format('%s = %s', node.getPath(), node.get()));
       } else {
         this.log.trace(util.format('%s not found', filePath));
       }
@@ -180,12 +180,12 @@ class MapManager extends EventEmitter {
             if (node.hasChild(property)) {
               let pnode = node.getChild(property);
               pnode.set(this.convert(pnode._datatype, obj[property]));
-              this.log.debug(util.format('%s = %s', pnode.getPath(), pnode.get()));
+              this.log.trace(util.format('%s = %s', pnode.getPath(), pnode.get()));
             } else {
               let datatype = this.getNodeDatatype(obj[property]);
               if (datatype != null) {
                 let pnode = node.addChild(property, datatype, obj[property]);
-                this.log.debug(util.format('%s = %s', pnode.getPath(), pnode.get()));
+                this.log.trace(util.format('%s = %s', pnode.getPath(), pnode.get()));
               } else {
                 this.log.error(util.format('Unknown datatype for %s.%s', node.getPath(), property));
               }
