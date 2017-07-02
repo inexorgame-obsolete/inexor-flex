@@ -69,8 +69,8 @@ class FlexServer {
   destroyApiInstances() {
     for (let i = 0; i < this.apiNames.length; i += 1) {
       let apiName = this.apiNames[i];
-      this.log.debug(util.format('Closing context of API %s', apiName));
-      this.apis[apiName].close();
+      this.log.debug(util.format('Calling beforeDestroy for API %s', apiName));
+      this.apis[apiName].beforeDestroy();
       this.log.debug(util.format('Destroying context of API %s', apiName));
       this.apis[apiName].destroy();
       delete this.apis[apiName];

@@ -60,11 +60,11 @@ class ApplicationContext {
     }
   }
 
-  close() {
+  beforeDestroy() {
     for (let name of Object.keys(this.components)) {
       if (this.components.hasOwnProperty(name)) {
-        if (this.components[name].close) {
-          this.components[name].close();
+        if (this.components[name].beforeDestroy) {
+          this.components[name].beforeDestroy();
         }
       }
     }
@@ -74,6 +74,8 @@ class ApplicationContext {
     for (let name of Object.keys(this.components)) {
       if (this.components.hasOwnProperty(name)) {
         delete this.components[name];
+        delete this.dependenciesSet[name];
+        delete this.propertiesSet[name];
       }
     }
   }
