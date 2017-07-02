@@ -443,23 +443,19 @@ class GitRepositoryManager extends EventEmitter {
         .open(repositoryPath)
         .then(function(repo) {
           repository = repo;
-          self.log.debug(util.format('[%s] Opened media repository', name));
+          self.log.trace(util.format('[%s] Opened media repository', name));
           return self.getBranches(name, repository);
         })
         .then(function(repository) {
-          self.log.debug(util.format('[%s] Got branches', name));
           return self.getCurrentBranch(name, repository);
         })
         .then(function(repository) {
-          self.log.debug(util.format('[%s] Got current branch', name));
           return self.fetchAll(name, repository);
         })
         .then(function(repository) {
-          self.log.debug(util.format('[%s] Fetched changes from remote', name));
           return self.mergeBranches(name, repository);
         })
         .then(function(repository) {
-          self.log.debug(util.format('[%s] Merged changes into local branch', name));
           if (branch_name != null) {
             return self.checkoutBranch(name, repository, branch_name);
           } else {
@@ -535,36 +531,36 @@ class GitRepositoryManager extends EventEmitter {
       // All available branches
       let branchesNode = this.repositoriesNode.getChild(name).branches;
       // The name of the current branch
-      let branchNode = this.repositoriesNode.getChild(name).branch;
+      let branchNode = this.repositoriesNode.getChild(name).getChild('branch');
       // The node of the current branch
-      let currentBranchNode = branchesNode.getChild(branchNode);
+      let currentBranchNode = branchesNode.getChild(branchNode.get());
       // Get or create the remote reference node
       let remoteReferenceNode;
       if (!currentBranchNode.hasChild('remote')) {
-        remoteReferenceNode = currentBranchNode.addChild('remote', 'string', util.format('refs/remotes/origin/%s', branchNode));
+        remoteReferenceNode = currentBranchNode.addChild('remote', 'string', util.format('refs/remotes/origin/%s', branchNode.get()));
       } else {
         remoteReferenceNode = currentBranchNode.getChild('remote');
       }
-      self.log.debug(util.format('[%s] Remote reference: %s', name, remoteReferenceNode.get()));
+      self.log.trace(util.format('[%s] Remote reference: %s', name, remoteReferenceNode.get()));
       let remoteBranchShorthand = remoteReferenceNode.get().substr(13);
       // Get or create the local reference node
       let localReferenceNode;
       let localReferenceExists;
       if (!currentBranchNode.hasChild('local')) {
-        localReferenceNode = currentBranchNode.addChild('local', 'string', util.format('refs/heads/%s', branchNode));
+        localReferenceNode = currentBranchNode.addChild('local', 'string', util.format('refs/heads/%s', branchNode.get()));
         localReferenceExists = false;
       } else {
         localReferenceNode = currentBranchNode.getChild('local');
         localReferenceExists = true;
       }
-      self.log.debug(util.format('[%s] Local reference: %s', name, localReferenceNode.get()));
+      self.log.trace(util.format('[%s] Local reference: %s', name, localReferenceNode.get()));
       let localBranchShorthand = localReferenceNode.get().substr(11);
       if (localReferenceExists) {
         self.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remoteBranchShorthand, localBranchShorthand));
         return repository
           .mergeBranches(localBranchShorthand, remoteBranchShorthand)
           .then(function() {
-            self.log.debug(util.format('[%s] Successfully merged new data', name));
+            self.log.trace(util.format('[%s] Successfully merged new data', name));
             return repository;
           })
           .catch(function(err) {
@@ -578,7 +574,7 @@ class GitRepositoryManager extends EventEmitter {
             return repository
               .mergeBranches(localBranchShorthand, remoteBranchShorthand)
               .then(function() {
-                self.log.debug(util.format('[%s] Successfully merged new data', name));
+                self.log.trace(util.format('[%s] Successfully merged new data', name));
                 return repository;
               })
               .catch(function(err) {
@@ -606,7 +602,7 @@ class GitRepositoryManager extends EventEmitter {
    * @param {string} branch_name - If true, the repository will be cloned.
    */
   checkoutBranch(name, repository, branch_name) {
-    let branchNode = this.repositoriesNode.getChild(name).branch;
+    let branchNode = this.repositoriesNode.getChild(name).getChild('branch');
     var self = this;
     return repository
       .getBranch('refs/remotes/origin/' + branch_name)
@@ -635,11 +631,11 @@ class GitRepositoryManager extends EventEmitter {
                     return repository
                       .createBranch(branch_name, commit, true)
                       .then(function(reference) {
-                        self.log.debug(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
+                        self.log.trace(util.format('[%s] Successfully created local branch %s (%s)', name, branch_name, reference.toString()));
                         return repository
                           .checkoutBranch(branch_name)
                           .then(function() {
-                            self.log.debug(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
+                            self.log.trace(util.format('[%s] Successfully checked out branch %s (%s)', name, branch_name, reference.toString()));
                             return repository;
                           })
                           .catch(function() {
@@ -672,13 +668,12 @@ class GitRepositoryManager extends EventEmitter {
    * @param {Repository} repository - The git repository.
    */
   getCurrentBranch(name, repository) {
-    // TODO: update branch node
-    let branchNode = this.repositoriesNode.getChild(name).branch;
+    let branchNode = this.repositoriesNode.getChild(name).getChild('branch');
     var self = this;
     return repository
       .getCurrentBranch()
       .then(function(reference) {
-        self.log.debug(util.format('[%s] Current branch reference: %s', name, reference));
+        self.log.trace(util.format('[%s] Current branch reference: %s', name, reference));
         try {
           let branch_name = reference.toString().substr(11);
           if (branch_name != '') {
@@ -690,7 +685,7 @@ class GitRepositoryManager extends EventEmitter {
           }
         } catch (err) {
           branchNode = 'master';
-          self.log.error(util.format('[%s] Failed to get current branch', name));
+          self.log.error(err, util.format('[%s] Failed to get current branch: %s', name, err.message));
         }
         return repository;
       })
@@ -732,7 +727,7 @@ class GitRepositoryManager extends EventEmitter {
               } else {
                 branchNode.addChild('local', 'string', reference_name);
               }
-              self.log.debug(util.format('[%s] Found local branch %s', name, branch_name));
+              self.log.trace(util.format('[%s] Found local branch %s', name, branch_name));
             } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
               // remote branch
               var branch_name = reference_name.substr(20);
@@ -747,10 +742,10 @@ class GitRepositoryManager extends EventEmitter {
               } else {
                 branchNode.addChild('remote', 'string', reference_name);
               }
-              self.log.debug(util.format('[%s] Found remote branch %s', name, branch_name));
+              self.log.trace(util.format('[%s] Found remote branch %s', name, branch_name));
             }
           }
-          self.log.debug(branchesNode.toString());
+          self.log.trace(util.format('[%s] List of branches and references:\n%s', name, branchesNode.toJson()));
         } catch (err) {
           self.log.error(util.format('[%s] Failed to get available branches: %s', name, err));
         }
@@ -820,13 +815,13 @@ class MediaRepositoryManager extends EventEmitter {
   afterPropertiesSet() {
 
     /// Print the repository paths
-    this.log.info(util.format('Repository paths: %s', this.pathsNode.toJson()));
+    this.log.debug(util.format('Repository paths:\n%s', this.pathsNode.toJson()));
 
     /// Scan all media paths
     this.scanAll();
 
     /// Print the scan result
-    this.log.info(util.format('Repository scan result: %s', this.repositoriesNode.toJson()));
+    this.log.debug(util.format('Repository scan result:\n%s', this.repositoriesNode.toJson()));
 
     // If not exist fetch the media-essential repository
     this.fetchMediaEssentialRepository();
