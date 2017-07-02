@@ -1,6 +1,14 @@
 const express_ws = require('express-ws');
 const util = require('util');
 
+const syncStates = {
+  get: 'get',
+  set: 'set',
+  sync: 'sync',
+  add: 'add',
+  error: 'error'
+};
+
 /**
  * Websockets API for managing tree nodes of the Inexor Tree.
  */
@@ -30,7 +38,11 @@ class InexorTreeWsAPI {
     this.wss = this.websockets.getWss('/ws/tree');
 
     // Listen on the root node if any node has changed
-    this.root.on('set', this.sync.bind(this));
+    this.root.on('postSet', this.syncNode.bind(this));
+
+    // Listen on the root node if any node has changed
+    this.root.on('add', this.addNode.bind(this));
+
   }
 
   /**
@@ -50,11 +62,7 @@ class InexorTreeWsAPI {
     let node = this.root.findNode(req.path);
     if (node != null) {
       if (node.isContainer) {
-        ws.send({
-          datatype: node._datatype,
-          path: node.getPath(),
-          childs: node.getChildNames(),
-        });
+        ws.send(this.getMessage(syncStates.get, node));
       } else {
         if (req.hasOwnProperty('value')) {
           let value = this.convert(node._datatype, req.value);
@@ -62,34 +70,50 @@ class InexorTreeWsAPI {
             node.set(value);
           }
         }
-        ws.send(JSON.stringify({
-          datatype: node._datatype,
-          path: node.getPath(),
-          value: node.get()
-        }));
+        ws.send(this.getMessage(syncStates.set, node));
       }
     } else {
       ws.send(JSON.stringify({
-        datatype: null
+        state: syncStates.error,
+        path: req.path,
+        message: 'Not found'
       }));
     }
   }
 
   /**
-   * Push changes to the clients
+   * Send tree node sync events to the web socket clients.
    */
-  sync({node: node}) {
+  syncNode({node: node}) {
     try {
-      this.wss.clients.forEach(function (client) {
-        client.send(JSON.stringify({
-          datatype: node._datatype,
-          path: node.getPath(),
-          value: node.get()
-        }));
+      this.wss.clients.forEach((client) => {
+        client.send(this.getMessage(syncStates.sync, node));
       });
     } catch (err) {
-      this.log.error(err, util.format('Failed to sync tree node %s: %s', node.getPath(), err.message));
+      this.log.error(err, util.format('Failed to send tree node sync event for %s: %s', node.getPath(), err.message));
     }
+  }
+
+  /**
+   * Send tree node add events to the web socket clients.
+   */
+  addNode(node) {
+    try {
+      this.wss.clients.forEach((client) => {
+        client.send(this.getMessage(syncStates.add, node));
+      });
+    } catch (err) {
+      this.log.error(err, util.format('Failed to send tree node add event for %s: %s', node.getPath(), err.message));
+    }
+  }
+  
+  getMessage(state, node) {
+    return JSON.stringify({
+      state: state,
+      datatype: node._datatype,
+      path: node.getPath(),
+      value: node.isContainer ? node.getChildNames : node.get()
+    });
   }
 
   /**
