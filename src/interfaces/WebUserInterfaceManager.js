@@ -63,7 +63,7 @@ class WebUserInterfaceManager extends EventEmitter {
     this.createInterface('ui-console', 'Inexor Web Console', 'ui-console', 'public', 'https://github.com/inexorgame/ui-console.git');
 
     /// Inexor Core Client HUD
-    this.createInterface('ui-client-hud', 'Inexor Core Client HUD', 'ui-client-hud', 'public', 'https://github.com/inexorgame/ui-client-hud.git');
+    this.createInterface('ui-client-hud', 'Inexor Core Client HUD', 'ui-client-hud', 'dist', 'https://github.com/inexorgame/ui-client-hud.git');
 
     // TODO: menu UI
 
