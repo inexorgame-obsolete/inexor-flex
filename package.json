@@ -14,7 +14,8 @@
     "server": "node server/index.js --profile=server",
     "shell": "node inexor shell",
     "build-ui-flex": "cd interfaces/ui-flex && npm run build",
-    "build-ui-client-hud": "cd interfaces/ui-client-hud && npm run build"
+    "build-ui-client-hud": "cd interfaces/ui-client-hud && npm run build",
+    "build-ui-console": "cd interfaces/ui-console && npm run build"
   },
   "repository": {
     "type": "git",

@@ -4,7 +4,9 @@
  */
 
 const ConsoleManager = require('./ConsoleManager');
+const CommandManager = require('./CommandManager');
 
 module.exports = {
-  ConsoleManager: ConsoleManager
+  ConsoleManager: ConsoleManager,
+  CommandManager: CommandManager
 }

@@ -31,6 +31,7 @@ const FlexRestAPI = require('./FlexRestAPI');
 
 // Import the WS API modules
 const InexorTreeWsAPI = require('./InexorTreeWsAPI');
+const ConsoleWsAPI = require('./ConsoleWsAPI');
 
 module.exports = function(argv, app, websockets) {
 
@@ -71,6 +72,7 @@ module.exports = function(argv, app, websockets) {
 
   // Constructing the WS API
   let inexorTreeWsAPI = applicationContext.construct('inexorTreeWsAPI', function() { return new InexorTreeWsAPI(applicationContext); });
+  let consoleWsAPI = applicationContext.construct('consoleWsAPI', function() { return new ConsoleWsAPI(applicationContext); });
 
   // Calling the setDependencies() method of every component in the application context
   applicationContext.setDependencies();

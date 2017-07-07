@@ -158,7 +158,13 @@ class ConsoleManager extends EventEmitter {
    * @param {string} level The log level.
    */
   writeBuffer(instanceId, message, level = 'info') {
-    let logger = this.instancesNode.getChild(instanceId).console.logger.get();
+    let instanceNode = this.instancesNode.getChild(instanceId);
+    this.emit('message', {
+      instanceId: instanceId,
+      message: message,
+      level: level
+    });
+    let logger = instanceNode.console.logger.get();
     logger[this.mapLogLevel(level)](message);
   }
 
@@ -173,7 +179,13 @@ class ConsoleManager extends EventEmitter {
    * TODO: create a simple web app which shows 
    */
   getBuffer(instanceId) {
-    return this.instancesNode.getChild(instanceId).console.buffer.get().records;
+    if (this.instancesNode.hasChild(instanceId)) {
+      let instanceNode = this.instancesNode.getChild(instanceId);
+      if (instanceNode.hasChild('console')) {
+        return instanceNode.console.buffer.records;
+      }
+    }
+    return [];
   }
 
   mapLogLevel(level) {
