@@ -101,6 +101,9 @@ class InstanceManager extends EventEmitter {
    */
   setDependencies() {
 
+    // The command line arguments.
+    this.argv = this.applicationContext.get('argv');
+
     /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
 
@@ -244,13 +247,13 @@ class InstanceManager extends EventEmitter {
     return new Promise((resolve, reject) => {
 
       // Resolve executable
-      let executable_path = inexor_path.getExecutablePath(instance_type)
+      let executable_path = inexor_path.getExecutablePath(instance_type);
       if (!fs.existsSync(executable_path)) {
         reject(new Error('Executable does not exist: ' + executable_path));
       }
 
       // Starting a new process with the instance id as only argument
-      let args = [ instanceId ];
+      let args = [ instanceId, this.getHostname(), this.getPort() ];
       let options = {
         cwd: path.resolve(inexor_path.getBasePath()),
         env: process.env
@@ -676,6 +679,27 @@ class InstanceManager extends EventEmitter {
 
   getInstanceName(instanceNode) {
     return util.format('%s instance %s', instanceNode.type, instanceNode.getName());
+  }
+
+  /**
+   * Returns the hostname to listen on.
+   */
+  getHostname() {
+    return this.argv.hostname != null ? this.argv.hostname : this.getCurrentProfile().hostname;
+  }
+
+  /**
+   * Returns the port to listen on.
+   */
+  getPort() {
+    return this.argv.port != null ? this.argv.port : this.getCurrentProfile().port;
+  }
+
+  /**
+   * Returns the current profile.
+   */
+  getCurrentProfile() {
+    return this.profileManager.getCurrentProfile();
   }
 
 }
