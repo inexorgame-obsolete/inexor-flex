@@ -59,26 +59,33 @@ class InexorTreeWsAPI {
    * Get or set node values.
    */
   handleRequest(ws, req) {
-    let node = this.root.findNode(req.path);
-    if (node != null) {
-      if (node.isContainer) {
-        ws.send(this.getMessage(syncStates.get, node));
-      } else {
-        if (req.hasOwnProperty('value')) {
-          let value = this.convert(node._datatype, req.value);
-          if (value != null) {
-            node.set(value);
+    ws.on('message', (message) => {
+      try {
+        let request = JSON.parse(message);
+        let node = this.root.findNode(request.path);
+        if (node != null) {
+          if (node.isContainer) {
+            ws.send(this.getMessage(syncStates.get, node));
+          } else {
+            if (req.hasOwnProperty('value')) {
+              let value = this.convert(node._datatype, request.value);
+              if (value != null) {
+                node.set(value);
+              }
+            }
+            ws.send(this.getMessage(syncStates.set, node));
           }
+        } else {
+          ws.send(JSON.stringify({
+            state: syncStates.error,
+            path: request.path,
+            message: 'Not found'
+          }));
         }
-        ws.send(this.getMessage(syncStates.set, node));
+      } catch (err) {
+        this.log.error(err, util.format('Failed to process message: %s\n%s', err.message, message));
       }
-    } else {
-      ws.send(JSON.stringify({
-        state: syncStates.error,
-        path: req.path,
-        message: 'Not found'
-      }));
-    }
+    });
   }
 
   /**

@@ -70,7 +70,7 @@ class ConsoleWsAPI {
             break;
         }
       } catch (err) {
-        this.log.error(err, util.format('Failed to process input: %s', err.message));
+        this.log.error(err, util.format('Failed to process message: %s\n%s', err.message, message));
       }
     });
   }
