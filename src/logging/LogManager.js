@@ -154,6 +154,7 @@ class LogManager extends EventEmitter {
       for (var i = 0; i < streams.length; i++) {
         logger.addStream(streams[i]);
       }
+      this.log.trace(util.format('Reconfigured logger %s (level: %s, streams: %d)', name, level, streams.length));
 
     }
     return this.loggers[name];

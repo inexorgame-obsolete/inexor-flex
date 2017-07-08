@@ -298,6 +298,7 @@ class InstanceManager extends EventEmitter {
         this.log.info(util.format('Stopping instance %s', this.getInstanceName(instanceNode)));
         this.shutdownConnection(instanceNode);
         this.shutdownProcess(instanceNode, true);
+        this.shutdownConsole(instanceNode);
         resolve(instanceNode);
       } catch (err) {
         reject(util.format('Failed to stop instance %s', this.getInstanceName(instanceNode)));
@@ -356,6 +357,22 @@ class InstanceManager extends EventEmitter {
       instanceNode.removeChild('pid');
     }
     this.transist(instanceNode, 'started', 'stopped');
+  }
+
+  shutdownConsole(instanceNode) {
+    if (instanceNode.hasChild('console')) {
+      let consoleNode = instanceNode.getChild('');
+      if (consoleNode.hasChild('logger')) {
+        consoleNode.removeChild('logger');
+      }
+      if (consoleNode.hasChild('buffer')) {
+        consoleNode.removeChild('buffer');
+      }
+      instanceNode.removeChild('console');
+      this.log.info(util.format('Removed console for instance %s', instanceNode.getName()));
+    } else {
+      this.log.info(util.format('No console found for instance %s', instanceNode.getName()));
+    }
   }
 
   /**

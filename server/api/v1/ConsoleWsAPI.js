@@ -8,7 +8,8 @@ const levelNames = {
   30: "info",
   20: "debug",
   10: "trace"
-}
+};
+
 /**
  * Websockets API for the Inexor Console.
  */
@@ -59,7 +60,6 @@ class ConsoleWsAPI {
   handleRequest(ws, req) {
     ws.on('message', (message) => {
       try {
-        this.log.error(message);
         let request = JSON.parse(message);
         switch (request.state) {
           case 'init':
@@ -78,19 +78,19 @@ class ConsoleWsAPI {
   sendInit(ws, instanceId) {
     this.log.debug(util.format('New console connection opened for instance %s', instanceId));
     let records = this.consoleManager.getBuffer(instanceId);
-    // this.log.error(buffer);
     for (let i = 0; i < records.length; i += 1) {
       ws.send(this.getMessageFromRecord(instanceId, records[i]));
     }
   }
 
-  sendLogMessage({instanceId: instanceId, message: message, level: level}) {
-    ws.send(JSON.stringify({
-      type: 'log',
-      instanceId: instanceId,
-      message: message,
-      level: level
-    }));
+  sendLogMessage(message) {
+    try {
+      this.wss.clients.forEach((client) => {
+        client.send(JSON.stringify(message));
+      });
+    } catch (err) {
+      this.log.error(err, util.format('Failed to log message: %s', err.message));
+    }
   }
 
   getMessageFromRecord(instanceId, record) {
@@ -102,13 +102,6 @@ class ConsoleWsAPI {
       name: record.name,
       time: record.time
     }));
-  }
-
-  getLevelName(level) {
-    switch (level) {
-      case 10:
-        return 
-    }
   }
 
 }

@@ -85,8 +85,8 @@ class ConsoleManager extends EventEmitter {
       let instanceLogger = this.logManager.createStreamLogger(loggerName, true, null, 'trace', streams);
 
       // Redirect the instance stdout and stderr to the instance logger
-      instanceProcess.stdout.on('data', (data) => { this.mapStreamToLog(instanceLogger, data) });
-      instanceProcess.stderr.on('data', (data) => { this.mapStreamToLog(instanceLogger, data) });
+      instanceProcess.stdout.on('data', (data) => { this.mapStreamToLog(instanceId, instanceLogger, data) });
+      instanceProcess.stderr.on('data', (data) => { this.mapStreamToLog(instanceId, instanceLogger, data) });
 
       // Create a tree node containing the instance logger and the ring buffer
       let consoleNode = instanceNode.getOrCreateNode('console');
@@ -110,18 +110,32 @@ class ConsoleManager extends EventEmitter {
    * @param {stream} data - The stream data.
    * @return {Promise<bool>}
    */
-  mapStreamToLog(instanceLogger, data) {
+  mapStreamToLog(instanceId, instanceLogger, data) {
     // TODO: write a custom sink for spdlog in Inexor Core which produces
     //       a JSON formatted string, which can be parsed easily here
     //       for example:
     //       { "name": "global", "level": "info", "msg": "the log message text", "time": "2016-07-03T16:07:10.754Z" }
-    let lines = data.toString('utf8').split("\n");
-    for (var line of lines) {
-      line = line.trim();
-      if (line.length > 0) {
-        let entry = this.parseLine(line);
-        instanceLogger[entry.level](entry.message);
+    try {
+      let lines = data.toString('utf8').split("\n");
+      for (var line of lines) {
+        line = line.trim();
+        if (line.length > 0) {
+          let entry = this.parseLine(line);
+          instanceLogger[entry.level](entry.message);
+          try {
+            this.emit('message', {
+              type: 'log',
+              instanceId: instanceId,
+              message: entry.message,
+              level: entry.level
+            });
+          } catch (err2) {
+            this.log.error(err2);
+          }
+        }
       }
+    } catch (err) {
+      this.log.error(err);
     }
   }
 
@@ -158,6 +172,7 @@ class ConsoleManager extends EventEmitter {
    * @param {string} level The log level.
    */
   writeBuffer(instanceId, message, level = 'info') {
+    this.log.error(util.format('Writing into console buffer: [%s] [%s] %s', instanceId, level, message));
     let instanceNode = this.instancesNode.getChild(instanceId);
     this.emit('message', {
       instanceId: instanceId,
