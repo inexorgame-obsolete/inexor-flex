@@ -4,13 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const os = require('os');
+const util = require('util');
 const unzip = require('unzip');
 const https = require('follow-redirects').https;
 
 const debuglog = util.debuglog('releases');
-const log = require('@inexor-game/logger')()
+const log = require('@inexor-game/logger')();
 const tree = require('@inexor-game/tree');
-const inexor_path = require('@inexor-game/path');;
+const inexor_path = require('@inexor-game/path');
 
 const releaseURL = 'https://api.github.com/repos/inexor-game/code/releases';
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
@@ -25,12 +26,8 @@ class ReleaseManager extends EventEmitter {
 
         // Hopefully we will support more platforms in the future
         this.platform = '';
-        if (process.env.RELEASEPLATFORM) { // This is mainly for testing purposes on OSX
-            this.platform = process.env.RELEASEPLATFORM;
-            // NOTE: Set it to either Linux or win64
-        } else {
-            this.platform = inexor_path.determinePlatform();
-        }
+        this.platform = inexor_path.determinePlatform();
+        this.platform (!this.platform) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
     }
 
     /**
@@ -97,12 +94,13 @@ class ReleaseManager extends EventEmitter {
             releaseNode.addChild('downloaded', 'boolean', false);
             releaseNode.addChild('installed', 'boolean', false);
 
-            let asset = assets.filter((a) => a.name.contains(this.platform));
+            let asset = assets.filter((a) => a.name.includes(this.platform));
             releaseNode.addChild('asset', 'node');
             let assetNode = releaseNode.getChild('asset');
             assetNode.addChild('name', 'string', asset.url);
             assetNode.addChild('url', 'string', asset.url);
 
+            this.log.info('A release with version %s has been added', version);
             this.emit('onNewReleaseAvailable', version);
         }
     }
@@ -130,7 +128,7 @@ class ReleaseManager extends EventEmitter {
      * @param  {string} archiveURL
      * @param  {string} fileName
      * @param  {string} destinationPath [destinationPath=process.cwd(] - where the file should go
-     * @return {Promise<fs.ReadStream>}
+     * @return {Promise<boolean>}
      */
     downloadArchive(archiveURL, fileName, destinationPath = process.cwd()) {
         return new Promise((resolve, reject) => {
@@ -149,7 +147,7 @@ class ReleaseManager extends EventEmitter {
 
                 response.on('end', () => {
                     file.close()
-                    resolve(fs.createReadStream(filePath))
+                    resolve(true)
                 })
             })
 
@@ -159,7 +157,6 @@ class ReleaseManager extends EventEmitter {
     /**
      * Downloads a release for the specific version
      * @param {string} version
-     * @throws FileNotSavedException
      */
     downloadRelease(version) {
         let releaseNode = this.releasesNode.getChild(version);
@@ -167,19 +164,65 @@ class ReleaseManager extends EventEmitter {
         let urlNode = assetNode.getChild('url');
         let nameNode = assetNode.getChild('name');
 
-        this.downloadArchive(urlNode.get(), nameNode.get()).then((fs) => {
-            this.releasesNode.getChild('downloaded').set(true);
-            this.emit('onReleaseDownloaded', version);
-        })
+        try {
+            this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
+                this.releasesNode.getChild('downloaded').set(true);
+                this.log.info('Release with version %s has been downloaded', version);
+                this.emit('onReleaseDownloaded', version);
+            })
+        } catch (e) {
+            this.log.error(e);
+        }
     }
 
+    /**
+     * @private
+     * @function installArchive
+     * Unzips a release at the given path
+     * @param {fileName} fileName
+     * @param {extractionPath} path
+     * @return {Promise<boolean>}
+     */
+    installArchive(fileName, extractionPath=process.getcwd()) {
+        return new Promise((resolve, reject) => {
+            let filePath = path.join(extractionPath, fileName);
+            let fileStream = fs.createReadStream(filePath)
+                .pipe(unzip.Parse())
+                .on('entry', function (entry) {
+                    let tempfileName = entry.path;
+                    let type = entry.type; // 'Directory' or 'File'
+                    let size = entry.size;
+
+                    if (tempfileName === "this IS the file I'm looking for") {
+                        entry.pipe(fs.createWriteStream('output/path'));
+                    } else {
+                        entry.autodrain();
+                    }
+
+            })
+
+            resolve(true);
+        })
+    }
 
     /**
      * Installs a release for the given version
      * @param {string} version
      */
     installRelease(version) {
+        let releaseNode = this.releasesNode.getChild(version);
+        let assetNode = releaseNode.getChild('asset');
+        let nameNode = assetNode.getChild('name');
 
+        this.installArchive(nameNode.get()).then((done) => {
+            try {
+                this.releasesNode.getChild('installed').set(true);
+                this.log.info('Release with version %s has been installed', version);
+                this.emit('onReleaseInstalled', version);
+            } catch (e) {
+                this.log.error(e);
+            }
+        })
     }
 
     /**
@@ -187,6 +230,14 @@ class ReleaseManager extends EventEmitter {
      * @param {string} version
      */
     uninstallRelease(version) {
+        let releaseNode = this.releasesNode.getChild(version);
+        let assetNode = releaseNode.getChild('asset');
+        let nameNode = assetNode.getChild('name');
 
+        let filePath = path.join(process.getCwd(), name);
+        fs.unlink(filePath, (done) => {
+            this.log.info("Uninstalled release with version %s", version)
+            this.emit('onReleaseUninstalled', version);
+        })
     }
 }

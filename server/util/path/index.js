@@ -7,6 +7,8 @@ const os = require('os');
 const process = require('process');
 const path = require('path');
 const standardPaths = require('./standardpaths');
+const util = require('util');
+const debuglog = util.debuglog('inexor-path');
 
 /**
  * The path of the flex folder
@@ -22,29 +24,23 @@ if (process.platform == 'win32') {
  * @function determinePlatform
  * Determines the current platform, which can be one of the current supported ones (below):
  * - win64
- * - linux64
- * @throws 'Unsupported platform'
- * @deprecated
+ * - Linux64
  * @return {string}
- * NOTE: This definition will change
- * NOTE: This will be deprecated and the release name will be determined by flex profiles
+ * TODO: Deprecate this when we find a fixed release naming schema for all platforms
  */
 function determinePlatform() {
     platform = ''
+    // TODO: Add more platforms
 
     if (os.platform() == 'win32') {
         platform += 'win'
     } else if (os.platform() == 'linux') {
         platform += 'Linux'
-    } else {
-        throw('Unsupported platform ' + os.platform())
     }
 
-    if (['arm64', 'x64'].contains(os.arch())) {
+    if (['arm64', 'x64'].includes(os.arch())) {
       if (platform == 'win')
         platform += '64' // TODO: We only do this for Windows currently, that sucks
-    } else {
-        throw('Unsupported architecture ' + platform + os.arch())
     }
 
     return platform
@@ -66,15 +62,15 @@ if (process.env.BINARY) {
   const binary_path = process.env.BINARY;
 } else {
   let path = null;
-  let platform = os.platform();
+  let platform = determinePlatform();
 
   switch(platform) {
-    // TODO: Add more platforms
-    // TODO: Add more binary types (inexor_client, inexor_server, inexor_bot, ...)
+    // TODO: This will be deprecated in the future by more flexible paths
     case 'Linux64': binary_path = 'bin/inexor'; break;
-    case 'win64': binary_path = 'bin/inexor.exe'; break; // TODO: @a_teammate, add windows path
+    case 'win64': binary_path = 'bin/inexor.exe'; break;
     default:
-      throw new Error('${platform} is not currently supported')
+      binary_path = 'bin/inexor'; // fall back to unix path
+      debuglog(`Using an unsupported platform ${platform}`);
   }
 }
 
