@@ -1,0 +1,24 @@
+{
+  "name": "@inexor-game/releases",
+  "version": "0.0.1",
+  "description": "A release downloader for inexor-core",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexorgame/inexor-flex.git"
+  },
+  "keywords": [
+    "inexor-core",
+    "releases"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexorgame/inexor-flex/issues"
+  },
+  "homepage": "https://github.com/inexorgame/inexor-flex#readme",
+  "dependencies": {
+    "follow-redirects": "^1.2.3",
+    "unzip": "^0.1.11"
+  }
+}

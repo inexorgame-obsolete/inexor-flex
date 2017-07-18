@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 
-const serveIndex = require('serve-index');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 
