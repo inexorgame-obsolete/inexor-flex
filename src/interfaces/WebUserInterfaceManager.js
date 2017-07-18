@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 
+const serveIndex = require('serve-index');
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 
@@ -53,7 +54,7 @@ class WebUserInterfaceManager extends EventEmitter {
 
     /// Scan for interfaces in the interfaces folder (WIP)
     // this.scanForInterfaces();
-    
+
     // Temporarily solution: manual creation of interfaces
 
     /// Inexor Flex User Interface
@@ -141,7 +142,7 @@ class WebUserInterfaceManager extends EventEmitter {
   removeInterface(name) {
     // TODO: implement
     let interfaceNode = this.interfacesNode.removeChild(name);
-    
+
   }
 
   /**
@@ -153,6 +154,7 @@ class WebUserInterfaceManager extends EventEmitter {
     let interfaceNode = this.interfacesNode.getChild(name);
     this.router.use(interfaceNode.relativeUrl, express.static(interfaceNode.absoluteFsPath));
     this.log.info(util.format('Enabled user interface %s on %s', interfaceNode.absoluteFsPath, interfaceNode.fullUrl));
+    this.log.debug('The static files of %s are located at %s', name, interfaceNode.relativeUrl);
     interfaceNode.enabled = true;
   }
 
@@ -170,7 +172,7 @@ class WebUserInterfaceManager extends EventEmitter {
   /**
    * Updates the local git repository to the latest revision of the remote
    * git repository.
-   * 
+   *
    * @function
    * @param {string} name The name of the web user interface.
    */

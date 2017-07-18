@@ -13,11 +13,16 @@ git submodule update --init
 npm install
 
 cd interfaces/ui-flex
-yarn
+yarn # <-- currently you must have yarn installed via npm install -g yarn
 npm run build
 
 cd ../../
 ./inexor
+
+# if you're developing and would like to install @inexor-game src
+npm run reinstall
+# or install a specific package of your choice
+npm install @inexor-game/profiles
 ```
 
 In the future:
