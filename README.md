@@ -4,6 +4,27 @@
 
 Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
+## How to set up inexor-flex
+To set up `inexor-flex` follow the below instructions.
+
+Given that you have cloned `inexor-flex` and are in the `inexor-flex` directory:
+```
+git submodule update --init
+npm install
+
+cd interfaces/ui-flex
+yarn
+npm run build
+
+cd ../../
+./inexor
+```
+
+In the future:
+
+- submodules shall not longer be cloned but managed by flex
+- a simple `npm install -g inexor-flex` will be sufficient
+
 ## Architecture
 
 * https://github.com/inexorgame/code/wiki/Overall-Architecture
