@@ -19,6 +19,44 @@ if (process.platform == 'win32') {
 }
 
 /**
+ * @function determinePlatform
+ * Determines the current platform, which can be one of the current supported ones (below):
+ * - win64
+ * - linux64
+ * @throws 'Unsupported platform'
+ * @deprecated
+ * @return {string}
+ * NOTE: This definition will change
+ * NOTE: This will be deprecated and the release name will be determined by flex profiles
+ */
+function determinePlatform() {
+    platform = ''
+
+    if (os.platform() == 'win32') {
+        platform += 'win'
+    } else if (os.platform() == 'linux') {
+        platform += 'Linux'
+    } else {
+        throw('Unsupported platform ' + os.platform())
+    }
+
+    if (['arm64', 'x64'].contains(os.arch())) {
+      if (platform == 'win')
+        platform += '64' // TODO: We only do this for Windows currently, that sucks
+    } else {
+        throw('Unsupported architecture ' + platform + os.arch())
+    }
+
+    return platform
+}
+
+if (process.env.BINARY) {
+  const binary_path = process.env.BINARY;
+} else {
+
+}
+
+/**
  * The executable path of Inexor Core
  * The path can be overriden using the BINARY envirpnment flag
  * @property {string} binary_path
@@ -33,9 +71,8 @@ if (process.env.BINARY) {
   switch(platform) {
     // TODO: Add more platforms
     // TODO: Add more binary types (inexor_client, inexor_server, inexor_bot, ...)
-    case 'linux': binary_path = 'bin/inexor'; break;
-    case 'win32': binary_path = 'bin/inexor.exe'; break; // TODO: @a_teammate, add windows path
-    case 'darwin': binary_path = 'bin/inexor'; break; // TODO: @Fohlen, add OSX path
+    case 'Linux64': binary_path = 'bin/inexor'; break;
+    case 'win64': binary_path = 'bin/inexor.exe'; break; // TODO: @a_teammate, add windows path
     default:
       throw new Error('${platform} is not currently supported')
   }
@@ -168,6 +205,7 @@ module.exports = {
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
+  determinePlatform: determinePlatform,
   DEFAULT_PORT: DEFAULT_PORT
 };
 

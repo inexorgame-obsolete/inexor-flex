@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "reinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/gameclient @inexor-game/gameserver @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types @inexor-game/loader",
+    "reinstall": "npm install @inexor-game/api @inexor-game/console @inexor-game/context @inexor-game/entities @inexor-game/gameclient @inexor-game/gameserver @inexor-game/instances @inexor-game/interfaces @inexor-game/logger @inexor-game/logging @inexor-game/media @inexor-game/path @inexor-game/profiles @inexor-game/tree @inexor-game/treeclient @inexor-game/types @inexor-game/releases",
     "start": "node server/index.js --hostname $npm_package_config_hostname --port $npm_package_config_port --level $npm_package_config_loglevel --ingorepid $npm_package_config_ignorepid",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
@@ -44,7 +44,7 @@
     "@inexor-game/gameserver": "file:src/gameserver",
     "@inexor-game/instances": "file:src/instances",
     "@inexor-game/interfaces": "file:src/interfaces",
-    "@inexor-game/loader": "file:src/loader",
+    "@inexor-game/releases": "file:src/releases",
     "@inexor-game/logger": "file:server/util/logger",
     "@inexor-game/logging": "file:src/logging",
     "@inexor-game/media": "file:src/media",
