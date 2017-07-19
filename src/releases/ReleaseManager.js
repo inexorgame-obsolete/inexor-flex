@@ -5,7 +5,7 @@ const path = require('path');
 const url = require('url');
 const os = require('os');
 const util = require('util');
-const unzip = require('unzip');
+const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
 
 const debuglog = util.debuglog('releases');
@@ -28,6 +28,12 @@ class ReleaseManager extends EventEmitter {
         this.platform = '';
         this.platform = inexor_path.determinePlatform();
         this.platform = (this.platform.length === 0) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
+
+        // Safe-locks to prevent concurrent tasks
+        this.fetching = false;
+        this.downloading = [];
+        this.installing = [];
+        this.uninstalling = [];
     }
 
     /**
@@ -99,7 +105,7 @@ class ReleaseManager extends EventEmitter {
                 releaseNode.addChild('asset', 'node');
                 let assetNode = releaseNode.getChild('asset');
                 assetNode.addChild('name', 'string', asset[0].name);
-                assetNode.addChild('url', 'string', asset[0].url);
+                assetNode.addChild('url', 'string', asset[0].browser_download_url);
 
                 this.log.info('A release with version %s has been added', version);
                 this.emit('onNewReleaseAvailable', version);
@@ -118,6 +124,7 @@ class ReleaseManager extends EventEmitter {
      *  - installed (bool)
      */
     checkForNewReleases() {
+        this.fetching = true;
         this.log.info('Checking for new releases');
         this.fetchReleases().then((releases) => {
             releases.forEach((release) => {
@@ -125,6 +132,7 @@ class ReleaseManager extends EventEmitter {
                 this.createRelease(release.name, release.tag_name, release.published_at, release.assets);
             })
         })
+        this.fetching = false;
     }
 
     /**
@@ -163,21 +171,29 @@ class ReleaseManager extends EventEmitter {
     /**
      * Downloads a release for the specific version
      * @param {string} version
+     * @throws "Download in progress"
      */
     downloadRelease(version) {
-        let releaseNode = this.releasesNode.getChild(version);
-        let assetNode = releaseNode.getNode('asset');
-        let urlNode = assetNode.getChild('url');
-        let nameNode = assetNode.getChild('name');
+        if (this.downloading[version]) {
+            this.log.error(`Downloading of release ${version} is already in progress`);
+        } else {
+            this.downloading[version] = true;
+            let releaseNode = this.releasesNode.getChild(version);
+            let assetNode = releaseNode.getChild('asset');
+            let urlNode = assetNode.getChild('url');
+            let nameNode = assetNode.getChild('name');
+            let downloadNode = releaseNode.getChild('downloaded');
 
-        try {
-            this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
-                this.releasesNode.getChild('downloaded').set(true);
-                this.log.info('Release with version %s has been downloaded', version);
-                this.emit('onReleaseDownloaded', version);
-            })
-        } catch (e) {
-            this.log.error(e);
+            try {
+                this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
+                    downloadNode.set(true);
+                    this.downloading[version] = false;
+                    this.log.info('Release with version %s has been downloaded', version);
+                    this.emit('onReleaseDownloaded', version);
+                })
+            } catch (e) {
+                this.log.error(e);
+            }
         }
     }
 
@@ -189,46 +205,49 @@ class ReleaseManager extends EventEmitter {
      * @param {extractionPath} path
      * @return {Promise<boolean>}
      */
-    installArchive(fileName, extractionPath=process.getcwd()) {
+    installArchive(fileName, extractionPath=process.cwd()) {
         return new Promise((resolve, reject) => {
             let filePath = path.join(extractionPath, fileName);
-            let fileStream = fs.createReadStream(filePath)
-                .pipe(unzip.Parse())
-                .on('entry', function (entry) {
-                    let tempfileName = entry.path;
-                    let type = entry.type; // 'Directory' or 'File'
-                    let size = entry.size;
+            let folderPath = path.join(extractionPath, fileName.replace('.zip', ''));
+            let folderName = fileName.replace('.zip', '/bin/');
+            debuglog(folderName);
+            let archive = AdmZip(filePath);
 
-                    if (tempfileName === "this IS the file I'm looking for") {
-                        entry.pipe(fs.createWriteStream('output/path'));
-                    } else {
-                        entry.autodrain();
-                    }
-
+            archive.extractEntryTo(folderName, extractionPath, true); // Ugh, synchronous
+            fs.rename(path.join(folderPath, 'bin'), path.join(extractionPath, 'bin'), (done) => {
+                fs.unlink(folderPath);
+                resolve(true);
             })
 
-            resolve(true);
         })
     }
 
     /**
      * Installs a release for the given version
      * @param {string} version
+     * @throws "Install in progress"
      */
     installRelease(version) {
-        let releaseNode = this.releasesNode.getChild(version);
-        let assetNode = releaseNode.getChild('asset');
-        let nameNode = assetNode.getChild('name');
+        if (this.installing[version]) {
+            this.log.error(`Installing of release ${version} is already in progress`);
+        } else {
+            this.installing[version] = true;
+            let releaseNode = this.releasesNode.getChild(version);
+            let assetNode = releaseNode.getChild('asset');
+            let nameNode = assetNode.getChild('name');
+            let installedNode = releaseNode.getChild('installed');
 
-        this.installArchive(nameNode.get()).then((done) => {
-            try {
-                this.releasesNode.getChild('installed').set(true);
-                this.log.info('Release with version %s has been installed', version);
-                this.emit('onReleaseInstalled', version);
-            } catch (e) {
-                this.log.error(e);
-            }
-        })
+            this.installArchive(nameNode.get()).then((done) => {
+                try {
+                    installedNode.set(true);
+                    this.installing[version] = false;
+                    this.log.info('Release with version %s has been installed', version);
+                    this.emit('onReleaseInstalled', version);
+                } catch (e) {
+                    this.log.error(e);
+                }
+            })
+        }
     }
 
     /**
@@ -236,15 +255,23 @@ class ReleaseManager extends EventEmitter {
      * @param {string} version
      */
     uninstallRelease(version) {
-        let releaseNode = this.releasesNode.getChild(version);
-        let assetNode = releaseNode.getChild('asset');
-        let nameNode = assetNode.getChild('name');
+        if (this.uninstalling[version]) {
+            this.log.error(`Uninstalling of release ${version} is already in progress`);
+        } else {
+            this.uninstalling[version] = true;
+            let releaseNode = this.releasesNode.getChild(version);
+            let assetNode = releaseNode.getChild('asset');
+            let installedNode = assetNode.getChild('installed');
 
-        let filePath = path.join(process.getCwd(), name);
-        fs.unlink(filePath, (done) => {
-            this.log.info("Uninstalled release with version %s", version)
-            this.emit('onReleaseUninstalled', version);
-        })
+            // TODO: Clean this up
+            let binaryPath = path.join(process.cwd(), 'bin');
+            fs.unlink(binaryPath, (done) => {
+                installedNode.set(false);
+                this.uninstalling[version] = false;
+                this.log.info("Uninstalled release with version %s", version)
+                this.emit('onReleaseUninstalled', version);
+            })
+        }
     }
 }
 

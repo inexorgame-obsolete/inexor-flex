@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "dependencies": {
-    "follow-redirects": "^1.2.3",
-    "unzip": "^0.1.11"
+    "adm-zip": "^0.4.7",
+    "follow-redirects": "^1.2.3"
   }
 }

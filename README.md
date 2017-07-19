@@ -139,7 +139,9 @@ To add a new user interface to flex, you must adapt the following schema
 # TODO
 Following is still undone:
 
- - [ ] add profiles
+ - [x] add profiles
  - [x] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexorgame/code/wiki/Command%20Line%20Options%20And%20Commands)
  - [x] fix the documentation
+ - [ ] make interfaces git-installable
+ - [ ] make `inexor-flex` a global command and release
  - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
