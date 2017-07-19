@@ -28,6 +28,7 @@ const InstancesRestAPI = require('./InstancesRestAPI');
 const InexorTreeRestAPI = require('./InexorTreeRestAPI');
 const MediaRepositoryRestAPI = require('./MediaRepositoryRestAPI');
 const FlexRestAPI = require('./FlexRestAPI');
+const ReleasesRestAPI = require('./ReleasesRestAPI');
 
 // Import the WS API modules
 const InexorTreeWsAPI = require('./InexorTreeWsAPI');
@@ -69,6 +70,7 @@ module.exports = function(argv, app, websockets) {
   let inexorTreeRestAPI = applicationContext.construct('inexorTreeRestAPI', function() { return new InexorTreeRestAPI(applicationContext); });
   let mediaRepositoryRestAPI = applicationContext.construct('mediaRepositoryRestAPI', function() { return new MediaRepositoryRestAPI(applicationContext); });
   let flexRestAPI = applicationContext.construct('flexRestAPI', function() { return new FlexRestAPI(applicationContext); });
+  let releasesRestAPI = applicationContext.construct('releasesRestAPI', function() { return new ReleasesRestAPI(applicationContext); });
 
   // Constructing the WS API
   let inexorTreeWsAPI = applicationContext.construct('inexorTreeWsAPI', function() { return new InexorTreeWsAPI(applicationContext); });
