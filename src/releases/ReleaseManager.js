@@ -27,7 +27,7 @@ class ReleaseManager extends EventEmitter {
         // Hopefully we will support more platforms in the future
         this.platform = '';
         this.platform = inexor_path.determinePlatform();
-        this.platform (!this.platform) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
+        this.platform = (this.platform.length === 0) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
     }
 
     /**
@@ -45,8 +45,7 @@ class ReleaseManager extends EventEmitter {
         this.releasesNode = this.root.getOrCreateNode('releases');
 
         /// The class logger
-        this.log = this.applicationContext.get('logManager').getLogger('flex.interfaces.ReleaseManager');
-
+        this.log = this.applicationContext.get('logManager').getLogger('flex.releases.ReleaseManager');
     }
 
     /**
@@ -71,6 +70,7 @@ class ReleaseManager extends EventEmitter {
 
                 response.on('end', () => {
                     let parsed = JSON.parse(body);
+                    debuglog(parsed);
                     resolve(parsed);
                 })
             });
@@ -86,22 +86,26 @@ class ReleaseManager extends EventEmitter {
      * @param {Array<Object>} assets - a list of assets attached to that release
      */
     createRelease(name, version, date, assets) {
-        if (!this.releasesNode.contains(version)) {
+        if (!this.releasesNode.hasChildren(version)) {
             let releaseNode = this.releasesNode.addNode(version); // Finding releases by semver is more guaranteed to succeed
             releaseNode.addChild('name', 'string', name);
             releaseNode.addChild('version', 'string', version);
             releaseNode.addChild('date', 'string', date);
-            releaseNode.addChild('downloaded', 'boolean', false);
-            releaseNode.addChild('installed', 'boolean', false);
+            releaseNode.addChild('downloaded', 'bool', false);
+            releaseNode.addChild('installed', 'bool', false);
 
             let asset = assets.filter((a) => a.name.includes(this.platform));
-            releaseNode.addChild('asset', 'node');
-            let assetNode = releaseNode.getChild('asset');
-            assetNode.addChild('name', 'string', asset.url);
-            assetNode.addChild('url', 'string', asset.url);
+            if (asset[0] !== null) {
+                releaseNode.addChild('asset', 'node');
+                let assetNode = releaseNode.getChild('asset');
+                assetNode.addChild('name', 'string', asset[0].name);
+                assetNode.addChild('url', 'string', asset[0].url);
 
-            this.log.info('A release with version %s has been added', version);
-            this.emit('onNewReleaseAvailable', version);
+                this.log.info('A release with version %s has been added', version);
+                this.emit('onNewReleaseAvailable', version);
+            } else {
+                this.log.error(`No release is available for platform ${this.platform} and version ${version}`);
+            }
         }
     }
 
@@ -114,10 +118,12 @@ class ReleaseManager extends EventEmitter {
      *  - installed (bool)
      */
     checkForNewReleases() {
+        this.log.info('Checking for new releases');
         this.fetchReleases().then((releases) => {
-            for (release in releases) {
+            releases.forEach((release) => {
+                debuglog(release);
                 this.createRelease(release.name, release.tag_name, release.published_at, release.assets);
-            }
+            })
         })
     }
 
@@ -241,3 +247,5 @@ class ReleaseManager extends EventEmitter {
         })
     }
 }
+
+module.exports = ReleaseManager;

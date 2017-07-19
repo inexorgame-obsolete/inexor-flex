@@ -5,6 +5,6 @@
 
 const ReleaseManager = require('./ReleaseManager');
 
-modules.export = {
+module.exports = {
     ReleaseManager: ReleaseManager
 }

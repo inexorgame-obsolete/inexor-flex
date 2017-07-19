@@ -21,15 +21,21 @@ class ReleasesRestAPI extends EventEmitter {
         this.root = applicationContext.get('tree');
 
         // The releases manager
-        this.releaseManager = applicationContext.get('releasesManager');
+        this.releaseManager = applicationContext.get('releaseManager');
 
         // The tree node which contains all instance nodes
         this.releasesNode = this.root.getOrCreateNode('releases');
 
         // TODO: Pre-populate with existing configs
 
+        // Fetch new releases
+        this.router.get('/releases/fetch', this.fetchReleases.bind(this));
+
         // List all releases via semver
         this.router.get('/releases', this.listReleases.bind(this));
+
+        // Get infos about a release
+        this.router.get('/releases/:version', this.getRelease.bind(this));
 
         // Download release via semver
         this.router.get('/releases/:version/download', this.downloadRelease.bind(this));
@@ -59,9 +65,23 @@ class ReleasesRestAPI extends EventEmitter {
 
 
     /**
+     * Fetches most recent releases
+     */
+    fetchReleases(req, res) {
+        this.log.info('Fetching releases');
+        try {
+            this.releaseManager.checkForNewReleases();
+            res.status(200).send('Fetching latest releases');
+        } catch (e) {
+            res.status(500).json(e);
+        }
+    }
+
+    /**
      * Lists all releases
      */
     listReleases(req, res) {
+        this.log.info('Listing available releases');
         res.status(200).json(this.releasesNode.getChildNames());
     }
 
@@ -71,9 +91,11 @@ class ReleasesRestAPI extends EventEmitter {
      */
     getRelease(req, res) {
         if (this.releasesNode.hasChild(req.params.version)) {
+            this.log.info(`Getting release ${req.params.version}`);
             let releaseNode = this.releasesNode.getChild(req.params.version);
             res.status(200).json(releaseNode.toJson());
         } else {
+            this.log.warn(`Release with version ${version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -84,12 +106,14 @@ class ReleasesRestAPI extends EventEmitter {
             let downloadedNode = releaseNode.getChild('downloaded');
 
             if (!downloadedNode.get()) {
+                this.log.info(`Downloading release ${req.params.version}`);
                 res.status(200).send(`Release with version ${req.params.version} is being downloaded`); // This is asynchronous, listen to WS API
                 this.releaseManager.downloadRelease(req.params.version);
             } else {
                 res.status(400).send(`Release with version ${req.param.id} has already been downloaded`);
             }
         } else {
+            this.log.warn(`Release with version ${version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -102,6 +126,7 @@ class ReleasesRestAPI extends EventEmitter {
 
             if (!downloadedNode.get()) {
                 if (!installedNode.get()) {
+                    this.log.info(`Installing release ${req.params.version}`);
                     res.status(200).send(`Release with version ${req.params.version} is being installed`); // This is asynchronous, listen to WS API
                     this.releaseManager.installRelease(req.params.version);
                 } else {
@@ -111,6 +136,7 @@ class ReleasesRestAPI extends EventEmitter {
                 res.status(400).send(`Release with version ${req.param.id} is not downloaded. Download it first!`);
             }
         } else {
+            this.log.warn(`Release with version ${version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -120,13 +146,17 @@ class ReleasesRestAPI extends EventEmitter {
             let installedNode = releaseNode.getChild('installed');
 
             if (installedNode.get()) {
+                this.log.info(`Uninstalling release ${req.params.version}`);
                 res.status(200).send(`Release with version ${req.params.version} is being uninstalled`); // This is asynchronous, listen to WS API
                 this.releaseManager.uninstallRelease(req.params.version);
             } else {
                 res.status(400).send(`Release with version ${req.param.id} is not installed`);
             }
         } else {
+            this.log.warn(`Release with version ${version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
 }
+
+module.exports = ReleasesRestAPI;

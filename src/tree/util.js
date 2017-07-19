@@ -15,7 +15,7 @@ const validName = /^[\w ]+$/;
 /**
  * Defines a possible node data type
  * Can be either: Node, int64, string, float, bool or timestamp
- * @typedef {(Node|boolean|int64|float|string|timestamp)} datatype
+ * @typedef {(Node|bool|int64|float|string|timestamp)} datatype
  */
 
 /**

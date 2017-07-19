@@ -21,6 +21,7 @@ const profiles = require('@inexor-game/profiles');
 const gameclient = require('@inexor-game/gameclient');
 const gameserver = require('@inexor-game/gameserver');
 const tree = require('@inexor-game/tree');
+const releases = require('@inexor-game/releases');
 
 // Import the REST API modules
 const ProfilesRestAPI = require('./ProfilesRestAPI');
@@ -57,6 +58,7 @@ module.exports = function(argv, app, websockets) {
   let textureManager = applicationContext.construct('textureManager', function() { return new media.TextureManager(applicationContext); });
   let mapManager = applicationContext.construct('mapManager', function() { return new media.MapManager(applicationContext); });
   let webUserInterfaceManager = applicationContext.construct('webUserInterfaceManager', function() { return new interfaces.WebUserInterfaceManager(applicationContext); });
+  let releaseManager = applicationContext.construct('releaseManager', function () { return new releases.ReleaseManager(applicationContext);} );
 
   let intermissionService = applicationContext.construct('intermissionService', function() { return new gameserver.IntermissionService(applicationContext); });
   let mapRotationService = applicationContext.construct('mapRotationService', function() { return new gameserver.MapRotationService(applicationContext); });
