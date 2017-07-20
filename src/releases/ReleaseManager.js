@@ -26,7 +26,7 @@ class ReleaseManager extends EventEmitter {
 
         // Hopefully we will support more platforms in the future
         this.platform = '';
-        this.platform = inexor_path.determinePlatform();
+        this.platform = this.determinePlatform();
         this.platform = (this.platform.length === 0) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
 
         // Safe-locks to prevent concurrent tasks
@@ -34,6 +34,28 @@ class ReleaseManager extends EventEmitter {
         this.downloading = [];
         this.installing = [];
         this.uninstalling = [];
+    }
+
+    /**
+     * @function
+     * Determines the function name as uploaded by Travis currently
+     * NOTE: Keep this up-to date!
+     * @returns {string}
+     */
+    determinePlatform() {
+        let platform = ''
+        if (os.platform() == 'win32') {
+            platform += 'win'
+        } else if (os.platform() == 'linux') {
+            platform += 'Linux'
+        }
+
+        if (['arm64', 'x64'].includes(os.arch())) {
+          if (platform == 'win')
+                platform += '64' // NOTE: We only do this for Windows currently, that sucks
+                }
+
+        return platform
     }
 
     /**
@@ -144,7 +166,7 @@ class ReleaseManager extends EventEmitter {
      * @param  {string} destinationPath [destinationPath=process.cwd(] - where the file should go
      * @return {Promise<boolean>}
      */
-    downloadArchive(archiveURL, fileName, destinationPath = process.cwd()) {
+    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.getBinaryPath()) {
         return new Promise((resolve, reject) => {
             let URL = url.parse(archiveURL)
             let filePath = path.resolve(destinationPath, fileName)
@@ -205,7 +227,7 @@ class ReleaseManager extends EventEmitter {
      * @param {extractionPath} path
      * @return {Promise<boolean>}
      */
-    installArchive(fileName, extractionPath=process.cwd()) {
+    installArchive(fileName, extractionPath=inexor_path.getBinaryPath()) {
         return new Promise((resolve, reject) => {
             let filePath = path.join(extractionPath, fileName);
             let folderPath = path.join(extractionPath, fileName.replace('.zip', ''));
@@ -263,8 +285,7 @@ class ReleaseManager extends EventEmitter {
             let assetNode = releaseNode.getChild('asset');
             let installedNode = assetNode.getChild('installed');
 
-            // TODO: Clean this up
-            let binaryPath = path.join(process.cwd(), 'bin');
+            let binaryPath = path.join(inexor_path.getBinaryPath(), 'bin');
             fs.unlink(binaryPath, (done) => {
                 installedNode.set(false);
                 this.uninstalling[version] = false;

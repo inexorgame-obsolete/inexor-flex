@@ -264,7 +264,7 @@ switch(os.platform()) {
       ],
       'appConfigLocation': [
         path.join(homeDir, 'Library', 'Preferences', appName)
-      ]
+      ],
     };
     break;
 

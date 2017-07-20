@@ -56,7 +56,7 @@ class MediaRepositoryRestAPI {
    */
   createMediaRepository(req, res) {
     if (req.body.type != null) {
-      let repository_path = path.resolve(path.join(path.join(inexor_path.getBasePath(), inexor_path.media_path), req.params.name));
+      let repository_path = path.resolve(path.join(path.join(inexor_path.standardPaths.appDataLocation, inexor_path.media_path), req.params.name));
       switch (req.body.type) {
         case 'fs':
           let repository_node = this.mediaRepositoryManager.fs.createRepository(req.params.name, repository_path);

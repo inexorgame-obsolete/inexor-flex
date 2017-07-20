@@ -255,7 +255,7 @@ class InstanceManager extends EventEmitter {
       // Starting a new process with the instance id as only argument
       let args = [ instanceId, this.getHostname(), this.getPort() ];
       let options = {
-        cwd: path.resolve(inexor_path.getBasePath()),
+        cwd: path.resolve(inexor_path.standardPaths.appDataLocation),
         env: process.env
       };
       this.log.info(util.format('Starting %s %s', executable_path, args.join(' ')));

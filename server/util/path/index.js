@@ -14,65 +14,7 @@ const debuglog = util.debuglog('inexor-path');
  * The path of the flex folder
  * @property {string} flex_path
  */
-
-let flex_path = process.env.PWD;
-if (process.platform == 'win32') {
-  flex_path = process.cwd()
-}
-
-/**
- * @function determinePlatform
- * Determines the current platform, which can be one of the current supported ones (below):
- * - win64
- * - Linux64
- * @return {string}
- * TODO: Deprecate this when we find a fixed release naming schema for all platforms
- */
-function determinePlatform() {
-    platform = ''
-    // TODO: Add more platforms
-
-    if (os.platform() == 'win32') {
-        platform += 'win'
-    } else if (os.platform() == 'linux') {
-        platform += 'Linux'
-    }
-
-    if (['arm64', 'x64'].includes(os.arch())) {
-      if (platform == 'win')
-        platform += '64' // TODO: We only do this for Windows currently, that sucks
-    }
-
-    return platform
-}
-
-if (process.env.BINARY) {
-  const binary_path = process.env.BINARY;
-} else {
-
-}
-
-/**
- * The executable path of Inexor Core
- * The path can be overriden using the BINARY envirpnment flag
- * @property {string} binary_path
- */
-
-if (process.env.BINARY) {
-  const binary_path = process.env.BINARY;
-} else {
-  let path = null;
-  let platform = determinePlatform();
-
-  switch(platform) {
-    // TODO: This will be deprecated in the future by more flexible paths
-    case 'Linux64': binary_path = 'bin/inexor'; break;
-    case 'win64': binary_path = 'bin/inexor.exe'; break;
-    default:
-      binary_path = 'bin/inexor'; // fall back to unix path
-      debuglog(`Using an unsupported platform ${platform}`);
-  }
-}
+const flex_path = process.cwd();
 
 /**
  * The pid file that Inexor Flex uses
@@ -98,20 +40,11 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : standa
 const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join(standardPaths.appDataLocation[0], 'media');
 
 /**
- * Returns the base directory of an Inexor installation (which is the parent
- * directory of Inexor Flex path).
- * @return {string}
- */
-function getBasePath() {
-  return path.resolve(path.join(flex_path, '..'));
-}
-
-/**
  * Returns the binary directory of an Inexor installation.
  * @return {string}
  */
 function getBinaryPath() {
-  return path.resolve(path.join(getBasePath(), 'bin'));
+  return path.resolve(path.join(standardPaths.appDataLocation, 'bin'));
 }
 
 /**
@@ -158,7 +91,7 @@ function getExecutablePath(instance_type) {
     default:
       throw new Error('${platform} is not currently supported')
   }
-  return path.resolve(path.join(getBasePath(), 'bin'));
+  return path.resolve(path.join(standardPaths.appDataLocation, 'bin'));
 }
 
 /**
@@ -192,16 +125,13 @@ const DEFAULT_PORT = 31416;
 module.exports = {
   standardPaths: standardPaths,
   flex_path: flex_path,
-  binary_path: binary_path,
   pid_path: pid_path,
   config_path: config_path,
   media_path: media_path,
-  getBasePath: getBasePath,
   getBinaryPath: getBinaryPath,
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
-  determinePlatform: determinePlatform,
   DEFAULT_PORT: DEFAULT_PORT
 };
 
