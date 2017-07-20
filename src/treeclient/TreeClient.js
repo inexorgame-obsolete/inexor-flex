@@ -60,6 +60,13 @@ class TreeClient {
         }
       },
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
+    },
+    this.releases = { // Since this does not fetch flex releases
+      fetch: this.createEndpoint('/releases/fetch', this.fetchReleases.name),
+          list: this.createEndpoint('/releases', this.listReleases.name),
+          download: this.createEndpoint('/releases/${version}/download', this.downloadRelease.name),
+          install: this.createEndpoint('/releases/${version}/install', this.installRelease.name),
+          uninstall: this.createEndpoint('/releases/${version}/uninstall', this.uninstallRelease.name)
     }
   }
 
@@ -424,6 +431,53 @@ class TreeClient {
     this.callEndpoint(this.readHJsonConfig.name, callback, { path: path });
   }
 
+  /**
+   * Fetches all releases (to the callback)
+   * @function
+   * @param {function} callback
+   */
+  fetchReleases(callback) {
+      this.callEndpoint(this.fetchReleases.name, callback);
+  }
+
+  /**
+   * Returns all the releases to the callback
+   * @function
+   * @param {function} callback
+   */
+  listReleases(callback) {
+      this.callEndpoint(this.listReleases.name, callback);
+  }
+
+  /**
+   * Downloads the release
+   * @function
+   * @param {string} version - the release version
+   * @param {function} callback
+   */
+  downloadRelease(version, callback) {
+      this.callEndpoint(this.downloadRelease.name, callback, { version: version });
+  }
+
+  /**
+   * Installs the release
+   * @function
+   * @param {string} version - the release version
+   * @param {function} callback
+   */
+  installRelease(version, callback) {
+      this.callEndpoint(this.installRelease.name, callback, { version: version });
+  }
+
+  /**
+   * Uninstalls the release
+   * @function
+   * @param {string} version - the release version
+   * @param {function} callback
+   */
+  uninstallRelease(version, callback) {
+      this.callEndpoint(this.uninstallRelease.name, callback, { version: version });
+  }
 }
 
 module.exports = TreeClient;
