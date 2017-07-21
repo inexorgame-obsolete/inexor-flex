@@ -19,6 +19,7 @@
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "dependencies": {
     "adm-zip": "^0.4.7",
-    "follow-redirects": "^1.2.3"
+    "follow-redirects": "^1.2.3",
+    "fs-extra": "^4.0.0"
   }
 }

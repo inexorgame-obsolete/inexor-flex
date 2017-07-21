@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const process = require('process');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const url = require('url');
 const os = require('os');
@@ -37,28 +37,6 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * @function
-     * Determines the function name as uploaded by Travis currently
-     * NOTE: Keep this up-to date!
-     * @returns {string}
-     */
-    determinePlatform() {
-        let platform = ''
-        if (os.platform() == 'win32') {
-            platform += 'win'
-        } else if (os.platform() == 'linux') {
-            platform += 'Linux'
-        }
-
-        if (['arm64', 'x64'].includes(os.arch())) {
-          if (platform == 'win')
-                platform += '64' // NOTE: We only do this for Windows currently, that sucks
-                }
-
-        return platform
-    }
-
-    /**
      * Sets the dependencies from the application context.
      * @function
      */
@@ -74,6 +52,36 @@ class ReleaseManager extends EventEmitter {
 
         /// The class logger
         this.log = this.applicationContext.get('logManager').getLogger('flex.releases.ReleaseManager');
+    }
+
+    /**
+     * @function
+     * Determines the function name as uploaded by Travis currently
+     * NOTE: Keep this up-to date!
+     * @returns {string}
+     */
+    determinePlatform() {
+        let platform = ''
+        if (os.platform() == 'win32') {
+            platform += 'win'
+        } else if (os.platform() == 'linux') {
+            platform += 'Linux'
+        }
+
+        if (['arm64', 'x64'].includes(os.arch())) {
+            if (platform == 'win')
+                platform += '64' // NOTE: We only do this for Windows currently, that sucks
+        }
+
+        return platform
+    }
+
+    loadReleases() {
+
+    }
+
+    saveReleases() {
+
     }
 
     /**
@@ -237,8 +245,8 @@ class ReleaseManager extends EventEmitter {
 
             archive.extractEntryTo(folderName, extractionPath, true); // Ugh, synchronous
             fs.rename(path.join(folderPath, 'bin'), inexor_path.getBinaryPath(), (done) => {
-                fs.unlink(folderPath, (done) => {
-                    this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
+                this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
+                fs.remove(folderPath, (done) => {
                     resolve(true);
                 });
             })
@@ -287,7 +295,7 @@ class ReleaseManager extends EventEmitter {
             let assetNode = releaseNode.getChild('asset');
             let installedNode = assetNode.getChild('installed');
 
-            fs.unlink(inexor_path.getBinaryPath(), (done) => {
+            fs.remove(inexor_path.getBinaryPath(), (done) => {
                 installedNode.set(false);
                 this.uninstalling[version] = false;
                 this.log.info("Uninstalled release with version %s", version)
