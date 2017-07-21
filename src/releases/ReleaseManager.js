@@ -166,7 +166,7 @@ class ReleaseManager extends EventEmitter {
      * @param  {string} destinationPath [destinationPath=process.cwd(] - where the file should go
      * @return {Promise<boolean>}
      */
-    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.getBinaryPath()) {
+    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.standardPaths.appDataLocation[0]) {
         return new Promise((resolve, reject) => {
             let URL = url.parse(archiveURL)
             let filePath = path.resolve(destinationPath, fileName)
@@ -224,10 +224,10 @@ class ReleaseManager extends EventEmitter {
      * @function installArchive
      * Unzips a release at the given path
      * @param {fileName} fileName
-     * @param {extractionPath} path
+     * @param {extractionPath} path - the default app data location
      * @return {Promise<boolean>}
      */
-    installArchive(fileName, extractionPath=inexor_path.getBinaryPath()) {
+    installArchive(fileName, extractionPath=inexor_path.standardPaths.appDataLocation[0]) {
         return new Promise((resolve, reject) => {
             let filePath = path.join(extractionPath, fileName);
             let folderPath = path.join(extractionPath, fileName.replace('.zip', ''));
@@ -236,9 +236,11 @@ class ReleaseManager extends EventEmitter {
             let archive = AdmZip(filePath);
 
             archive.extractEntryTo(folderName, extractionPath, true); // Ugh, synchronous
-            fs.rename(path.join(folderPath, 'bin'), path.join(extractionPath, 'bin'), (done) => {
-                fs.unlink(folderPath);
-                resolve(true);
+            fs.rename(path.join(folderPath, 'bin'), inexor_path.getBinaryPath(), (done) => {
+                fs.unlink(folderPath, (done) => {
+                    this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
+                    resolve(true);
+                });
             })
 
         })
@@ -285,8 +287,7 @@ class ReleaseManager extends EventEmitter {
             let assetNode = releaseNode.getChild('asset');
             let installedNode = assetNode.getChild('installed');
 
-            let binaryPath = path.join(inexor_path.getBinaryPath(), 'bin');
-            fs.unlink(binaryPath, (done) => {
+            fs.unlink(inexor_path.getBinaryPath(), (done) => {
                 installedNode.set(false);
                 this.uninstalling[version] = false;
                 this.log.info("Uninstalled release with version %s", version)

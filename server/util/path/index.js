@@ -44,7 +44,7 @@ const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join
  * @return {string}
  */
 function getBinaryPath() {
-  return path.resolve(path.join(standardPaths.appDataLocation, 'bin'));
+  return path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
 }
 
 /**
