@@ -1,4 +1,3 @@
-const express_ws = require('express-ws');
 const util = require('util');
 
 const syncStates = {

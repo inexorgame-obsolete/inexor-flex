@@ -1,6 +1,4 @@
 const EventEmitter = require('events');
-const express = require('express');
-const process = require('process');
 const util = require('util');
 
 /**
@@ -60,7 +58,7 @@ class InstancesRestAPI extends EventEmitter {
     this.router.get('/instances/:id/synchronize', this.synchronizeWithInstance.bind(this));
 
     // Configures the tree from instance :id using the TOML cofigurator module. Returns the configured tree or raises an error.
-    this.router.get('/instances/:id/configure', (req, res) => { });
+    this.router.get('/instances/:id/configure', (req, res) => { }); // eslint-disable-line no-unused-vars
   }
 
   /**

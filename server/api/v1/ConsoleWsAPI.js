@@ -1,4 +1,3 @@
-const express_ws = require('express-ws');
 const util = require('util');
 
 const levelNames = {
@@ -57,7 +56,7 @@ class ConsoleWsAPI {
   /**
    * Get or set node values.
    */
-  handleRequest(ws, req) {
+  handleRequest(ws, req) { // eslint-disable-line no-unused-vars
     ws.on('message', (message) => {
       try {
         let request = JSON.parse(message);
