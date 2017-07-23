@@ -53,7 +53,6 @@
     "@inexor-game/tree": "file:src/tree",
     "@inexor-game/treeclient": "file:src/treeclient",
     "@inexor-game/types": "file:src/types",
-    "@inexor-ui/ui-flex": "file:interfaces/ui-flex",
     "circular-json": "^0.3.1",
     "cors": "^2.8.3",
     "express": "^4.15.2",
