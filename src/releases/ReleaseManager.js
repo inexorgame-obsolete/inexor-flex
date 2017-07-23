@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 const process = require('process');
 const fs = require('fs-extra');
 const path = require('path');
+const toml = require('toml');
 const url = require('url');
 const os = require('os');
 const util = require('util');
@@ -9,7 +10,6 @@ const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
 
 const debuglog = util.debuglog('releases');
-const log = require('@inexor-game/logger')();
 const tree = require('@inexor-game/tree');
 const inexor_path = require('@inexor-game/path');
 
@@ -50,6 +50,9 @@ class ReleaseManager extends EventEmitter {
         /// The Inexor Tree node containing releases
         this.releasesNode = this.root.getOrCreateNode('releases');
 
+        /// The profile manager service
+        this.profileManager = this.applicationContext.get('profileManager');
+
         /// The class logger
         this.log = this.applicationContext.get('logManager').getLogger('flex.releases.ReleaseManager');
     }
@@ -76,12 +79,81 @@ class ReleaseManager extends EventEmitter {
         return platform
     }
 
-    loadReleases() {
+    /**
+     * Loads releases from a TOML file.
+     * @function
+     * @param {string} [filename] - The filename.
+     * @return {Promise<bool|string>} - either true or the error reason
+     */
+    loadReleases(filename = 'releases.toml') {
+        return new Promise((resolve, reject) => {
+            let config_path = this.profileManager.getConfigPath(filename)
+            this.log.info(`Loading releases from ${filename}`);
+            fs.readFile(config_path, ((err, data) => {
+                if (err) {
+                    this.log.err(`Failed to load releases from ${config_path}: ${err.message}`);
+                    reject(`Failed to load releases from ${config_path}: ${err.message}`);
+                } else {
+                    let config = toml.parse(data.toString());
 
+                    for (let version of Object.keys(config.releases)) {
+                        this.createRelease(
+                            config.releases[version].name,
+                            version,
+                            config.releases[version].date,
+                            config.releases[version].downloaded,
+                            config.releases[version].installed,
+                            config.releases[version].asset
+                        )
+                    }
+
+                    resolve(true);
+                }
+            }))
+
+        })
     }
 
-    saveReleases() {
+    /**
+     * Saves releases to a TOML file.
+     * @function
+     * @param {string} [filename] - The filename.
+     * @return {Promise<bool|string>} - either true or the error reason
+     */
+    saveReleases(filename="releases.toml") {
+        return new Promise((resolve, reject) => {
+            let config_path = this.profileManager.getConfigPath(filename);
+            let versions = this.releasesNode.getChildNames();
 
+            let config = {
+                releases: {}
+            };
+
+            for (i = 0; i < versions.length; i++) {
+                let version = versions[i];
+                let releaseNode = this.releasesNode.getChild(version);
+
+                config.releases[version] = {
+                    name: releaseNode.name,
+                    version: version,
+                    downloaded: releaseNode.downloaded,
+                    installed: releaseNode.installed,
+                    asset: releaseNode.asset
+                }
+            }
+
+            let config_toml = tomlify(config, {delims: false});
+            this.log.debug(config_toml);
+            fs.writeFile(config_path, config_toml, (err) => {
+                if (err) {
+                    this.log.warn(`Failed to write releases to ${config_path}: ${err}`);
+                    reject(`Failed to write releases to ${config_path}: ${err}`);
+                } else {
+                    this.log.info(`Saved releases to ${config_path}`);
+                    resolve(`Saved releases to ${config_path}`);
+                }
+            })
+        })
     }
 
     /**
@@ -121,14 +193,14 @@ class ReleaseManager extends EventEmitter {
      * @param {string} date - the date of the release
      * @param {Array<Object>} assets - a list of assets attached to that release
      */
-    createRelease(name, version, date, assets) {
+    createRelease(name, version, date, downloaded = false, installed = false, assets) {
         if (!this.releasesNode.hasChildren(version)) {
             let releaseNode = this.releasesNode.addNode(version); // Finding releases by semver is more guaranteed to succeed
             releaseNode.addChild('name', 'string', name);
             releaseNode.addChild('version', 'string', version);
             releaseNode.addChild('date', 'string', date);
-            releaseNode.addChild('downloaded', 'bool', false);
-            releaseNode.addChild('installed', 'bool', false);
+            releaseNode.addChild('downloaded', 'bool', downloaded);
+            releaseNode.addChild('installed', 'bool', installed);
 
             let asset = assets.filter((a) => a.name.includes(this.platform));
             if (asset[0] !== null) {
@@ -159,7 +231,7 @@ class ReleaseManager extends EventEmitter {
         this.fetchReleases().then((releases) => {
             releases.forEach((release) => {
                 debuglog(release);
-                this.createRelease(release.name, release.tag_name, release.published_at, release.assets);
+                this.createRelease(release.name, release.tag_name, release.published_at, false, false, release.assets);
             })
         })
         this.fetching = false;
