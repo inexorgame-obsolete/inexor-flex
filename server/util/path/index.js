@@ -14,7 +14,7 @@ const debuglog = util.debuglog('inexor-path');
  * The path of the flex folder
  * @property {string} flex_path
  */
-const flex_path = process.cwd();
+const flex_path = process.env.PWD; // This should not change
 
 /**
  * The pid file that Inexor Flex uses
@@ -134,4 +134,3 @@ module.exports = {
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
 };
-

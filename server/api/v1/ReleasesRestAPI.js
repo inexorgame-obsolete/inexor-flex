@@ -115,10 +115,10 @@ class ReleasesRestAPI extends EventEmitter {
                 res.status(200).send(`Release with version ${req.params.version} is being downloaded`); // This is asynchronous, listen to WS API
                 this.releaseManager.downloadRelease(req.params.version);
             } else {
-                res.status(400).send(`Release with version ${req.param.id} has already been downloaded`);
+                res.status(400).send(`Release with version ${req.params.version} has already been downloaded`);
             }
         } else {
-            this.log.warn(`Release with version ${version} does not exist`);
+            this.log.warn(`Release with version ${req.params.version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
