@@ -1,13 +1,13 @@
 /**
  * This module is responsible for the lifecycle of instances of Inexor Core.
- * 
+ *
  * Inexor Core instances can be a game client or a game server. In future there
  * may be other types of instances like bots.
- * 
+ *
  * Each instance contains it's own subtree in the Inexor Tree.
- * 
+ *
  * The lifecycle is defined by the states an instance of Inexor Core can have.
- * 
+ *
  * @module instances
  */
 
@@ -37,7 +37,7 @@ const instance_types = [
 /**
  * The instance states.
  * TODO: document the states in the wiki
- * 
+ *
  * @constant {array}
  */
 const instance_states = [
@@ -243,7 +243,7 @@ class InstanceManager extends EventEmitter {
     let instance_port = instanceNode.port;
     let instance_type = instanceNode.type;
   	this.log.info('Starting instance ' + instanceNode.name + ' (id: ' + instanceId + ', type: ' + instance_type + ', port: ' + instance_port + ')');
-  
+
     return new Promise((resolve, reject) => {
 
       // Resolve executable
@@ -255,11 +255,11 @@ class InstanceManager extends EventEmitter {
       // Starting a new process with the instance id as only argument
       let args = [ instanceId, this.getHostname(), this.getPort() ];
       let options = {
-        cwd: path.resolve(inexor_path.standardPaths.appDataLocation),
+        cwd: inexor_path.getBinaryPath(),
         env: process.env
       };
       this.log.info(util.format('Starting %s %s', executable_path, args.join(' ')));
-      
+
       // Spawn process
       let instanceProcess = spawn(executable_path, args, options);
       this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
@@ -573,7 +573,7 @@ class InstanceManager extends EventEmitter {
           this.log.info(util.format('Wrote instances to %s', config_path));
           resolve(true);
         }
-      }); 
+      });
     });
   }
 
@@ -713,4 +713,3 @@ module.exports = {
   default_instance_state: default_instance_state,
   default_instance_ports: default_instance_ports,
 }
-
