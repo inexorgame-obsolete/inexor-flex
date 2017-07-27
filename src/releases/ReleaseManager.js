@@ -3,6 +3,7 @@ const process = require('process');
 const fs = require('fs-extra');
 const path = require('path');
 const toml = require('toml');
+const tomlify = require('tomlify');
 const url = require('url');
 const os = require('os');
 const util = require('util');
@@ -71,6 +72,9 @@ class ReleaseManager extends EventEmitter {
                 if (err.code !== 'EEXIST')
                     this.log.error(err)
         })
+
+        // TODO: Pre-populate with existing configs
+
     }
 
     /**
@@ -145,7 +149,7 @@ class ReleaseManager extends EventEmitter {
                 releases: {}
             };
 
-            for (i = 0; i < versions.length; i++) {
+            for (let i = 0; i < versions.length; i++) {
                 let version = versions[i];
                 let releaseNode = this.releasesNode.getChild(version);
 
@@ -154,7 +158,10 @@ class ReleaseManager extends EventEmitter {
                     version: version,
                     downloaded: releaseNode.downloaded,
                     installed: releaseNode.installed,
-                    asset: releaseNode.asset
+                    asset: {
+                        name: releaseNode.asset.name,
+                        url: releaseNode.asset.url
+                    }
                 }
             }
 
