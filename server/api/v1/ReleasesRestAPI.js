@@ -115,10 +115,10 @@ class ReleasesRestAPI extends EventEmitter {
                 res.status(200).send(`Release with version ${req.params.version} is being downloaded`); // This is asynchronous, listen to WS API
                 this.releaseManager.downloadRelease(req.params.version);
             } else {
-                res.status(400).send(`Release with version ${req.param.id} has already been downloaded`);
+                res.status(400).send(`Release with version ${req.params.version} has already been downloaded`);
             }
         } else {
-            this.log.warn(`Release with version ${version} does not exist`);
+            this.log.warn(`Release with version ${req.params.version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -136,13 +136,13 @@ class ReleasesRestAPI extends EventEmitter {
                     res.status(200).send(`Release with version ${req.params.version} is being installed`); // This is asynchronous, listen to WS API
                     this.releaseManager.installRelease(req.params.version);
                 } else {
-                    res.status(400).send(`Release with version ${req.param.version} has already been installed`);
+                    res.status(400).send(`Release with version ${req.params.version} has already been installed`);
                 }
             } else {
-                res.status(400).send(`Release with version ${req.param.version} is not downloaded. Download it first!`);
+                res.status(400).send(`Release with version ${req.params.version} is not downloaded. Download it first!`);
             }
         } else {
-            this.log.warn(`Release with version ${version} does not exist`);
+            this.log.warn(`Release with version ${req.params.version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -156,7 +156,7 @@ class ReleasesRestAPI extends EventEmitter {
                 res.status(200).send(`Release with version ${req.params.version} is being uninstalled`); // This is asynchronous, listen to WS API
                 this.releaseManager.uninstallRelease(req.params.version);
             } else {
-                res.status(400).send(`Release with version ${req.param.version} is not installed`);
+                res.status(400).send(`Release with version ${req.params.version} is not installed`);
             }
         } else {
             this.log.warn(`Release with version ${req.params.version} does not exist`);

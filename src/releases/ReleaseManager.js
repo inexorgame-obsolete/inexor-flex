@@ -58,6 +58,22 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
+     * Initialization after the components in the application context have been
+     * constructed.
+     * @function
+     */
+    afterPropertiesSet() {
+        this.log.debug(`Checking wether the releases directory exists at ${inexor_path.releases_path}`)
+        fs.mkdir(inexor_path.releases_path, (err) => {
+            if (!err)
+                this.log.info(`Created releases directory at ${inexor_path.releases_path}`)
+            else
+                if (err.code !== 'EEXIST')
+                    this.log.error(err)
+        })
+    }
+
+    /**
      * @function
      * Determines the function name as uploaded by Travis currently
      * NOTE: Keep this up-to date!
@@ -246,7 +262,7 @@ class ReleaseManager extends EventEmitter {
      * @param  {string} destinationPath [destinationPath=process.cwd(] - where the file should go
      * @return {Promise<boolean>}
      */
-    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.standardPaths.appDataLocation[0]) {
+    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.releases_path) {
         return new Promise((resolve, reject) => {
             let URL = url.parse(archiveURL)
             let filePath = path.resolve(destinationPath, fileName)
@@ -307,22 +323,20 @@ class ReleaseManager extends EventEmitter {
      * @param {extractionPath} path - the default app data location
      * @return {Promise<boolean>}
      */
-    installArchive(fileName, extractionPath=inexor_path.standardPaths.appDataLocation[0]) {
+    installArchive(fileName, extractionPath=inexor_path.releases_path) {
         return new Promise((resolve, reject) => {
             let filePath = path.join(extractionPath, fileName);
             let folderPath = path.join(extractionPath, fileName.replace('.zip', ''));
-            let folderName = fileName.replace('.zip', '/bin/');
-            debuglog(folderName);
             let archive = AdmZip(filePath);
 
-            archive.extractEntryTo(folderName, extractionPath, true); // Ugh, synchronous
-            fs.rename(path.join(folderPath, 'bin'), inexor_path.getBinaryPath(), (done) => {
-                this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
-                fs.remove(folderPath, (done) => {
-                    resolve(true);
-                });
+            archive.extractAllToAsync(extractionPath, true, (done) => {
+                fs.rename(path.join(folderPath, 'bin'), inexor_path.getBinaryPath(), (done) => {
+                    this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
+                    fs.remove(folderPath, (done) => {
+                        resolve(true);
+                    })
+                })
             })
-
         })
     }
 
