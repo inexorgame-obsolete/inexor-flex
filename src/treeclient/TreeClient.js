@@ -66,7 +66,9 @@ class TreeClient {
           list: this.createEndpoint('/releases', this.listReleases.name),
           download: this.createEndpoint('/releases/${version}/download', this.downloadRelease.name),
           install: this.createEndpoint('/releases/${version}/install', this.installRelease.name),
-          uninstall: this.createEndpoint('/releases/${version}/uninstall', this.uninstallRelease.name)
+          uninstall: this.createEndpoint('/releases/${version}/uninstall', this.uninstallRelease.name),
+          save: this.createEndpoint('/releases/save', this.saveReleases.name),
+          load: this.createEndpoint('/releases/load', this.loadReleases.name)
     }
   }
 
@@ -478,6 +480,24 @@ class TreeClient {
   uninstallRelease(version, callback) {
       this.callEndpoint(this.uninstallRelease.name, callback, { version: version });
   }
+
+    /**
+     * Saves the release config
+     * @function
+     * @param {function} callback
+     */
+    saveReleases(callback) {
+        this.callEndpoint(this.saveReleases.name, callback);
+    }
+
+    /**
+     * Load the release config
+     * @function
+     * @param {function} callback
+     */
+    loadReleases(callback) {
+        this.callEndpoint(this.loadReleases.name, callback);
+    }
 }
 
 module.exports = TreeClient;

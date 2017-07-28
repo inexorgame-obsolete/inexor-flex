@@ -26,13 +26,18 @@ class ReleasesRestAPI extends EventEmitter {
         // The tree node which contains all instance nodes
         this.releasesNode = this.root.getOrCreateNode('releases');
 
-        // TODO: Pre-populate with existing configs
+        // List all releases via semver
+        this.router.get('/releases', this.listReleases.bind(this));
 
         // Fetch new releases
         this.router.get('/releases/fetch', this.fetchReleases.bind(this));
 
-        // List all releases via semver
-        this.router.get('/releases', this.listReleases.bind(this));
+        // Save release config
+        this.router.get('/releases/save', this.saveReleases.bind(this));
+
+        // Load release config
+        this.router.get('/releases/load', this.loadReleases.bind(this));
+
 
         // Get infos about a release
         this.router.get('/releases/:version', this.getRelease.bind(this));
@@ -136,13 +141,13 @@ class ReleasesRestAPI extends EventEmitter {
                     res.status(200).send(`Release with version ${req.params.version} is being installed`); // This is asynchronous, listen to WS API
                     this.releaseManager.installRelease(req.params.version);
                 } else {
-                    res.status(400).send(`Release with version ${req.param.version} has already been installed`);
+                    res.status(400).send(`Release with version ${req.params.version} has already been installed`);
                 }
             } else {
-                res.status(400).send(`Release with version ${req.param.version} is not downloaded. Download it first!`);
+                res.status(400).send(`Release with version ${req.params.version} is not downloaded. Download it first!`);
             }
         } else {
-            this.log.warn(`Release with version ${version} does not exist`);
+            this.log.warn(`Release with version ${req.params.version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
     }
@@ -156,12 +161,30 @@ class ReleasesRestAPI extends EventEmitter {
                 res.status(200).send(`Release with version ${req.params.version} is being uninstalled`); // This is asynchronous, listen to WS API
                 this.releaseManager.uninstallRelease(req.params.version);
             } else {
-                res.status(400).send(`Release with version ${req.param.version} is not installed`);
+                res.status(400).send(`Release with version ${req.params.version} is not installed`);
             }
         } else {
             this.log.warn(`Release with version ${req.params.version} does not exist`);
             res.status(404).send(util.format('Release with version %s was not found', req.params.version));
         }
+    }
+
+    saveReleases(req, res) {
+        this.log.info('Saving release config')
+        this.releaseManager.saveReleases().then((done) => {
+            res.status(200).send('Saved release config')
+        }).catch((err) => {
+            res.status(500)
+        })
+    }
+
+    loadReleases(req, res) {
+        this.log.info('Loading release config')
+        this.releaseManager.loadReleases().then((done) => {
+            res.status(200).send('Loaded release config')
+        }).catch((err) => {
+            res.status(500).err()
+        })
     }
 }
 

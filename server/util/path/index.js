@@ -36,15 +36,24 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : standa
  * By default the XDG data path is used. This can be overwritten by the
  * environment variable MEDIA_PATH (absolute path). If both are not set
  * the fallback is a relative path to the flex directory.
+ * @property {string} media_path
  */
 const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join(standardPaths.appDataLocation[0], 'media');
 
 /**
+ * The releases path of inexor
+ * By default the app data location + 'releases' is used
+ * @property {string} releases_path
+ */
+const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : path.join(standardPaths.appDataLocation[0], 'releases');
+
+/**
  * Returns the binary directory of an Inexor installation.
+ * Can be overwritten with the environment variable BINARY_PATH (absolute path)
  * @return {string}
  */
 function getBinaryPath() {
-  return path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
+  return (process.env.BINARY_PATH) ? process.env.BINARY_PATH : path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
 }
 
 /**
@@ -128,6 +137,7 @@ module.exports = {
   pid_path: pid_path,
   config_path: config_path,
   media_path: media_path,
+  releases_path: releases_path,
   getBinaryPath: getBinaryPath,
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
