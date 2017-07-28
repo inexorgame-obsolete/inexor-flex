@@ -61,7 +61,6 @@
     "npid": "^0.4.0",
     "portscanner": "^2.1.1",
     "prettyjson": "^1.2.1",
-    "segfault-handler": "^1.0.0",
     "toml": "^2.3.2",
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
