@@ -1,5 +1,5 @@
 const Client = require('node-rest-client').Client;
-const log = require('@inexor-game/logger')();
+const log = require('@inexorgame/logger')();
 
 /**
  * The client for the local or remote Inexor Tree instances via a REST API.

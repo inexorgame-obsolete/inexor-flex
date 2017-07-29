@@ -1,11 +1,11 @@
 {
-  "name": "@inexor-game/tree",
+  "name": "@inexorgame/tree",
   "version": "1.0.0",
   "description": "A tree implementation that powers the Inexor Tree technology.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inexorgame/flex.git"
+    "url": "git+https://github.com/inexorgame/inexor-flex.git"
   },
   "keywords": [
     "inexor",

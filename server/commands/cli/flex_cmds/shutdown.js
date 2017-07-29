@@ -1,5 +1,5 @@
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 exports.command = 'shutdown';
 exports.describe = 'Stops all running instances and shutdown';

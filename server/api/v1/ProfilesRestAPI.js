@@ -2,8 +2,8 @@ const express = require('express');
 const process = require('process');
 const util = require('util');
 
-const inexor_log = require('@inexor-game/logger');
-const log = inexor_log('@inexor-game/flex/api/v1/profiles');
+const inexor_log = require('@inexorgame/logger');
+const log = inexor_log('@inexorgame/flex/api/v1/profiles');
 
 /**
  * REST API for managing profiles.

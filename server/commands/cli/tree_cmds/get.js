@@ -1,5 +1,5 @@
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 exports.command = 'get <instance> <path>'
 exports.describe = 'Get the value of an Inexor Tree node'

@@ -11,8 +11,8 @@ const path = require('path');
 const toml = require('toml');
 const util = require('util');
 
-const tree = require('@inexor-game/tree');
-const inexor_path = require('@inexor-game/path');
+const tree = require('@inexorgame/tree');
+const inexor_path = require('@inexorgame/path');
 
 /**
  * Connects a {@link Root} with a Inexor Core instance

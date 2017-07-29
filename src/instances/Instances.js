@@ -22,8 +22,8 @@ const tomlify = require('tomlify');
 const util = require('util');
 
 const Connector = require('./Connector');
-const tree = require('@inexor-game/tree');
-const inexor_path = require('@inexor-game/path');
+const tree = require('@inexorgame/tree');
+const inexor_path = require('@inexorgame/path');
 
 /**
  * The list of instance types.

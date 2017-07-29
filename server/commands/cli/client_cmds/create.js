@@ -1,5 +1,5 @@
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 exports.command = 'create <instance> [name] [description] [persistent] [autostart] [autoconnect] [autorestart] [start]'
 exports.describe = 'Creates a client'

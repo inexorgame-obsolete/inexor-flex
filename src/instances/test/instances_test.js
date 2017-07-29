@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const tree = require('@inexor-game/tree');
+const tree = require('@inexorgame/tree');
 const instances = require('../');
 
 /**

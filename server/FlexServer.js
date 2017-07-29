@@ -3,9 +3,9 @@ const express = require('express');
 const express_ws = require('express-ws');
 const util = require('util');
 
-const inexor_api = require('@inexor-game/api');
-const inexor_path = require('@inexor-game/path');
-const inexor_logger = require('@inexor-game/logger');
+const inexor_api = require('@inexorgame/api');
+const inexor_path = require('@inexorgame/path');
+const inexor_logger = require('@inexorgame/logger');
 
 
 class FlexServer {

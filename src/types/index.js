@@ -1,6 +1,6 @@
 const util = require('util');
 const debuglog = util.debuglog('types');
-const tree = require('@inexor-game/tree');
+const tree = require('@inexorgame/tree');
 
 /**
  * Converts Core types to JavaScript

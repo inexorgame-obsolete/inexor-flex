@@ -11,8 +11,8 @@ const toml = require('toml');
 const tomlify = require('tomlify');
 const util = require('util');
 
-const tree = require('@inexor-game/tree');
-const inexor_path = require('@inexor-game/path');
+const tree = require('@inexorgame/tree');
+const inexor_path = require('@inexorgame/path');
 
 /**
  * Logging configuration.
