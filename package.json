@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "reinstall": "npm install @inexorgame/api @inexorgame/console @inexorgame/context @inexorgame/entities @inexorgame/gameclient @inexorgame/gameserver @inexorgame/instances @inexorgame/interfaces @inexorgame/logger @inexorgame/logging @inexorgame/media @inexorgame/path @inexorgame/profiles @inexorgame/tree @inexorgame/treeclient @inexorgame/types @inexorgame/releases",
+    "reinstall": "npm install @inexorgame/api @inexorgame/console @inexorgame/context @inexorgame/entities @inexorgame/gameclient @inexorgame/gameserver @inexorgame/instances @inexorgame/interfaces @inexorgame/logger @inexorgame/logging @inexorgame/media @inexorgame/path @inexorgame/profiles @inexorgame/treeclient @inexorgame/types @inexorgame/releases",
     "start": "node server/index.js --profile  $npm_package_config_profile",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
@@ -50,7 +50,7 @@
     "@inexorgame/media": "file:src/media",
     "@inexorgame/path": "file:server/util/path",
     "@inexorgame/profiles": "file:src/profiles",
-    "@inexorgame/tree": "file:src/tree",
+    "@inexorgame/tree": "^1.0.3",
     "@inexorgame/treeclient": "file:src/treeclient",
     "@inexorgame/types": "file:src/types",
     "circular-json": "^0.3.1",
