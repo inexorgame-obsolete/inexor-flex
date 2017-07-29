@@ -110,6 +110,10 @@ function getExecutablePath(instance_type) {
  */
 function getMediaPaths() {
   var media_paths = [];
+  // User set media_path is first priority
+  if (media_path) {
+    media_paths.push(media_path);
+  }
   for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
     media_paths.push(path.join(standardPaths.appDataLocation[i], 'media'));
   }
