@@ -11,17 +11,17 @@ const bodyParser = require('body-parser');
 // TODO: const stringify = require('json-stringify-safe');
 
 // Pull the inexor dependencies
-const console = require('@inexor-game/console');
-const context = require('@inexor-game/context');
-const interfaces = require('@inexor-game/interfaces');
-const instances = require('@inexor-game/instances');
-const logging = require('@inexor-game/logging');
-const media = require('@inexor-game/media');
-const profiles = require('@inexor-game/profiles');
-const gameclient = require('@inexor-game/gameclient');
-const gameserver = require('@inexor-game/gameserver');
-const tree = require('@inexor-game/tree');
-const releases = require('@inexor-game/releases');
+const console = require('@inexorgame/console');
+const context = require('@inexorgame/context');
+const interfaces = require('@inexorgame/interfaces');
+const instances = require('@inexorgame/instances');
+const logging = require('@inexorgame/logging');
+const media = require('@inexorgame/media');
+const profiles = require('@inexorgame/profiles');
+const gameclient = require('@inexorgame/gameclient');
+const gameserver = require('@inexorgame/gameserver');
+const tree = require('@inexorgame/tree');
+const releases = require('@inexorgame/releases');
 
 // Import the REST API modules
 const ProfilesRestAPI = require('./ProfilesRestAPI');

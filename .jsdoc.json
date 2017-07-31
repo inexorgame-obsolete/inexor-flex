@@ -11,7 +11,7 @@
         "dictionaries": ["jsdoc","closure"]
     },
     "source": {
-        "include": ["server/", "plugins", "src"],
+        "include": ["server/", "src", "node_modules/@inexorgame/tree"],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "node_modules"
     },

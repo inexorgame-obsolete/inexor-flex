@@ -1,5 +1,5 @@
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 // Configuration for maximizing the client window
 exports.command = 'maximize <instance>'

@@ -1,11 +1,11 @@
 {
-  "name": "@inexor-game/media",
+  "name": "@inexorgame/media",
   "version": "1.0.0",
   "description": "Manages media content for the Inexor Tree technology.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inexorgame/flex.git"
+    "url": "git+https://github.com/inexorgame/inexor-flex.git"
   },
   "keywords": [
     "inexor",
@@ -21,9 +21,9 @@
   "author": "The Inexor Team",
   "license": "Zlib",
   "bugs": {
-    "url": "https://github.com/inexorgame/flex/issues"
+    "url": "https://github.com/inexorgame/inexor-flex/issues"
   },
-  "homepage": "https://github.com/inexorgame/flex#readme",
+  "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=6.9.1"
   },

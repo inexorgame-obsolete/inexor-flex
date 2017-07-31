@@ -1,7 +1,7 @@
 const child_process = require('child_process');
 
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 exports.command = 'restart'
 exports.describe = 'Restarts Inexor Flex'

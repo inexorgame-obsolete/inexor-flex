@@ -7,8 +7,8 @@ const toml = require('toml');
 const util = require('util');
 const yargs = require('yargs');
 
-const inexor_path = require('@inexor-game/path');
-const log = require('@inexor-game/logger')();
+const inexor_path = require('@inexorgame/path');
+const log = require('@inexorgame/logger')();
 
 exports.command = 'shell [profile]'
 exports.describe = 'Interactive Inexor Shell'

@@ -1,6 +1,6 @@
 /**
  * @module path
- * // TODO: Might be better called inexor-game/defaults
+ * // TODO: Might be better called inexorgame/defaults
  */
 
 const os = require('os');

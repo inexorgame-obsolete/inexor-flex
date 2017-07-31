@@ -1,8 +1,8 @@
 // TODO: remove ?
 
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const path = require('@inexor-game/path');
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const path = require('@inexorgame/path');
+const log = require('@inexorgame/logger')();
 
 exports.command = 'initialize'
 exports.describe = 'Exports the instance according to the config'

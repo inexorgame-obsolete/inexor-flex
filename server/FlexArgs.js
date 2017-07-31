@@ -1,6 +1,6 @@
 const util = require('util');
 
-const inexor_logger = require('@inexor-game/logger');
+const inexor_logger = require('@inexorgame/logger');
 
 /**
  * Handles the command line arguments for the Flex server.

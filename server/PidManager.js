@@ -4,8 +4,8 @@ const portscanner = require('portscanner');
 const process = require('process');
 const util = require('util');
 
-const inexor_path = require('@inexor-game/path');
-const inexor_logger = require('@inexor-game/logger');
+const inexor_path = require('@inexorgame/path');
+const inexor_logger = require('@inexorgame/logger');
 
 /**
  * Manager for PID files.

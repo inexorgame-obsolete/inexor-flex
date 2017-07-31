@@ -1,5 +1,5 @@
 {
-  "name": "@inexor-game/instances",
+  "name": "@inexorgame/instances",
   "version": "1.0.0",
   "description": "A module that allows for process managing, starting, stoping, of Inexor Core.",
   "main": "index.js",
@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/inexorgame/code/issues"
   },
-  "homepage": "https://github.com/inexorgame/flex#readme",
+  "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=6.9.1"
   },

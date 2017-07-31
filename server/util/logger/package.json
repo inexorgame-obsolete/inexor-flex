@@ -1,5 +1,5 @@
 {
-  "name": "@inexor-game/logger",
+  "name": "@inexorgame/logger",
   "version": "1.0.0",
   "description": "Returns a logger object",
   "main": "index.js",
@@ -7,16 +7,16 @@
   "license": "Zlib",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inexorgame/flex.git"
+    "url": "git+https://github.com/inexorgame/inexor-flex.git"
   },
   "keywords": [
     "inexor",
     "path"
   ],
   "bugs": {
-    "url": "https://github.com/inexorgame/flex/issues"
+    "url": "https://github.com/inexorgame/inexor-flex/issues"
   },
-  "homepage": "https://github.com/inexorgame/flex#readme",
+  "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=6.9.1"
   },

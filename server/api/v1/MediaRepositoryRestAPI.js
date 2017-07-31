@@ -1,7 +1,7 @@
 const path = require('path');
-const inexor_path = require('@inexor-game/path');
+const inexor_path = require('@inexorgame/path');
 
-const media = require('@inexor-game/media');
+const media = require('@inexorgame/media');
 
 /**
  * REST API for media repositories.

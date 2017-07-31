@@ -4,8 +4,8 @@ const process = require('process');
 const segfaultHandler = require('segfault-handler');
 const util = require('util');
 
-const inexor_path = require('@inexor-game/path');
-const inexor_logger = require('@inexor-game/logger');
+const inexor_path = require('@inexorgame/path');
+const inexor_logger = require('@inexorgame/logger');
 
 /**
  * Manager for the Inexor Flex process.

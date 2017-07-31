@@ -1,5 +1,5 @@
-const TreeClient = require('@inexor-game/treeclient').TreeClient;
-const log = require('@inexor-game/logger')();
+const TreeClient = require('@inexorgame/treeclient').TreeClient;
+const log = require('@inexorgame/logger')();
 
 // Configuration for listing all client instances
 exports.command = 'list'
