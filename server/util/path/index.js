@@ -47,6 +47,13 @@ const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join
 const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : path.join(standardPaths.appDataLocation[0], 'releases');
 
 /**
+ * The interfaces path of Inexor
+ * By default the app data location + 'interfaces' is used
+ * @property {string} interfaces_path
+ */
+const interfaces_path = (process.env.INTERFACES_PATH) ? process.env.INTERFACES_PATH : path.join(standardPaths.appDataLocation[0], 'interfaces');
+
+/**
  * Returns the binary directory of an Inexor installation.
  * Can be overwritten with the environment variable BINARY_PATH (absolute path)
  * @return {string}
@@ -135,6 +142,7 @@ module.exports = {
   config_path: config_path,
   media_path: media_path,
   releases_path: releases_path,
+  interfaces_path: interfaces_path,
   getBinaryPath: getBinaryPath,
   getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
