@@ -177,6 +177,9 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   updateInterface(name) {
     // TODO: clone or pull/merge repository of the web user interface
+    let interfaceNode = this.interfacesNode.getChild(name);
+    let interfacePath = interfaceNode.path;
+
     this.log.warn('Not implemented updating an user interface');
   }
 
@@ -223,7 +226,7 @@ class WebUserInterfaceManager extends EventEmitter {
    * @param {string} name The name of the web user interface.
    */
   getAbsoluteFsPath(name) {
-    return path.resolve(this.getRelativeFsPath(name));
+    return path.join(inexor_path.interfaces_path, name);
   }
 
   /**
