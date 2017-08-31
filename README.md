@@ -1,6 +1,6 @@
 # Inexor Flex
 
-[![Build Status](https://ci.inexor.org/job/inexor/job/flex/job/master/badge/icon)](https://ci.inexor.org/job/inexor/job/flex/job/master/)
+[![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexor-game/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex)
 
 Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 

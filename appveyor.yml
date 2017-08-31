@@ -11,6 +11,7 @@ install:
   - ps: Install-Product node $env:nodejs_version
   # install modules
   - git submodule update --init
+  - npm install -g mocha
   - npm install
 
 # Post-install test scripts.
@@ -19,7 +20,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - npm test
+  - mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js') --harmony
 
 # Don't actually build.
 build: off
