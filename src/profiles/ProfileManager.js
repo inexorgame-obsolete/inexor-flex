@@ -9,7 +9,6 @@ const toml = require('toml');
 const tomlify = require('tomlify');
 const util = require('util');
 
-const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
 
 /**
@@ -22,7 +21,7 @@ class ProfileManager extends EventEmitter {
    */
   constructor(applicationContext) {
     super();
-    
+
     /// The application context
     /// this.applicationContext = applicationContext;
 
@@ -52,7 +51,7 @@ class ProfileManager extends EventEmitter {
     /// Flex is started without a profile)
     this.profilesNode.addChild('default', 'string', 'client');
 
-    /// The name of the current profile 
+    /// The name of the current profile
     this.profilesNode.addChild('current', 'string', 'client');
 
     /// The class logger
@@ -113,7 +112,7 @@ class ProfileManager extends EventEmitter {
 
       // The description
       profileNode.addChild('description', 'string', description);
-      
+
       this.log.debug(util.format('Added profile %s@%s:%d', profileNode.getName(), profileNode.hostname, profileNode.port));
 
       resolve(profileNode);
@@ -224,7 +223,7 @@ class ProfileManager extends EventEmitter {
           this.log.info(util.format('Wrote profiles to %s', config_path));
           resolve(true);
         }
-      }); 
+      });
     });
   }
 
@@ -304,9 +303,9 @@ class ProfileManager extends EventEmitter {
 
   /**
    * Sets the name of the current profile.
-   * 
+   *
    * Warning: do not use this function! Use switchTo instead!
-   * 
+   *
    * @function
    * @param {string} name - The name of the profile.
    */
@@ -354,4 +353,3 @@ class ProfileManager extends EventEmitter {
 }
 
 module.exports = ProfileManager;
-

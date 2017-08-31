@@ -3,9 +3,10 @@
  */
 
 const EventEmitter = require('events');
+const util = require('util');
 
 /**
- * The map rotation service chooses 
+ * The map rotation service chooses
  */
 class IntermissionService extends EventEmitter {
 

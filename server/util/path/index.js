@@ -8,7 +8,6 @@ const process = require('process');
 const path = require('path');
 const standardPaths = require('./standardpaths');
 const util = require('util');
-const debuglog = util.debuglog('inexor-path');
 
 /**
  * The path of the flex folder
@@ -68,7 +67,6 @@ function getBinaryPath() {
  */
 function getExecutablePath(instance_type) {
   let platform = os.platform();
-  let binary_path = getBinaryPath();
   switch (platform) {
     case 'linux':
       switch (instance_type) {
@@ -100,7 +98,6 @@ function getExecutablePath(instance_type) {
     default:
       throw new Error('${platform} is not currently supported')
   }
-  return path.resolve(path.join(standardPaths.appDataLocation, 'bin'));
 }
 
 /**

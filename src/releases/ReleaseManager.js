@@ -1,5 +1,4 @@
 const EventEmitter = require('events');
-const process = require('process');
 const fs = require('fs-extra');
 const path = require('path');
 const toml = require('toml');
@@ -11,7 +10,6 @@ const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
 
 const debuglog = util.debuglog('releases');
-const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
 
 const releaseURL = 'https://api.github.com/repos/inexorgame/code/releases';

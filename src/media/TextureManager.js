@@ -6,9 +6,6 @@ const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
-const tree = require('@inexorgame/tree');
-
-const inexor_path = require('@inexorgame/path');
 
 
 /**
@@ -27,7 +24,7 @@ class TextureManager extends EventEmitter {
     this.mediaType = 'texture';
 
     /**
-     * 
+     *
      * "c" or 0 for primary diffuse texture (RGB)
      * "u" or 1 for generic secondary texture
      * "d" for decals (RGBA), blended into the diffuse texture if running in fixed-function mode.
@@ -131,10 +128,10 @@ class TextureManager extends EventEmitter {
 
   /**
    * Finds the texture files by type (diffuse, normals, specularity).
-   * 
+   *
    * The filename must be {textureType}.{fileExtension}.
    * For example: diffuse.jpg
-   * 
+   *
    * @function
    * @param {Tree.Node} versionNode - The tree node of a texture representing a texture with multiple texture files.
    * @param {string} versionPath - The path to the directory which contains the texture files.
@@ -149,7 +146,7 @@ class TextureManager extends EventEmitter {
           var textureFileNode;
           if (versionNode.hasChild(textureType)) {
             textureFileNode = versionNode.getChild(textureType);
-            textureFileNode.set(textureFilePath); 
+            textureFileNode.set(textureFilePath);
           } else {
             textureFileNode = versionNode.addChild(textureType, 'string', textureFilePath);
           }

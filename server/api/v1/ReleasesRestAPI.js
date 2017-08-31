@@ -1,6 +1,4 @@
 const EventEmitter = require('events');
-const express = require('express');
-const process = require('process');
 const util = require('util');
 
 /**
@@ -133,7 +131,6 @@ class ReleasesRestAPI extends EventEmitter {
             let releaseNode = this.releasesNode.getChild(req.params.version);
             let downloadedNode = releaseNode.getChild('downloaded');
             let installedNode = releaseNode.getChild('installed');
-            console.log(downloadedNode.get());
 
             if (downloadedNode.get()) {
                 if (!installedNode.get() && !this.releaseManager.installing[req.params.version]) {
@@ -154,7 +151,7 @@ class ReleasesRestAPI extends EventEmitter {
 
     uninstallRelease(req, res) {
         if (this.releasesNode.hasChild(req.params.version)) {
-            let installedNode = releaseNode.getChild('installed');
+            let installedNode = this.releaseNode.getChild('installed');
 
             if (installedNode.get() && !!this.releaseManager.uninstalling[req.params.version]) {
                 this.log.info(`Uninstalling release ${req.params.version}`);

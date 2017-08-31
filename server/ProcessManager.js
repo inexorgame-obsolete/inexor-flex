@@ -4,19 +4,18 @@ const process = require('process');
 const segfaultHandler = require('segfault-handler');
 const util = require('util');
 
-const inexor_path = require('@inexorgame/path');
 const inexor_logger = require('@inexorgame/logger');
 
 /**
  * Manager for the Inexor Flex process.
- * 
+ *
  * Exit handlers:
- * 
+ *
  * - on SIGHUP a reload is triggered (excluding win32, which exits)
  * - on SIGINT and SIGTERM the process is killed and the PID file is removed
  * - on exiting, a message is printed about the exit code or signal
  * - we cannot handle SIGKILL, in this case the PID file cannot be removed cleanly
- * 
+ *
  */
 class ProcessManager extends EventEmitter {
 

@@ -1,7 +1,6 @@
 const path = require('path');
+const util = require('util');
 const inexor_path = require('@inexorgame/path');
-
-const media = require('@inexorgame/media');
 
 /**
  * REST API for media repositories.
@@ -12,10 +11,10 @@ class MediaRepositoryRestAPI {
    * Constructs the media repository REST API.
    */
   constructor(applicationContext) {
-    
+
     // The media repository manager
     this.mediaRepositoryManager = applicationContext.get('mediaRepositoryManager');
-    
+
     // The express router
     this.router = applicationContext.get('router');
 
@@ -38,10 +37,10 @@ class MediaRepositoryRestAPI {
 
   /**
    * Scans for media repositories.
-   * 
+   *
    * TODO: use promises.
    * TODO: improve result
-   * 
+   *
    */
   scanMediaRepositories(req, res) {
     this.mediaRepositoryManager.scanAll();
@@ -50,19 +49,20 @@ class MediaRepositoryRestAPI {
 
   /**
    * Creates a new media repository.
-   * 
+   *
    * TODO: use promises.
-   * 
+   *
    */
   createMediaRepository(req, res) {
     if (req.body.type != null) {
       let repository_path = path.resolve(path.join(path.join(inexor_path.standardPaths.appDataLocation, inexor_path.media_path), req.params.name));
       switch (req.body.type) {
-        case 'fs':
+        case 'fs': {
           let repository_node = this.mediaRepositoryManager.fs.createRepository(req.params.name, repository_path);
           res.status(201).json(repository_node.get());
           break;
-        case 'git':
+        }
+        case 'git': {
           if (req.body.url != null) {
             let repository_node = this.mediaRepositoryManager.git.createRepository(req.params.name, repository_path, req.body.url);
             res.status(201).json(repository_node.get());
@@ -70,6 +70,7 @@ class MediaRepositoryRestAPI {
             res.status(500).send(util.format('Missing parameter: url'));
           }
           break;
+        }
       }
     } else {
       res.status(500).send(util.format('Missing parameter: type'));
@@ -78,10 +79,10 @@ class MediaRepositoryRestAPI {
 
   /**
    * Updates a media repository.
-   * 
+   *
    * TODO: use promises.
    * TODO: improve result
-   * 
+   *
    */
   updateMediaRepository(req, res) {
     if (this.mediaRepositoryManager.exists(req.params.name)) {
@@ -94,10 +95,10 @@ class MediaRepositoryRestAPI {
 
   /**
    * Updates the media repository branch.
-   * 
+   *
    * TODO: use promises.
    * TODO: improve result
-   * 
+   *
    */
   updateMediaRepositoryBranch(req, res) {
     if (this.mediaRepositoryManager.exists(req.params.name)) {
@@ -110,10 +111,10 @@ class MediaRepositoryRestAPI {
 
   /**
    * Removes a media repository.
-   * 
+   *
    * TODO: use promises.
    * TODO: improve result
-   * 
+   *
    */
   removeMediaRepository(req, res) {
     if (this.mediaRepositoryManager.exists(req.params.name)) {

@@ -1,5 +1,3 @@
-const express = require('express');
-const process = require('process');
 const util = require('util');
 
 const inexor_log = require('@inexorgame/logger');

@@ -4,7 +4,6 @@ const express_ws = require('express-ws');
 const util = require('util');
 
 const inexor_api = require('@inexorgame/api');
-const inexor_path = require('@inexorgame/path');
 const inexor_logger = require('@inexorgame/logger');
 
 

@@ -26,7 +26,7 @@ class MediaManager extends EventEmitter {
   setDependencies() {
 
     /// The media repository manager
-    this.mediaRepositoryManager = application_context.get('mediaRepositoryManager');
+    this.mediaRepositoryManager = this.applicationContext.get('mediaRepositoryManager');
 
     /// The Inexor Tree root node
     this.root = this.applicationContext.get('tree');
@@ -54,18 +54,18 @@ class MediaManager extends EventEmitter {
   }
 
   /**
-   * 
+   *
    * media_path: the path to the folder containing the texture
-   * 
+   *
    * Unify filesystem representation of a texture:
    * - Enables loading textures into Inexor Tree
    * - Allows to make textures available via webserver
    *   - Use the texture in the UI (Texture Browser)
    *   - Download textures from a remote server (the structure is the same)
-   *  
+   *
    * ## Path to the media folder
    * /:repository_name/:media_type+'s'/:media_name
-   * 
+   *
    * ## Path to the config file (contains: author, license, dependencies)
    * /:repository_name/:media_type+'s'/:media_name/config.json
    * {
@@ -89,19 +89,19 @@ class MediaManager extends EventEmitter {
    *     }
    *   ]
    * }
-   * 
-   * ## Path to the readme 
+   *
+   * ## Path to the readme
    * /:repository_name/:media_type+'s'/:media_name/readme.[txt|md|html]
-   * 
+   *
    * ## The texture itself
    * /:repository_name/textures/:texture_name/texture.[png|jpg]
-   * 
+   *
    * ## The normal map
    * repo/textures/:texture_name/normalmap.[png|jpg]
-   * 
+   *
    * ## The height map
    * /:repository_name/textures/:texture_name/heightmap.[png|jpg]
-   * 
+   *
    * "c" or 0 for primary diffuse texture (RGB)
    * "u" or 1 for generic secondary texture
    * "d" for decals (RGBA), blended into the diffuse texture if running in fixed-function mode. To disable this combining, specify secondary textures as generic with 1 or "u"
@@ -110,7 +110,7 @@ class MediaManager extends EventEmitter {
    * "s" for specularity maps (grey-scale), put in alpha channel of diffuse ("c")
    * "z" for depth maps (Z), put in alpha channel of normal ("n") maps
    * "e" for environment maps (skybox), uses the same syntax as "loadsky", and set a custom environment map (overriding the "envmap" entities) to use in environment-mapped shaders ("bumpenv*world")
-   * 
+   *
    */
   addMedia(type, name, repository, mediaPath, dependencies, author = '', license = '') {
     let mediaTypeNode = this.mediaTypeNodes[type];
@@ -124,7 +124,7 @@ class MediaManager extends EventEmitter {
   }
 
   removeMedia(type, name) {
-    
+
   }
 
   addMap(name, repository, mediaPath, dependencies) {

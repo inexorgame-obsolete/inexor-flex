@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const git = require('nodegit');
 const util = require('util');
-const tree = require('@inexorgame/tree');
 const mkdirp = require('mkdirp');
 
 const inexor_path = require('@inexorgame/path');

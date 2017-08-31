@@ -22,7 +22,7 @@ class TreeClient {
       profiles: {
         create: this.createEndpoint('/profiles/${name}', this.createProfile.name, 'POST'),
         remove: this.createEndpoint('/profiles/${name}', this.removeProfile.name, 'DELETE'),
-        create: this.createEndpoint('/profiles/${name}/switch', this.switchProfile.name)
+        create: this.createEndpoint('/profiles/${name}/switch', this.switchProfile.name) // eslint-disable-line no-dupe-keys
       },
       instances: {
         getAll: this.createEndpoint('/instances', this.getAllInstances.name),
