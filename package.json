@@ -7,7 +7,7 @@
     "start": "node server/index.js --profile  $npm_package_config_profile",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
-    "test": "mocha $(find . -not -iwholename '*node_modules*' -iwholename '*test*' -name '*.js') --harmony",
+    "test": "mocha \"src/*/test/*.js\" \"server/test/*.js\" \"server/*/*/test/*.js\" --harmony",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
