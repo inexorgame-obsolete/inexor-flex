@@ -50,7 +50,6 @@
     "@inexorgame/path": "file:server/util/path",
     "@inexorgame/profiles": "file:src/profiles",
     "@inexorgame/releases": "file:src/releases",
-    "@inexorgame/segfault-handler": "^1.0.1",
     "@inexorgame/tree": "^1.0.3",
     "@inexorgame/treeclient": "file:src/treeclient",
     "@inexorgame/types": "file:src/types",
