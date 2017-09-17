@@ -204,6 +204,7 @@ switch(os.platform()) {
       'downloadLocation': path.join(homeDir, 'Documents'),
       'genericCacheLocation': path.join(homeDir, 'AppData', 'Local', 'cache'),
       'appDataLocation': [
+        path.join(homeDir, 'Documents', 'My Games', appName),
         path.join(homeDir, 'AppData', 'Roaming', appName),
         path.join('C:\\ProgramData', appName),
         appDir,

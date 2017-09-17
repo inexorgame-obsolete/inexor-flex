@@ -6,8 +6,8 @@
 const os = require('os');
 const process = require('process');
 const path = require('path');
+const fs = require('fs');
 const standardPaths = require('./standardpaths');
-const util = require('util');
 
 /**
  * The path of the flex folder
@@ -52,7 +52,22 @@ const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : 
  * @return {string}
  */
 function getBinaryPath() {
-  return (process.env.BINARY_PATH) ? process.env.BINARY_PATH : path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
+  if (process.env.BINARY_PATH) {
+    return path.resolve(process.env.BINARY_PATH);
+  } else {
+    let binaryAppDataPath = path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
+    if (fs.existsSync(binaryAppDataPath)) {
+      return binaryAppDataPath;
+    } else {
+      let fallbackPaths = ['../bin', 'bin'];
+
+      fallbackPaths.forEach((fallbackPath) => {
+        if (fs.existsSync(path.join(flex_path, fallbackPath))) {
+          return path.resolve(path.join(flex_path, fallbackPath))
+        }
+      })
+    }
+  }
 }
 
 /**
