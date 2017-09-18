@@ -256,7 +256,7 @@ class Connector extends EventEmitter {
               self.linkTreeMounts();
 
               // Set package dir
-              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
+              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
 
               // Send signal that the tree initialization has been finished
               self.sendFinishedTreeIntro();
@@ -274,7 +274,7 @@ class Connector extends EventEmitter {
               self.loadInstanceConfiguration();
 
               // Set package dir
-              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'core'));
+              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
 
               // Send signal that the tree initialization has been finished
               self.sendFinishedTreeIntro();
