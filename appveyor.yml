@@ -20,7 +20,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - mocha ^$^(find \. -not -iwholename ^'\*node_modules\*^' -iwholename ^'\*test\*^' -name ^'\*.js^'^) --harmony
+  - npm test
 
 # Don't actually build.
 build: off

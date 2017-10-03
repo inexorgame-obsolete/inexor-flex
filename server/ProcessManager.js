@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
 const os = require('os');
 const process = require('process');
-const segfaultHandler = require('segfault-handler');
+//const segfaultHandler = require('@inexorgame/segfault-handler');
 const util = require('util');
 
 const inexor_logger = require('@inexorgame/logger');
@@ -37,7 +37,7 @@ class ProcessManager extends EventEmitter {
   createProcessHandlers() {
     let pidManager = this.pidManager;
     let shutdownSignalHandler = this.onShutdownSignal.bind(this);
-    let _segfaultHandler = this.onSegfault.bind(this);
+    //let _segfaultHandler = this.onSegfault.bind(this);
     switch(os.platform()) {
       case 'win32':
         // Different behavior on windows: closing a CMD window
@@ -50,7 +50,7 @@ class ProcessManager extends EventEmitter {
     process.on('SIGTERM', function() { shutdownSignalHandler('SIGTERM', pidManager.removePid.bind(pidManager))});
     process.on('uncaughtException', this.onUncaughtException.bind(this));
     process.on('exit', this.onExit.bind(this));
-    segfaultHandler.registerHandler('crash.log', function(signal, address, stack) { _segfaultHandler(signal, address, stack, pidManager.removePid.bind(pidManager))});
+    //segfaultHandler.registerHandler('crash.log', function(signal, address, stack) { _segfaultHandler(signal, address, stack, pidManager.removePid.bind(pidManager))});
   }
 
   /**
