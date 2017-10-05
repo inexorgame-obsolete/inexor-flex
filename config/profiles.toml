@@ -6,12 +6,12 @@
 default = "client"
 
 [profiles.client]
-description = "Production ready client and optional local server"
+description = "Production ready client and local server"
 hostname = "localhost"
 port = 31416
 
 [profiles.server]
-description = "Production ready server"
+description = "Only the server, without the client starting"
 hostname = "localhost"
 port = 31416
 
