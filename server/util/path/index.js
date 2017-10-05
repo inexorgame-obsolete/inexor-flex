@@ -50,21 +50,28 @@ const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : 
 /**
  * Returns the binary directory of an Inexor installation.
  * Can be overwritten with the environment variable BINARY_PATH (absolute path)
+ * @param {string} [check_executable_name] optional: only returns a folder where this binary name exists.
  * @return {string}
  */
-function getBinaryPath() {
+function getBinaryPath(check_executable_name) {
   if (process.env.BINARY_PATH) {
     return path.resolve(process.env.BINARY_PATH);
   }
+  const bin_paths = [path.join(flex_path, '../bin'), path.join(standardPaths.appDataLocation[0], 'bin')];
 
-  let binpaths = ['../bin', 'bin'];
-  binpaths.push(path.resolve(path.join(standardPaths.appDataLocation[0], 'bin')));
-
-  binpaths.forEach((binpath) => {
-    if (fs.existsSync(path.join(flex_path, binpath))) {
-      return path.resolve(path.join(flex_path, binpath))
+    for (var bin_path of bin_paths) {
+      let exe_path = "";
+      if (typeof check_executable_name !== 'undefined' && check_executable_name) {
+        exe_path = path.resolve(path.join(bin_path, check_executable_name));
+      }
+      else {
+        exe_path = path.resolve(bin_path);
+      }
+      if (fs.existsSync(exe_path)) {
+        console.log("Found Executable " + exe_path);
+        return bin_path;
+      }
     }
-  })
 }
 
 /**
@@ -75,7 +82,7 @@ function getBinaryPath() {
 function getExecutablePath(instance_type) {
   let platform = os.platform();
   let binary_name = util.format("inexor-core-%s.exe", instance_type);
-  return path.join(getBinaryPath(), binary_name);
+  return path.join(getBinaryPath(binary_name), binary_name);
 }
 
 /**
