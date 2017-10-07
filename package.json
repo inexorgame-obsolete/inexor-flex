@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.0",
+  "version": "0.9.0-preview",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "reinstall": "npm install @inexorgame/api @inexorgame/console @inexorgame/context @inexorgame/entities @inexorgame/gameclient @inexorgame/gameserver @inexorgame/instances @inexorgame/interfaces @inexorgame/logger @inexorgame/logging @inexorgame/media @inexorgame/path @inexorgame/profiles @inexorgame/treeclient @inexorgame/types @inexorgame/releases",
