@@ -18,6 +18,7 @@
     "build:ui-client-hud": "cd interfaces/ui-client-hud && npm run build",
     "build:ui-console": "cd interfaces/ui-console && npm run build"
   },
+  "bin": {"inexor-flex": "./bin/inexor.js"},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/inexorgame/inexor-flex.git"
