@@ -50,7 +50,7 @@
     "@inexorgame/releases": "^1.0.1",
     "@inexorgame/tree": "^1.0.3",
     "@inexorgame/treeclient": "^1.0.1",
-    "@inexorgame/types": "^1.0.1",
+    "@inexorgame/types": "^1.0.1  ",
     "circular-json": "^0.3.1",
     "cors": "^2.8.3",
     "express": "^4.15.2",
