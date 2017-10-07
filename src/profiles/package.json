@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/profiles",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Profile management",
   "main": "index.js",
   "repository": {
@@ -19,7 +19,5 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": true,
-  "dependencies": {
-  }
+  "private": true
 }

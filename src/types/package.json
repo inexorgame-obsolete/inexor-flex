@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/types",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts types from Inexor Core to JavaScript",
   "main": "index.js",
   "repository": {
