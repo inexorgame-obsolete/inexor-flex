@@ -18,6 +18,17 @@ if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
 
 
 // Ensure that Inexor Flex is running
+let serverDir;
+if (!fs.existsSync('./server')) {
+  serverDir = require.resolve('@inexorgame/inexor-flex');
+  serverDir = serverDir.replace("inexor.js", "");
+  serverDir = path.join(serverDir, "server");
+} else {
+  serverDir = path.resolve('./server');
+}
+
+log.debug(`The server dir is at ${serverDir}`);
+
 const hostname = 'localhost' // This will comfort >90% of our users
 const pid_path = path.join(inexor_path.pid_path, util.format('flex.%s.%s.pid', hostname, inexor_path.DEFAULT_PORT));
 log.debug(`Checking wether the flex pid exists at ${pid_path} exists`)
@@ -26,7 +37,7 @@ if (!fs.existsSync(pid_path)) {
   log.warn('Inexor Flex is not running! Starting Inexor Flex...');
   // Starting Inexor Flex detached without stdio
   const child = child_process.spawn(process.argv[0], [
-    'server/index.js'
+    path.join(serverDir, 'index.js')
   ], {
     detached: true,
     stdio: 'ignore'
@@ -46,25 +57,15 @@ wait_on({
     log.error('Inexor Flex didn\'t came up:');
     log.error(err);
   } else {
-    let commandDir;
-    if (fs.existsSync('./server')) {
-      commandDir = path.resolve('./server'); // local setup
-    } else {
-      let moduleDir = require.resolve('@inexorgame/inexor-flex');
-      moduleDir = moduleDir.substr('inexor.js', ''); // WTF. WHY YOU SO HARD TO STRIP DIR
-      commandDir = path.join(moduleDir, 'server');
-    }
-    log.info(`Running flex from command line from ${commandDir}`)
-
     if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
       const argv = yargs
-        .commandDir(path.join(commandDir, 'commands'))
+        .commandDir(path.join(serverDir, 'commands'))
         .demandCommand(1)
         .help()
         .argv;
     } else {
       const argv = yargs
-        .commandDir(path.join(commandDir, 'commands/cli'))
+        .commandDir(path.join(serverDir, 'commands/cli'))
         .command('shell', 'Opens an interactive shell')
         .demandCommand(1)
         .help()
