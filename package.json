@@ -3,7 +3,8 @@
   "version": "0.9.0-preview5",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "postinstall": "npm install server/api/ src/console/ src/context/ src/entities/ src/gameclient/ src/gameserver/ src/instances/ src/interfaces/ server/util/logger/ src/logging/ src/media/ server/util/path/ src/profiles/ src/releases/ src/treeclient/ src/types/",
+    "postinstall": "localinstall",
+    "localinstall": "yarn add file:server/api/ file:src/console/ file:src/context/ file:src/entities/ file:src/gameclient/ file:src/gameserver/ file:src/instances/ file:src/interfaces/ file:server/util/logger/ file:src/logging/ file:src/media/ file:server/util/path/ file:src/profiles/ file:src/releases/ file:src/treeclient/ file:src/types/",
     "start": "node server/index.js --profile  $npm_package_config_profile",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
@@ -12,11 +13,7 @@
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
-    "shell": "node inexor shell",
-    "build": "npm run build:ui-flex",
-    "build:ui-flex": "cd interfaces/ui-flex && npm run build",
-    "build:ui-client-hud": "cd interfaces/ui-client-hud && npm run build",
-    "build:ui-console": "cd interfaces/ui-console && npm run build"
+    "shell": "node inexor.js shell"
   },
   "bin": {
     "inexor-flex": "inexor.js"
@@ -52,7 +49,8 @@
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
     "xdg-basedir": "^3.0.0",
-    "yargs": "^7.0.2"
+    "yargs": "^7.0.2",
+    "yarn": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
