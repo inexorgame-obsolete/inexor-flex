@@ -1,0 +1,10 @@
+{
+  "lerna": "2.4.0",
+  "packages": [
+    "src/*",
+    "server/api",
+    "server/util/path",
+    "server/util/logger"
+  ],
+  "version": "independent"
+}
