@@ -1,3 +1,6 @@
+const EventEmitter = require('events');
+const Relationship = require('./Relationship');
+
 /**
  * @module entities
  */
@@ -212,3 +215,5 @@ class Entity extends EventEmitter {
   }
 
 }
+
+module.exports = Entity

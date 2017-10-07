@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 /**
  * @module entities
  */
@@ -37,7 +39,7 @@ class EntityTypeManager extends EventEmitter {
    * @return {Array.<EntityType>} The list of entity types.
    */
   getAll() {
-    return entityTypes;
+    return this.entityTypes;
   }
 
   /**
@@ -79,3 +81,5 @@ class EntityTypeManager extends EventEmitter {
   }
 
 }
+
+module.exports = EntityTypeManager

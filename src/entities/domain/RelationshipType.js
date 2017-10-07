@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 /**
  * @module entities
  */
@@ -84,3 +86,5 @@ class RelationshipType extends EventEmitter {
   }
 
 }
+
+module.exports = RelationshipType

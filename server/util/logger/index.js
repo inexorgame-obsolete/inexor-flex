@@ -11,7 +11,7 @@ const bunyanDebugStream = require('bunyan-debug-stream');
  * @param {string} level - the log level to display
  */
 module.exports = (name = '@inexorgame/flex', console = true, file = null, level = 'info') => {
-  streams = [];
+  let streams = [];
 
   if (console) {
    streams.push({

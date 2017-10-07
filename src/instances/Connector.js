@@ -11,7 +11,6 @@ const path = require('path');
 const toml = require('toml');
 const util = require('util');
 
-const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
 
 /**
@@ -113,7 +112,7 @@ class Connector extends EventEmitter {
       var dataType = this.getDataType(protoKey);
       var id = this.getId(protoKey);
       switch (eventType) {
-        case 'TYPE_GLOBAL_VAR_MODIFIED':
+        case 'TYPE_GLOBAL_VAR_MODIFIED': // eslint-disable-line
           this.log.trace(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
           let node = this.instanceNode.getRoot().findNode(path);
           // Set value, but prevent sync
@@ -305,7 +304,7 @@ class Connector extends EventEmitter {
   }
 
   disconnect() {
-    let instanceId = this.instanceNode.getName();
+    //let instanceId = this.instanceNode.getName();
     this.removeListeners();
     this.closeGrpcConnection();
     // this.instanceNode.initialized = false;

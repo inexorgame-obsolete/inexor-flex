@@ -5,7 +5,6 @@
 const os = require('os');
 const path = require('path');
 const process = require('process');
-const util = require('util');
 const env = process.env;
 
 let homeDir = os.homedir();
@@ -273,5 +272,4 @@ switch(os.platform()) {
     module.exports = {};
     break;
 
-};
-
+}

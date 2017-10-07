@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 /**
  * @module entities
  */
@@ -40,7 +42,7 @@ class RelationshipManager extends EventEmitter {
    * @return {Array.<Relationship>} The list of relationships.
    */
   getAll() {
-    return relationships;
+    return this.relationships;
   }
 
   /**
@@ -76,3 +78,5 @@ class RelationshipManager extends EventEmitter {
   }
 
 }
+
+module.exports = RelationshipManager

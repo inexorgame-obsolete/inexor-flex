@@ -8,7 +8,6 @@ const util = require('util');
 const yargs = require('yargs');
 
 const inexor_path = require('@inexorgame/path');
-const log = require('@inexorgame/logger')();
 
 exports.command = 'shell [profile]'
 exports.describe = 'Interactive Inexor Shell'
@@ -24,7 +23,7 @@ exports.builder = {
 
 exports.handler = function(argv) {
 
-  console.log(figlet.textSync('INEXOR', {
+  console.log(figlet.textSync('INEXOR', { // eslint-disable-line no-console
     font: 'Ghost',
     horizontalLayout: 'default',
     verticalLayout: 'default'
@@ -102,20 +101,20 @@ exports.handler = function(argv) {
       case 'quit':
         readline_handler.close();
         break;
-      default:
+      default: // eslint-disable-line no-case-declarations
         let argv2 = line.split(' ');
         switch (argv2[0]) {
           case 'use':
             setCurrentProfile(argv2[1]);
             break;
           default:
-            console.log(argv2);
+            console.log(argv2); // eslint-disable-line no-console
             argv2.push('--profileName=' + getCurrentProfile());
             argv2.push('--profileHostname=' + getCurrentProfileHostname());
             argv2.push('--profilePort=' + getCurrentProfilePort());
             parser.parse(argv2, function (err, argv, output) {
               if (output) {
-                console.log(output);
+                console.log(output); // eslint-disable-line no-console
               }
             });
             break;
@@ -125,7 +124,7 @@ exports.handler = function(argv) {
         break;
     }
   }).on('close', () => {
-    console.log('Thank you for playing Inexor!');
+    console.log('Thank you for playing Inexor!'); // eslint-disable-line no-console
   }).on('SIGINT', () => {
     readline_handler.close();
   });

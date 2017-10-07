@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 /**
  * @module entities
  */
@@ -95,3 +97,5 @@ class EntityType extends EventEmitter {
   }
 
 }
+
+module.exports = EntityType

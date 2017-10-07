@@ -2,17 +2,7 @@
  * @module interfaces
  */
 
-const bunyan = require('bunyan');
 const EventEmitter = require('events');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-
-const tree = require('@inexorgame/tree');
-const inexor_path = require('@inexorgame/path');
-
-const debuglog = util.debuglog('instances');
-const log = require('@inexorgame/logger')();
 
 /**
  * Management service for CEF layers in Inexor Core Client.

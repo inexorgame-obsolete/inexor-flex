@@ -6,13 +6,8 @@ const EventEmitter = require('events');
 const bunyan = require('bunyan');
 const bunyanDebugStream = require('bunyan-debug-stream');
 const fs = require('fs');
-const path = require('path');
 const toml = require('toml');
-const tomlify = require('tomlify');
 const util = require('util');
-
-const tree = require('@inexorgame/tree');
-const inexor_path = require('@inexorgame/path');
 
 /**
  * Logging configuration.
@@ -105,13 +100,13 @@ class LogManager extends EventEmitter {
 
       // Create tree structure
       let parts = name.split('.');
-      var treeNode = this.loggingNode;
+      let treeNode = this.loggingNode;
       for (let i = 0; i < parts.length; i++) {
         treeNode = treeNode.getOrCreateNode(parts[i]);
       }
       let levelNode = treeNode.addChild('level', 'string', level);
-      let consoleNode = treeNode.addChild('console', 'bool', console);
-      let fileNode = treeNode.addChild('file', 'string', file == null ? 'null' : file);
+      //let consoleNode = treeNode.addChild('console', 'bool', console);
+      //let fileNode = treeNode.addChild('file', 'string', file == null ? 'null' : file);
 
       // Create new logger
       this.loggers[name] = bunyan.createLogger({
@@ -138,7 +133,7 @@ class LogManager extends EventEmitter {
 
       // Update tree structure
       let parts = name.split('.');
-      var treeNode = this.loggingNode;
+      let treeNode = this.loggingNode;
       for (let i = 0; i < parts.length; i++) {
         treeNode = treeNode.getOrCreateNode(parts[i]);
       }

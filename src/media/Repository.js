@@ -70,7 +70,7 @@ class FilesystemRepositoryManager extends EventEmitter {
     if (_mediaPath == null) {
       _mediaPath = inexor_path.media_path;
     }
-    var self = this;
+
     if (fs.existsSync(_mediaPath)) {
       try {
         this.log.debug(util.format('Scaning media path %s for FS media repositories', _mediaPath));
@@ -413,7 +413,6 @@ class GitRepositoryManager extends EventEmitter {
     if (clone) {
       // git clone
       this.log.info(util.format('Cloning media repository %s from %s to local path %s', name, repositoryNode.url, repositoryNode.path));
-      var self = this;
       var repository;
       git.Clone(repositoryNode.url, repositoryNode.path, {
         fetchOpts: {
@@ -436,8 +435,7 @@ class GitRepositoryManager extends EventEmitter {
       // git pull
       // TODO: Resolve the repository url first!
       this.log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repositoryNode.url, repositoryNode.path));
-      var self = this;
-      var repository;
+      let repository; // eslint-disable-line
       git.Repository
         .open(repositoryPath)
         .then(function(repo) {
@@ -706,7 +704,6 @@ class GitRepositoryManager extends EventEmitter {
    * @param {Repository} repository - The git repository.
    */
   getBranches(name, repository) {
-    let repositoryNode = this.repositoriesNode.getChild(name);
     let branchesNode = this.repositoriesNode.getChild(name).branches;
     var self = this;
     return repository
@@ -715,10 +712,11 @@ class GitRepositoryManager extends EventEmitter {
         try {
           for (var i = 0; i < reference_names.length; i++) {
             var reference_name = reference_names[i];
+            var branch_name, branchNode;
+
             if (reference_name.substr(0, 11) == 'refs/heads/') {
               // local branch
-              var branch_name = reference_name.substr(11);
-              var branchNode;
+              branch_name = reference_name.substr(11);
               if (branchesNode.hasChild(branch_name)) {
                 branchNode = branchesNode.getChild(branch_name);
               } else {
@@ -732,8 +730,7 @@ class GitRepositoryManager extends EventEmitter {
               self.log.trace(util.format('[%s] Found local branch %s', name, branch_name));
             } else if (reference_name.substr(0, 20) == 'refs/remotes/origin/') {
               // remote branch
-              var branch_name = reference_name.substr(20);
-              var branchNode;
+              branch_name = reference_name.substr(20);
               if (branchesNode.hasChild(branch_name)) {
                 branchNode = branchesNode.getChild(branch_name);
               } else {

@@ -19,11 +19,10 @@ exports.handler = function(argv) {
   let client = new TreeClient(argv.profileHostname, argv.profilePort);
   client.flex.tree.dump(argv.instance, function(data, response) {
     if (response.statusCode == 200) {
-      if (argv.filename) {
-      } else {
-        // var treeAsString = data.toString('utf-8');
-        // log.info(data);
-        log.info(JSON.stringify(data, null, 2));
+      if (!argv.filename) {
+          // var treeAsString = data.toString('utf-8');
+          // log.info(data);
+          log.info(JSON.stringify(data, null, 2));
       }
     } else if (response.statusCode == 404) {
       log.info('404');
