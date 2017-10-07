@@ -4,6 +4,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const toml = require('toml');
+const NodeGit = require('git');
 
 const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
@@ -50,26 +52,17 @@ class WebUserInterfaceManager extends EventEmitter {
    * @function
    */
   afterPropertiesSet() {
+    this.loadInterfaces().then(() => {
+      return new Promise((resolve, reject) => {
+        this.interfacesNode.getChildNames().forEach((name) => {
+            this.updateInterface(name);
+        })
 
-    /// Scan for interfaces in the interfaces folder (WIP)
-    // this.scanForInterfaces();
-
-    // Temporarily solution: manual creation of interfaces
-
-    /// Inexor Flex User Interface
-    this.createInterface('ui-flex', 'Inexor Flex User Interface', 'ui-flex', 'dist', 'https://github.com/inexorgame/ui-flex.git');
-
-    /// Inexor Web Console
-    this.createInterface('ui-console', 'Inexor Web Console', 'ui-console', 'dist', 'https://github.com/inexorgame/ui-console.git');
-
-    /// Inexor Core Client HUD
-    this.createInterface('ui-client-hud', 'Inexor Core Client HUD', 'ui-client-hud', 'dist', 'https://github.com/inexorgame/ui-client-hud.git');
-
-    // TODO: menu UI
-
-    /// Inexor Core Client Interface
-    this.createInterface('ui-client-interface', 'Inexor Core Client Interface', 'ui-client-interface', 'public', 'https://github.com/inexorgame/ui-client-interface.git');
-
+        resolve(true);
+      })
+    }).then(() => {
+      this.scanForInterfaces();
+    })
   }
 
   /**
@@ -142,6 +135,12 @@ class WebUserInterfaceManager extends EventEmitter {
     // TODO: implement
     let interfaceNode = this.interfacesNode.removeChild(name);
 
+    if (this.interfacesNode.hasChild(name)) {
+      let interfaceNode = this.interfacesNode.removeChild(name);
+      return interfaceNode;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -176,20 +175,84 @@ class WebUserInterfaceManager extends EventEmitter {
    * @param {string} name The name of the web user interface.
    */
   updateInterface(name) {
-    // TODO: clone or pull/merge repository of the web user interface
     let interfaceNode = this.interfacesNode.getChild(name);
     let interfacePath = interfaceNode.path;
 
-    this.log.warn('Not implemented updating an user interface');
+    if (fs.existsSync(path)) {
+      NodeGit.Repository.open(interfacePath).then((repo) => {
+        return repo.fetchAll({
+            callbacks: {
+                credentials: function(url, userName) {
+                    return nodegit.Cred.sshKeyFromAgent(userName);
+                },
+                certificateCheck: function() {
+                    return 1;
+                }
+            }
+        });
+      }).then(() => {
+        return repo.mergeBranches("master", "origin/master");
+      }).done(() => {
+        this.log.info(`Checked out latest master`);
+      }).catch((err) => {
+        this.log.warn(`Something went wrong while opening repository of ${name} at ${interfacePath}`);
+      })
+    } else {
+      let repositoryUri = interfaceNode.repository;
+
+      if (repositoryUri == null) {
+        this.log.warn(`Trying to clone interface without repository uri ${name}`)
+      } else {
+        this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
+
+        NodeGit.Clone(repositoryUri, interfacePath, {
+            fetchOpts: {
+                callbacks: {
+                    certificateCheck: function() {
+                        return 1;
+                    }
+                }
+            }
+        }).then((repo) => {
+          this.log.info(`Successfully cloned interface ${name} to ${interfacePath}`)
+          // TODO: Currently we ALWAYS use master branch
+          repo.getBranch('refs/remotes/origin/master').then((ref) => {
+            return repo.checkoutRef(ref);
+          })
+        })
+      }
+    }
   }
 
   /**
    * Loads a web user interface from TOML config.
    * @function
+   * @param {string} [filename] - The filename.
+   * @return {Promise<bool|string>} - either true or the error reason
    */
-  loadInterfaces() {
-    // TODO: implement
-    this.log.warn('Not implemented loading user interfaces from TOML');
+  loadInterfaces(filename = 'interfaces.toml') {
+    return new Promise((resolve, reject) => {
+        let config_path = this.profileManager.getConfigPath(filename);
+        this.log.info(`Loading interfaces from ${filename}`);
+        fs.readFile(config_path, ((err, data) => {
+          if (err) {
+            this.log.err(`Failed to load interfaces config because of ${err}`);
+            reject(err);
+          }
+
+          let config = toml.parse(data.toString());
+
+          for (let interface of Object.keys(config.interfaces)) {
+            this.createInterface(
+                config.interfaces[interface].name,
+                config.interfaces[interface].description,
+                config.interfaces[interface].path,
+                inexor_path.interfaces_path,
+                config.interfaces[interface].repository,
+            )
+          }
+        }))
+    })
   }
 
   /**
@@ -197,8 +260,31 @@ class WebUserInterfaceManager extends EventEmitter {
    * @function
    */
   scanForInterfaces() {
-    // TODO: implement
-    this.log.warn('Not implemented scanning for user interfaces');
+    return new Promise((resolve, reject) => {
+      let paths = [path.join(inexor_path.flex_path, 'interfaces'), inexor_path.interfaces_path]
+
+      paths.forEach((folder) => {
+        fs.readdir(folder, (err, files) => {
+          if (err) {
+            this.log.error(err)
+            reject(err)
+          }
+
+          files.forEach((file) => {
+            fs.stat(file, (err, stats) => {
+              if (err) {
+                this.log.error(err)
+                reject(err)
+              }
+
+              if (stats.isDirectory()) {
+                this.createInterface(file, 'scanned repository', file, folder, `file://${path.resolve(file)}`);
+              }
+            })
+          })
+        })
+      })
+    })
   }
 
   /**
