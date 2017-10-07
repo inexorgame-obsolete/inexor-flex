@@ -27,7 +27,6 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": true,
   "dependencies": {
     "nodegit": "^0.17.0"
   }
