@@ -5,9 +5,7 @@
 Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
 ## How to set up inexor-flex
-You need `yarn` to be installed via `npm install -g yarn` because npm does not support needed features.
-
-Install via `yarn install -g @inexorgame/inexor-flex`
+Install via `npm install -g @inexorgame/inexor-flex`
 You can start flex via `inexor-flex`
 
 ## How to set up inexor-flex as a developer
@@ -15,7 +13,7 @@ To set up `inexor-flex` follow the below instructions.
 
 Given that you have cloned `inexor-flex` and are in the `inexor-flex` directory:
 ```
-yarn install
+npm install
 npm start # start flex 
 
 # if you want to build interfaces to your interfaces path
@@ -27,12 +25,9 @@ cd ../../
 ./inexor
 
 # if you're developing and would like to install @inexor-game src
-npm run reinstall
 # or install a specific package of your choice
 npm install @inexor-game/profiles
 ```
-
-When you start the server again via `npm start` module changes from local modules are loaded automatically (in >=5)
 
 ## Architecture
 
@@ -139,6 +134,14 @@ To add a new user interface to flex, you must adapt the following schema
 - Your dependencies will be served from `http(s)://flex_url/static`
 - Your interface will be served from `http(s)://flex_url/ui/UINAME`
 - `flex` is a reserved module name that will also be an alias for `http(s)://flex_url/ui`
+
+# Publishing
+We use [lerna](https://lernajs.io/) for publishing. You can use the following:
+
+```
+npm install -g lerna
+lerna publish --skip-git
+```
 
 # TODO
 Following is still undone:
