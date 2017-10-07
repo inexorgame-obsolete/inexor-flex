@@ -46,15 +46,22 @@ wait_on({
     log.error('Inexor Flex didn\'t came up:');
     log.error(err);
   } else {
+    let commandDir;
+    if (fs.existsSync('./server')) {
+      commandDir = path.resolve('./server'); // local setup
+    } else {
+      commandDir = path.join(require.resolve('@inexorgame/inexor-flex'), 'server');
+    }
+
     if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
       const argv = yargs
-        .commandDir('../server/commands')
+        .commandDir(path.join(commandDir, 'commands'))
         .demandCommand(1)
         .help()
         .argv;
     } else {
       const argv = yargs
-        .commandDir('../server/commands/cli/')
+        .commandDir(path.join(commandDir, 'commands/cli'))
         .command('shell', 'Opens an interactive shell')
         .demandCommand(1)
         .help()
