@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const toml = require('toml');
-const NodeGit = require('git');
+const NodeGit = require('nodegit');
 
 const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
@@ -41,6 +41,9 @@ class WebUserInterfaceManager extends EventEmitter {
     /// The Inexor Tree node containing interfaces
     this.interfacesNode = this.root.getOrCreateNode('interfaces');
 
+    /// The profile manager service
+    this.profileManager = this.applicationContext.get('profileManager');
+
     /// The class logger
     this.log = this.applicationContext.get('logManager').getLogger('flex.interfaces.WebUserInterfaceManager');
 
@@ -60,6 +63,8 @@ class WebUserInterfaceManager extends EventEmitter {
 
         resolve(true);
       })
+    }).catch((err) => {
+        this.log.err(`Failed during interface initialization ${err}`)
     }).then(() => {
       this.scanForInterfaces();
     })
@@ -87,8 +92,9 @@ class WebUserInterfaceManager extends EventEmitter {
     interfaceNode.addChild('relativeUrl', 'string', '');
     interfaceNode.addChild('fullUrl', 'string', '');
     this.updateInterfaceNode(name);
-    this.updateInterface(name);
-    this.enableInterface(name);
+    this.updateInterface(name).then(() => {
+        this.enableInterface(name);
+    });
   }
 
   /**
@@ -150,8 +156,9 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   enableInterface(name) {
     let interfaceNode = this.interfacesNode.getChild(name);
-    this.router.use(interfaceNode.relativeUrl, express.static(interfaceNode.absoluteFsPath));
-    this.log.info(util.format('Enabled user interface %s on %s', interfaceNode.absoluteFsPath, interfaceNode.fullUrl));
+    let interfacePath = path.join(interfaceNode.absoluteFsPath, 'dist') // Always use the dist folder
+    this.router.use(interfaceNode.relativeUrl, express.static(interfacePath));
+    this.log.info(util.format('Enabled user interface %s on %s', interfacePath, interfaceNode.fullUrl));
     this.log.debug('The static files of %s are located at %s', name, interfaceNode.relativeUrl);
     interfaceNode.enabled = true;
   }
@@ -175,53 +182,64 @@ class WebUserInterfaceManager extends EventEmitter {
    * @param {string} name The name of the web user interface.
    */
   updateInterface(name) {
-    let interfaceNode = this.interfacesNode.getChild(name);
-    let interfacePath = interfaceNode.path;
+    return new Promise((resolve, reject) => {
+      let interfaceNode = this.interfacesNode.getChild(name);
+      let interfacePath = interfaceNode.absoluteFsPath;
+      this.log.info(`Updating interface at ${interfacePath}`);
 
-    if (fs.existsSync(path)) {
-      NodeGit.Repository.open(interfacePath).then((repo) => {
-        return repo.fetchAll({
-            callbacks: {
-                credentials: function(url, userName) {
-                    return nodegit.Cred.sshKeyFromAgent(userName);
-                },
-                certificateCheck: function() {
-                    return 1;
-                }
-            }
-        });
-      }).then(() => {
-        return repo.mergeBranches("master", "origin/master");
-      }).done(() => {
-        this.log.info(`Checked out latest master`);
-      }).catch((err) => {
-        this.log.warn(`Something went wrong while opening repository of ${name} at ${interfacePath}`);
-      })
-    } else {
-      let repositoryUri = interfaceNode.repository;
-
-      if (repositoryUri == null) {
-        this.log.warn(`Trying to clone interface without repository uri ${name}`)
-      } else {
-        this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
-
-        NodeGit.Clone(repositoryUri, interfacePath, {
-            fetchOpts: {
-                callbacks: {
-                    certificateCheck: function() {
-                        return 1;
-                    }
-                }
-            }
-        }).then((repo) => {
-          this.log.info(`Successfully cloned interface ${name} to ${interfacePath}`)
-          // TODO: Currently we ALWAYS use master branch
-          repo.getBranch('refs/remotes/origin/master').then((ref) => {
-            return repo.checkoutRef(ref);
+      if (fs.existsSync(interfacePath)) {
+          NodeGit.Repository.open(interfacePath).then((repo) => {
+              repo.fetchAll({
+                  callbacks: {
+                      certificateCheck: function() {
+                          return 1;
+                      }
+                  }
+              }).then(() => {
+                  repo.mergeBranches("master", "origin/master").then(() => {
+                      this.log.info(`Checked out latest master`);
+                      resolve(true);
+                  }).catch((err) => {
+                    this.log.warn(`Failed to merge branch master into origin/master because of ${err}`)
+                  });
+              }).catch((err) => {
+                this.log.warn(`Failed to fetch branches for ${name} because of ${err}`)
+              });
+          }).catch((err) => {
+              this.log.warn(`Something went wrong while opening repository of ${name} at ${interfacePath}`);
+              reject(err);
           })
-        })
+      } else {
+          let repositoryUri = interfaceNode.repository;
+
+          if (repositoryUri == null) {
+              this.log.warn(`Trying to clone interface without repository uri ${name}`)
+          } else {
+              this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
+
+              NodeGit.Clone(repositoryUri, interfacePath, {
+                  fetchOpts: {
+                      callbacks: {
+                          certificateCheck: function() {
+                              return 1;
+                          }
+                      }
+                  }
+              }).then((repo) => {
+                  this.log.info(`Successfully cloned interface ${name} to ${interfacePath}`)
+                  // TODO: Currently we ALWAYS use master branch
+                  repo.getBranch('refs/remotes/origin/master').then((ref) => {
+                      return repo.checkoutRef(ref);
+                  })
+
+                  resolve(true);
+              }).catch((err) => {
+                  this.log.warn(`Failed cloning interface ${name} to ${interfacePath} because ${err}`)
+                  reject(err);
+              })
+          }
       }
-    }
+  })
   }
 
   /**
@@ -233,22 +251,29 @@ class WebUserInterfaceManager extends EventEmitter {
   loadInterfaces(filename = 'interfaces.toml') {
     return new Promise((resolve, reject) => {
         let config_path = this.profileManager.getConfigPath(filename);
-        this.log.info(`Loading interfaces from ${filename}`);
+
+        this.log.info(`Loading interfaces from ${config_path}`);
         fs.readFile(config_path, ((err, data) => {
           if (err) {
             this.log.err(`Failed to load interfaces config because of ${err}`);
             reject(err);
           }
 
-          let config = toml.parse(data.toString());
+          let config;
+          try {
+            config = toml.parse(data.toString());
+          } catch (err) {
+            this.log.error(`Failed to parse config ${err}`);
+            reject(err);
+          }
 
-          for (let interface of Object.keys(config.interfaces)) {
+          for (let name of Object.keys(config.interfaces)) {
             this.createInterface(
-                config.interfaces[interface].name,
-                config.interfaces[interface].description,
-                config.interfaces[interface].path,
+                config.interfaces[name].name,
+                config.interfaces[name].description,
+                config.interfaces[name].path,
                 inexor_path.interfaces_path,
-                config.interfaces[interface].repository,
+                config.interfaces[name].repository,
             )
           }
         }))
@@ -312,7 +337,8 @@ class WebUserInterfaceManager extends EventEmitter {
    * @param {string} name The name of the web user interface.
    */
   getAbsoluteFsPath(name) {
-    return path.join(inexor_path.interfaces_path, name);
+    let interfaceNode = this.interfacesNode.getChild(name);
+    return path.join(inexor_path.interfaces_path, interfaceNode.path);
   }
 
   /**
