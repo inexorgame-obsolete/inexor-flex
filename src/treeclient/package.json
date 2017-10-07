@@ -20,7 +20,6 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": true,
   "dependencies": {
     "node-rest-client": "^2.0.1"
   }
