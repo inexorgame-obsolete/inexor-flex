@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const process = require('process');
 const fs = require('fs');
 const yargs = require('yargs');
@@ -6,8 +7,8 @@ const child_process = require('child_process');
 const wait_on = require('wait-on');
 const util = require('util');
 const path = require('path');
-const inexor_path = require('@inexor-game/path');
-const log = require('@inexor-game/logger')();
+const inexor_path = require('@inexorgame/path');
+const log = require('@inexorgame/logger')();
 
 // Convert URL to command line parameters if necessary
 if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
@@ -47,13 +48,13 @@ wait_on({
   } else {
     if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
       const argv = yargs
-        .commandDir('server/commands')
+        .commandDir('../server/commands')
         .demandCommand(1)
         .help()
         .argv;
     } else {
       const argv = yargs
-        .commandDir('server/commands/cli/')
+        .commandDir('../server/commands/cli/')
         .command('shell', 'Opens an interactive shell')
         .demandCommand(1)
         .help()
