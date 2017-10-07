@@ -50,8 +50,11 @@ wait_on({
     if (fs.existsSync('./server')) {
       commandDir = path.resolve('./server'); // local setup
     } else {
-      commandDir = path.join(require.resolve('@inexorgame/inexor-flex'), 'server');
+      let moduleDir = require.resolve('@inexorgame/inexor-flex');
+      moduleDir = moduleDir.substr('inexor.js', ''); // WTF. WHY YOU SO HARD TO STRIP DIR
+      commandDir = path.join(moduleDir, 'server');
     }
+    log.info(`Running flex from command line from ${commandDir}`)
 
     if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
       const argv = yargs
