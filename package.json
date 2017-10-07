@@ -1,9 +1,9 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.0-preview7",
+  "version": "0.9.0-preview8",
   "description": "Scripting environment for Inexor.",
   "scripts": {
-    "postinstall": "npm run localinstall",
+    "preinstall": "npm run localinstall",
     "localinstall": "yarn add file:server/api/ file:src/console/ file:src/context/ file:src/entities/ file:src/gameclient/ file:src/gameserver/ file:src/instances/ file:src/interfaces/ file:server/util/logger/ file:src/logging/ file:src/media/ file:server/util/path/ file:src/profiles/ file:src/releases/ file:src/treeclient/ file:src/types/",
     "start": "node server/index.js --profile  $npm_package_config_profile",
     "stop": "./inexor flex shutdown",
