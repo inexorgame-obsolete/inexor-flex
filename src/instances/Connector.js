@@ -643,13 +643,8 @@ class Connector extends EventEmitter {
    * @return {string} the path to the proto file.
    */
   getProtoPath(instanceType) {
-    switch (instanceType) {
-      case 'client':
-      default:
-        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
-      case 'server':
-        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-server.proto');
-    }
+    const protofile = util.format('inexor-tree-%s.proto', instanceType);
+    return path.join(inexor_path.getBinaryPath(), protofile);
   }
 
 }

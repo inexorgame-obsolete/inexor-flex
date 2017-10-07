@@ -7,6 +7,7 @@ const os = require('os');
 const process = require('process');
 const path = require('path');
 const fs = require('fs');
+const util = require('util');
 const standardPaths = require('./standardpaths');
 
 /**
@@ -54,65 +55,27 @@ const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : 
 function getBinaryPath() {
   if (process.env.BINARY_PATH) {
     return path.resolve(process.env.BINARY_PATH);
-  } else {
-    let binaryAppDataPath = path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
-    if (fs.existsSync(binaryAppDataPath)) {
-      return binaryAppDataPath;
-    } else {
-      let fallbackPaths = ['../bin', 'bin'];
-
-      fallbackPaths.forEach((fallbackPath) => {
-        if (fs.existsSync(path.join(flex_path, fallbackPath))) {
-          return path.resolve(path.join(flex_path, fallbackPath))
-        }
-      })
-    }
   }
+
+  let binpaths = ['../bin', 'bin'];
+  binpaths.push(path.resolve(path.join(standardPaths.appDataLocation[0], 'bin')));
+
+  binpaths.forEach((binpath) => {
+    if (fs.existsSync(path.join(flex_path, binpath))) {
+      return path.resolve(path.join(flex_path, binpath))
+    }
+  })
 }
 
 /**
- * Returns the path of the executable.
- *
- * TODO: use naming scheme for executables: inexor-[instance_type]-[platform][.extension]
- *       examples:
- *       - inexor-client-win32.exe
- *       - inexor-server-linux
+ * Returns the absolute path to the InexorCore executable.
  *
  * @return {string}
  */
 function getExecutablePath(instance_type) {
   let platform = os.platform();
-  switch (platform) {
-    case 'linux':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    case 'win32':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server.exe');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor.exe');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    case 'darwin':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    default:
-      throw new Error('${platform} is not currently supported')
-  }
+  let binary_name = util.format("inexor-core-%s.exe", instance_type);
+  return path.join(getBinaryPath(), binary_name);
 }
 
 /**

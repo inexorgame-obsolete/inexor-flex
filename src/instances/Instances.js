@@ -596,35 +596,35 @@ class InstanceManager extends EventEmitter {
    * @return {boolean} - True if the given state transition is valid.
    */
   transist(instanceNode, oldState, newState) {
-    if (instance_states.includes(oldState)) {
-      if (instance_states.includes(newState)) {
-        if (instanceNode.state == oldState) {
-          let transition = this.getTransition(oldState, newState);
-          if (transition != null) {
-            instanceNode.state = newState;
-            this.log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
-            try {
-              instanceNode.emit(transition.eventName, instanceNode);
-            } catch (err) {
-              this.log.error(err);
-            }
-            return true;
-          } else {
-            this.log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
-            return false;
-          }
-        } else {
-          this.log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
-          return false;
-        }
-      } else {
-        this.log.error(util.format('%s is not a valid state', oldState));
-        return false;
-      }
-    } else {
-      this.log.error(util.format('%s is not a valid state', newState));
+
+    if (!instance_states.includes(newState)) {
+     this.log.error(util.format('%s is not a valid state', newState));
       return false;
     }
+    if (!instance_states.includes(oldState)) {
+     this.log.error(util.format('%s is not a valid state', oldState));
+      return false;
+    }
+    if (instanceNode.state != oldState) {
+      this.log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
+      return false;
+    }
+
+    let transition = this.getTransition(oldState, newState);
+    if (transition == null) {
+      this.log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
+      return false;
+    }
+
+    this.log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
+    try {
+      instanceNode.state = newState;
+      instanceNode.emit(transition.eventName, instanceNode);
+    } catch (err) {
+      this.log.error(err);
+      instanceNode.state = oldState;
+    }
+    return true;
   }
 
   /**
@@ -644,7 +644,7 @@ class InstanceManager extends EventEmitter {
   }
 
   /**
-   * Returns an array of instance ids which the given state.
+   * Returns an array of instance ids which the given type.
    * @function
    * @param {string} [state] - The state.
    * @return {array} - The list of instance ids.
