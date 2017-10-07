@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/gameclient",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Game client management",
   "main": "index.js",
   "repository": {
@@ -18,8 +18,5 @@
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=6.9.1"
-  },
-  "private": true,
-  "dependencies": {
   }
 }
