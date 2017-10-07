@@ -19,7 +19,7 @@
     "build:ui-console": "cd interfaces/ui-console && npm run build"
   },
   "bin": {
-    "inexor-flex": "bin/inexor.js"
+    "inexor-flex": "inexor.js"
   },
   "repository": {
     "type": "git",
