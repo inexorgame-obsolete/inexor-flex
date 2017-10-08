@@ -10,6 +10,6 @@
     ],
     "rules": {
       "no-unused-vars": [ "error", { "args": "none" } ],
-      "linebreak-style": "never"
+      "linebreak-style": "off"
     }
 }
