@@ -55,6 +55,10 @@ class WebUserInterfaceManager extends EventEmitter {
    * @function
    */
   afterPropertiesSet() {
+    if (!fs.existsSync(inexor_path.interfaces_path)) {
+        fs.mkdirSync(inexor_path.interfaces_path);
+    }
+
     this.loadInterfaces().then(() => {
       return new Promise((resolve, reject) => {
         this.interfacesNode.getChildNames().forEach((name) => {

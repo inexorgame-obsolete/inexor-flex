@@ -74,6 +74,9 @@ function getBinaryPath() {
         }
       })
     }
+
+    fs.mkdirSync(binaryAppDataPath); // If no path at all is found
+    return binaryAppDataPath;
   }
 }
 
