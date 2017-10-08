@@ -2,7 +2,7 @@ Inexor game source code, any release.
 
 ZLIB License
 
-Copyright (C) 2014-2016 Inexor Developers
+Copyright (C) 2014-2017 Inexor Developers
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
