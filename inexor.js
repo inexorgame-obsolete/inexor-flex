@@ -48,13 +48,13 @@ wait_on({
     log.error(err);
   } else {
     if (process.argv.length >= 3 && process.argv[2].trim() == 'shell') {
-      const argv = yargs
+      const argv = yargs // eslint-disable-line no-unused-vars
         .commandDir(path.join(serverDir, 'commands'))
         .demandCommand(1)
         .help()
         .argv;
     } else {
-      const argv = yargs
+      const argv = yargs // eslint-disable-line no-unused-vars
         .commandDir(path.join(serverDir, 'commands/cli'))
         .command('shell', 'Opens an interactive shell')
         .demandCommand(1)

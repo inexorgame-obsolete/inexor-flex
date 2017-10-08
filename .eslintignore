@@ -1,5 +1,8 @@
 interfaces/
 docs/
 node_modules/**
-*/node_modules/**
-*/*/node_modules/**
+src/*/node_modules/*
+server/api/node/modules/*
+server/util/path/node_modules/*
+server/util/logger/node_modules/*
+
