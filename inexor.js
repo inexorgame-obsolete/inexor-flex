@@ -16,17 +16,7 @@ if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
   process.argv = process.argv.slice(0, 2).concat(process.argv[2].substr(7).split(' '));
 }
 
-
-// Ensure that Inexor Flex is running
-let serverDir;
-if (!fs.existsSync('./server')) {
-  serverDir = require.resolve('@inexorgame/inexor-flex');
-  serverDir = serverDir.replace("inexor.js", "");
-  serverDir = path.join(serverDir, "server");
-} else {
-  serverDir = path.resolve('./server');
-}
-
+let serverDir = path.join(__dirname, 'server');
 log.debug(`The server dir is at ${serverDir}`);
 
 const hostname = 'localhost' // This will comfort >90% of our users

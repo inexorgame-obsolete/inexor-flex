@@ -13,7 +13,6 @@
     "server": "node server/index.js --profile=server",
     "shell": "node inexor.js shell"
   },
-  "main": "index.js",
   "bin": {
     "inexor-flex": "inexor.js"
   },
