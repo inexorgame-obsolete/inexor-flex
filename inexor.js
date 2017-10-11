@@ -29,13 +29,15 @@ if (!fs.existsSync(pid_path)) {
   let serverPath = path.join(serverDir, 'index.js');
   log.debug(`Trying to start the server via ${serverPath}`)
 
-  const child = child_process.spawn('npm', [
-    'start'
-  ], {
-    detached: true,
-    stdio: 'inherit',
-    cwd: __dirname // Ensures stuff to run correctly,
-  });
+  const child = child_process.spawn('npm', ['start'],
+    {
+      shell: true,   // otherwise it wont work on windows.
+      detached: true,
+      stdio: 'inherit',
+      cwd: __dirname // Ensures stuff to run correctly
+    }
+  );
+
   child.unref();
 }
 
