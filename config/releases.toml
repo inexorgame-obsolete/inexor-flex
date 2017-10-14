@@ -1,0 +1,35 @@
+# Manage folders of InexorCore prebuilts on your machine.
+
+# In the Instance configs you can specify the version it shall start.
+# The requested version also can be a semversion string (">0.9.8||<0.12.7"), in which case the newest version found wins.
+
+[releases]
+
+# These folders are matched before the subfolders of a provider.
+# The last folder of the path is considered to be the version
+# e.g. C:/inexorbinfolders/0.8.2-alpha/ matches the version "0.8.2-alpha"
+#      D:/inexorgame/inexor-core/build matches the version "build"
+explicit_release_folders = [
+]
+
+# Each release provider provides InexorCore binary packages.
+#
+# Release providers are
+# A) REST services which answer to a GET request with a JSON listing the releases.
+#       See https://developer.github.com/v3/repos/releases/#list-releases-for-a-repository for hosting one yourself
+# B) Local filesystem paths, where each subdirectory (or each .zip file if needsunpacking true) is considered a "version"
+#       If the path is relative, it will be relative to the appDataLocation-path (My Games/inexor on Windows, .local/share/inexor on Linux)
+
+# It takes the provider which is higher up in the list first (if both provide the same version)
+
+# The first provider with type "filesystem" is the download destination of every provider which needs a download
+
+[[releases.provider]]
+type = filesystem
+path = "releases"
+needsunpacking = false # Whether or not we need to unpack .zip files or not first
+
+[[releases.provider]]
+type = REST
+path = https://github.com/inexorgame/inexor-core/releases
+needsunpacking = true # we download .zip files
