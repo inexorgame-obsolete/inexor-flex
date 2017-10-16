@@ -17,22 +17,22 @@ explicit_release_folders = [
 # Release providers are
 # A) REST services which answer to a GET request with a JSON listing the releases.
 #       See https://developer.github.com/v3/repos/releases/#list-releases-for-a-repository for hosting one yourself
-# B) Local filesystem paths, where each subdirectory (or each .zip file if needsunpacking true) is considered a "version"
+# B) Local filesystem paths, where each subdirectory and each .zip file (fulfilling the pattern Inexor-<version>-<platform>.zip) is considered a "version"
 #       If the path is relative, it will be relative to the appDataLocation-path (My Games/inexor on Windows, .local/share/inexor on Linux)
 
 # It takes the provider which is higher up in the list first (if both provide the same version)
 
-# The name of a provider with type "filesystem" which acts as the download destination of every provider which needs a download
+# The download destination of every download
+# The name of a provider with type "filesystem". If cache_provider isn't given, the first provider of type filesystem is used.
 cache_provider = "local_cache"
 
 [[releases.provider]]
 name = "local_cache"
-type = filesystem
+type = "filesystem"
 path = "releases"
-needsunpacking = false # Whether or not we need to unpack .zip files or not first
 
 [[releases.provider]]
 name = "inexor_github"
-type = REST
+type = "REST"
 path = "https://api.github.com/repos/inexorgame/inexor-core/releases"
-needsunpacking = true # we download .zip files
+
