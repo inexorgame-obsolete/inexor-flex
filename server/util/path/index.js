@@ -45,10 +45,10 @@ const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join
 
 /**
  * The releases path of inexor
- * By default the app data location + 'releases' is used
+ * By default the app data location is used
  * @property {string} releases_path
  */
-const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : path.join(standardPaths.appDataLocation[0], 'releases');
+const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : standardPaths.appDataLocation[0];
 
 /**
  * The interfaces path of Inexor
@@ -171,3 +171,4 @@ module.exports = {
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
 };
+

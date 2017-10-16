@@ -22,7 +22,8 @@ class ReleasesRestAPI extends EventEmitter {
         this.releaseManager = applicationContext.get('releaseManager');
 
         // The tree node which contains all instance nodes
-        this.releasesNode = this.root.getOrCreateNode('releases');
+        this.releaseManagerTreeNode = this.root.getOrCreateNode('release');
+        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('releases');
 
         // List all releases via semver
         this.router.get('/releases', this.listReleases.bind(this));
@@ -84,9 +85,9 @@ class ReleasesRestAPI extends EventEmitter {
      * Lists all releases
      */
     listReleases(req, res) {
-        if (!this.releaseManager.fetching) {
+        if (!this.releaseManager.isfetching()) {
             this.log.info('Listing available releases');
-            res.status(200).json(this.releasesNode.getChildNames());
+            res.status(200).json(this.releasesTreeNode.getChildNames());
         } else {
             this.log.warn('Fetching releases is in progress. Wait until releases are fetched.');
             res.status(412).send(`New releases are currently fetched. Hang on.`);
@@ -98,9 +99,9 @@ class ReleasesRestAPI extends EventEmitter {
      * supply the :semver as an argument
      */
     getRelease(req, res) {
-        if (this.releasesNode.hasChild(req.params.version)) {
+        if (this.releasesTreeNode.hasChild(req.params.version)) {
             this.log.info(`Getting release ${req.params.version}`);
-            let releaseNode = this.releasesNode.getChild(req.params.version);
+            let releaseNode = this.releasesTreeNode.getChild(req.params.version);
             res.status(200).json(releaseNode.toJson());
         } else {
             this.log.warn(`Release with version ${req.params.version} does not exist`);
@@ -109,8 +110,8 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     downloadRelease(req, res) {
-        if (this.releasesNode.hasChild(req.params.version)) {
-            let releaseNode = this.releasesNode.getChild(req.params.version);
+        if (this.releasesTreeNode.hasChild(req.params.version)) {
+            let releaseNode = this.releasesTreeNode.getChild(req.params.version);
             let downloadedNode = releaseNode.getChild('downloaded');
 
             if (!downloadedNode.get() && !this.releaseManager.downloading[req.params.version]) {
@@ -127,8 +128,8 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     installRelease(req, res) {
-        if (this.releasesNode.hasChild(req.params.version)) {
-            let releaseNode = this.releasesNode.getChild(req.params.version);
+        if (this.releasesTreeNode.hasChild(req.params.version)) {
+            let releaseNode = this.releasesTreeNode.getChild(req.params.version);
             let downloadedNode = releaseNode.getChild('downloaded');
             let installedNode = releaseNode.getChild('installed');
 
@@ -150,7 +151,7 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     uninstallRelease(req, res) {
-        if (this.releasesNode.hasChild(req.params.version)) {
+        if (this.releasesTreeNode.hasChild(req.params.version)) {
             let installedNode = this.releaseNode.getChild('installed');
 
             if (installedNode.get() && !!this.releaseManager.uninstalling[req.params.version]) {

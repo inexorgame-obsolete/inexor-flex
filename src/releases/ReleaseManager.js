@@ -15,6 +15,16 @@ const inexor_path = require('@inexorgame/path');
 const releaseURL = 'https://api.github.com/repos/inexorgame/inexor-core/releases';
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
 
+/* whats missing?
+- releases always need to get fetched, but its not clear which one are already downloaded.
+- download + install should be doable in one step
+- release-semversion-string -> exact release version -> exact bin path
+- more than one release/folders
+- remove determinePlatform hack
+- maybe rename pakete zu inexor-core-only-{windows/linux/darwin}-{32/64}-alpha.zip vllt
+- installation does not rename unpacked folder
+*/
+
 class ReleaseManager extends EventEmitter {
 
     /**
@@ -28,8 +38,9 @@ class ReleaseManager extends EventEmitter {
         this.platform = this.determinePlatform();
         this.platform = (this.platform.length === 0) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
 
+        // The provider which acts as local cache. needs to be of type filesystem
+        this.cache_folder = "";
         // Safe-locks to prevent concurrent tasks
-        this.fetching = false;
         this.downloading = [];
         this.installing = [];
         this.uninstalling = [];
@@ -47,10 +58,9 @@ class ReleaseManager extends EventEmitter {
         this.router = this.applicationContext.get('router');
 
         /// The Inexor Tree node containing releases
-        this.releasesNode = this.root.getOrCreateNode('releases');
-
-        /// The profile manager service
-        this.profileManager = this.applicationContext.get('profileManager');
+        this.releaseManagerTreeNode = this.root.getOrCreateNode('release');
+        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('releases');
+        this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
         /// The class logger
         this.log = this.applicationContext.get('logManager').getLogger('flex.releases.ReleaseManager');
@@ -62,17 +72,46 @@ class ReleaseManager extends EventEmitter {
      * @function
      */
     afterPropertiesSet() {
-        this.log.debug(`Checking whether the releases directory exists at ${inexor_path.releases_path}`)
-        fs.mkdir(inexor_path.releases_path, (err) => {
-            if (!err)
-                this.log.info(`Created releases directory at ${inexor_path.releases_path}`)
-            else
+        this.loadConfig().then((resolve, reject) => {
+            this.log.debug(`Checking whether the releases directory exists at ${this.cache_folder}`)
+            fs.mkdir(this.cache_folder, (err) => {
+                if (!err)
+                    this.log.info(`Created releases directory at ${this.cache_folder}`)
+                else
                 if (err.code !== 'EEXIST')
                     this.log.error(err)
-        })
+            })
+            this.checkForNewReleases();
+        });
+    }
 
-        // TODO: Pre-populate with existing configs
+    /**
+     * @function
+     * Checks if any of the providers is currently fetching.
+     * @returns true if yes
+     */
+    isfetching() {
+        for(let providerobj of this.releaseprovidersTreeNode) {
+            if(provider.getChild("isfetching") == true) return true;
+        }
+        return false;
+    }
 
+    /**
+     * Returns the path of the releases.toml.
+     * @function
+     * @param {string} [filename] - The filename.
+     * @return {string} - The path to the configuration file.
+     */
+    getConfigPath(filename = "releases.toml"){
+        let config_paths = inexor_path.getConfigPaths();
+        for (var i = 0; i < config_paths.length; i++) {
+            var config_path =  path.join(config_paths[i], filename);
+            if (fs.existsSync(config_path)) {
+                return config_path;
+            }
+        }
+        return filename;
     }
 
     /**
@@ -103,159 +142,286 @@ class ReleaseManager extends EventEmitter {
      * @param {string} [filename] - The filename.
      * @return {Promise<bool|string>} - either true or the error reason
      */
-    loadReleases(filename = 'releases.toml') {
+    loadConfig(filename = 'releases.toml') {
         return new Promise((resolve, reject) => {
-            let config_path = this.profileManager.getConfigPath(filename)
-            this.log.info(`Loading releases from ${filename}`);
+            let config_path = this.getConfigPath(filename);
+            this.log.info(`Loading release config from ${config_path}`);
             fs.readFile(config_path, ((err, data) => {
                 if (err) {
-                    this.log.err(`Failed to load releases from ${config_path}: ${err.message}`);
-                    reject(`Failed to load releases from ${config_path}: ${err.message}`);
-                } else {
-                    let config = toml.parse(data.toString());
-
-                    for (let version of Object.keys(config.releases)) {
-                        this.createRelease(
-                            config.releases[version].name,
-                            version,
-                            config.releases[version].date,
-                            config.releases[version].downloaded,
-                            config.releases[version].installed,
-                            config.releases[version].asset
-                        )
-                    }
-
-                    resolve(true);
+                    this.log.error(`Failed to load releases config from ${config_path}: ${err.message}`);
+                    reject(`Failed to load releases config from ${config_path}: ${err.message}`);
+                    return
                 }
+                let config = ""
+                try {
+                    config = toml.parse(data.toString());
+                } catch(e) {
+                    let errormsg = `Error parsing ${config_path} on line ${e.line}, column ${e.column}: ${e.message}`
+                    this.log.error(errormsg);
+                    reject(errormsg);
+                    return
+                }
+                this.log.info(config);
+
+                if(config.releases["explicit_release_folders"])
+                {
+                    for (let i = 0; i < config.releases.explicit_release_folders.length; i++) {
+                        // we say the version name is the folder.
+                        let fullpath = config.releases.explicit_release_folders[i];
+                        let version_name = path.basename(fullpath); // the last folder
+                        this.addRelease(version_name, fullpath, true, true, version_name, "explicit_path");
+                    }
+                }
+
+                for (let name of Object.keys(config.releases.provider)) {
+                    let providerNode = config.releases.provider[name];
+                    let needsunpacking = providerNode.needsunpacking == true;
+                    this.addProvider(providerNode.name, providerNode.type, providerNode.path, needsunpacking);
+                }
+
+                let cache_folder_provider = config.releases["cache_provider"];
+
+                // if no cache_folder_provider entry exists, fall back to using the last provider with type filesystem.
+                // if none exist: reject
+                if(!cache_folder_provider)
+                {
+                    let providers_obj = this.releaseprovidersTreeNode.toObject();
+                    for (let name of Object.keys(providers_obj))
+                    {
+                        if(providers_obj[name].type == "filesystem")
+                        {
+                            this.cache_folder = providers_obj[name].path;
+                            resolve(true);
+                            return;
+                        }
+                    }
+                    const errmsg = `There was neither a cache_folder entry nor any release providers of type filesystem in your ${config_path}`
+                    this.log.error(errmsg);
+                    reject(false);
+                    return;
+                }
+                if (!this.releaseprovidersTreeNode.hasChild(cache_folder_provider)) {
+                    this.log.error(`Cache folder provider error in ${config_path}: provider with name ${cache_folder_provider} does not exists`);
+                    reject(false);
+                    return
+                }
+                this.cache_folder = this.releaseprovidersTreeNode.getChild(cache_folder_provider)["path"]
+                this.log.info(`Using the provider ${cache_folder_provider} as cache folder (${this.cache_folder})`);
+
+                resolve(true);
+
             }))
 
         })
     }
 
     /**
-     * Saves releases to a TOML file.
+     * Saves release to a TOML file. Currently doing nothing!
      * @function
      * @param {string} [filename] - The filename.
      * @return {Promise<bool|string>} - either true or the error reason
      */
-    saveReleases(filename="releases.toml") {
+    saveConfig(filename="releases.toml") {
         return new Promise((resolve, reject) => {
-            let config_path = this.profileManager.getConfigPath(filename);
-            let versions = this.releasesNode.getChildNames();
-
-            let config = {
-                releases: {}
-            };
-
-            for (let i = 0; i < versions.length; i++) {
-                let version = versions[i];
-                let releaseNode = this.releasesNode.getChild(version);
-
-                config.releases[version] = {
-                    name: releaseNode.name,
-                    version: version,
-                    downloaded: releaseNode.downloaded,
-                    installed: releaseNode.installed,
-                    asset: {
-                        name: releaseNode.asset.name,
-                        url: releaseNode.asset.url
-                    }
-                }
-            }
-
-            let config_toml = tomlify(config, {delims: false});
-            this.log.debug(config_toml);
-            fs.writeFile(config_path, config_toml, (err) => {
-                if (err) {
-                    this.log.warn(`Failed to write releases to ${config_path}: ${err}`);
-                    reject(`Failed to write releases to ${config_path}: ${err}`);
-                } else {
-                    this.log.info(`Saved releases to ${config_path}`);
-                    resolve(`Saved releases to ${config_path}`);
-                }
-            })
-        })
+            this.log.warn(`Saving ${filename} is currently not supported.`);
+            reject(`Failed to write releases to ${filename}: not supported atm.`);
+        });
     }
+    /**
+     * @private
+     * Scans folder for subfolders.
+     * @param {Object} provider
+     * @return {Promise<bool>}
+     */
+    fetchfromFilesystemProvider(provider){
+        return new Promise((resolve, reject) => {
+            var absolute_path = provider["path"];
+            this.log.info(`starting to scan folder ${absolute_path}`);
+            fs.readdir(absolute_path, (err, items) => {
+                if (err) {
+                    this.log.error(`Failed to scan folder ${absolute_path} for subfolders: ${err}`);
+                    reject(false)
+                }
+
+                let folders = items.filter((item) => {
+                    let fullpath = path.join(absolute_path, item);
+                    return fs.statSync(fullpath).isFolder;
+                });
+
+                this.log.info(`Successfully scanned ${absolute_path} for subfolders (found ${folders.length}`);
+                folders.forEach(function (folder) {
+                    this.addRelease(folder, path.join(absolute_path, folder), true, true, folder, provider["name"]);
+                });
+                //// @Fohlen: Ive no idea why folders is empty while items is not.. even when i have folders and files.
+                this.log.warn(folders);
+                this.log.warn(items);
+                resolve(true);
+            });
+        });
+    }
+
 
     /**
      * @private
-     * Fetches releases
-     * @return {Promise<Object>}
+     * Fetches releases from a REST provider and saves them to the Tree.
+     * @param {Object} provider - the provider object in the Tree.
+     * @return {Promise<bool>}
      */
-    fetchReleases() {
-        return new Promise((resolve, reject) => {
-            this.log.info("Fetching latest releases from %s", releaseURL);
-            let URL = url.parse(releaseURL);
+    fetchfromRestProvider(provider){
+        const path = provider["path"];
+        let isfetchingNode = provider["isfetching"];
+
+        let promise = new Promise((resolve, reject) => {
+
+            if(isfetchingNode == true)
+            {
+                this.log.error(`Already fetching latest releases from  ${path} (provider:${provider["name"]})`);
+                reject(false);
+            }
+            isfetchingNode = true;
+            this.log.info(`Fetching latest releases from  ${path}`);
+            let URL = url.parse(path);
 
             https.get({
-                host: URL.host,
-                path: URL.path,
-                headers: {
-                    'User-Agent': userAgent
-                }
-            }, (response) => {
-                let body = ''
-                response.on('data', (d) => body += d);
+                    host: URL.host,
+                    path: URL.path,
+                    headers: {
+                        'User-Agent': userAgent
+                    },
+                    timeout: 10000 // wait 10 sec at max
+                }, (response) => {
+                    let body = '';
+                    response.on('data', (d) => body += d);
 
-                response.on('end', () => {
-                    let parsed = JSON.parse(body);
-                    debuglog(parsed);
-                    resolve(parsed);
-                })
+                    response.on('end', () => {
+                        let parsed = JSON.parse(body);
+                        debuglog(parsed);
+                        resolve(parsed);
+                    })
+                }
+            )
+        });
+        promise.then((releases) => {
+            isfetchingNode = false;
+            releases.forEach((release) => {
+                debuglog(release);
+
+                // find asset path for our platform from json
+                let asset = release.assets.filter((a) => {
+                    if(a.content_type != "application/zip")
+                        return false;
+                    return a.name.includes(this.platform);
+                });
+
+                if (asset[0] !== null) {
+                    this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider["name"]);
+                }
+                resolve(true)
+                //// @Fohlen: ive no idea how to chain the promise here so i both: get the release as input and can call resolve/reject.
             });
-        })
+        });
+        return promise;
     }
 
     /**
      * @private
-     * Inserts a release into the tree
-     * @param {string} name - the name of the release
-     * @param {string} version - the semantical version of the release
-     * @param {string} date - the date of the release
-     * @param {Array<Object>} assets - a list of assets attached to that release
+     * Fetches releases from the providers.
+     * @return {Promise<bool>}
      */
-    createRelease(name, version, date, downloaded = false, installed = false, assets) {
-        if (!this.releasesNode.hasChildren(version)) {
-            let releaseNode = this.releasesNode.addNode(version); // Finding releases by semver is more guaranteed to succeed
-            releaseNode.addChild('name', 'string', name);
-            releaseNode.addChild('version', 'string', version);
-            releaseNode.addChild('date', 'string', date);
-            releaseNode.addChild('downloaded', 'bool', downloaded);
-            releaseNode.addChild('installed', 'bool', installed);
+    fetchReleases() {
+        let promises = []
+        let providers = this.releaseprovidersTreeNode.toObject();
+        this.log.info(`providers ${providers.length}`)
+        for (let i of Object.keys(providers))
+        {
+            this.log.info("da");
+            let provider_obj = providers[i];
+            this.log.info(`Fetching from ${provider_obj["name"]}`);
 
-            let asset = assets.filter((a) => a.name.includes(this.platform));
-            if (asset[0] !== null) {
-                releaseNode.addChild('asset', 'node');
-                let assetNode = releaseNode.getChild('asset');
-                assetNode.addChild('name', 'string', asset[0].name);
-                assetNode.addChild('url', 'string', asset[0].browser_download_url);
-
-                this.log.info('A release with version %s has been added', version);
-                this.emit('onNewReleaseAvailable', version);
-            } else {
-                this.log.error(`No release is available for platform ${this.platform} and version ${version}`);
-            }
+            if(provider_obj["type"] == "filesystem")
+                promises.push(this.fetchfromFilesystemProvider(provider_obj));
+            else
+                promises.push(this.fetchfromRestProvider(provider_obj));
         }
+        // we now have a promises array and return it a single promise which resolves when all promises inside are.
+        return Promise.all(promises);
+    }
+
+    /**
+     * @private
+     * Inserts a release into the tree (a virtual one on a remote server, or a filesystem one).
+     * If the release already exists, it returns.
+     * @param {string} version - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
+     * @param {string} path - the filepath to the release on the harddisk or online.
+     * @param {bool} isdownloaded - if the release is already on the harddisk.
+     * @param {bool} isinstalled - if the release is a zip or already a directory.
+     * @param {string} name - optional name for the release.
+     * @param {string} provider - the provider name, where the release is currently.
+     */
+    addRelease(version, path, isdownloaded = false, isinstalled = false, name="", provider = "explicit_path") {
+        if (this.releasesTreeNode.hasChild(version)) {
+            return;
+        }
+        let releaseNode = this.releasesTreeNode.addNode(version);
+        releaseNode.addChild('version', 'string', version);
+        releaseNode.addChild('path', 'string', path);
+        releaseNode.addChild('name', 'string', name);
+        releaseNode.addChild('provider', 'string', provider);
+        releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
+        releaseNode.addChild('isinstalled', 'bool', isinstalled);
+
+        this.emit('onNewReleaseAvailable', version);
+        this.log.info(`A release with version ${version} has been added (provider: ${provider}`);
+    }
+
+    /**
+     * @private
+     * Inserts a release provider into the tree.
+     * If the name is already in the tree, error and return.
+     * @param {string} name - the unique identifier for this provider
+     * @param {string} type - either "filesystem" or "REST" (case insensitive)
+     * @param {string} provider_path - either the URL or path on the filesystem (absolute or relative to path.AppdataLocation[0])
+     * @param {string} needsunpacking - does the provider provide zips or folders?
+     */
+    addProvider(name, type, provider_path, needsunpacking = false) {
+        if (this.releaseprovidersTreeNode.hasChild(name)) {
+
+            this.log.warn(`A release provider with name ${name} already exists`);
+            return;
+        }
+        const lower_case_type = type.toLowerCase();
+        if (lower_case_type != "filesystem" && lower_case_type != "rest"){
+            this.log.error(`The release provider ${name} is of unknown type ${type} (supported: rest and filesystem)`);
+            return;
+        }
+        let absolute_path = provider_path;
+        if (lower_case_type == "filesystem"){
+            absolute_path = path.isAbsolute(provider_path) ? provider_path : path.join(inexor_path.releases_path, provider_path);
+        }
+      //  this.log.warn(`Len before: ${Object(this.releaseprovidersTreeNode).keys.length}`)
+        let providerNode = this.releaseprovidersTreeNode.addNode(name);
+        providerNode.addChild('name', 'string', name);
+        providerNode.addChild('type', 'string', lower_case_type);
+        providerNode.addChild('path', 'string', absolute_path);
+        providerNode.addChild('needsunpacking', 'bool', needsunpacking);
+        providerNode.addChild('isfetching', 'bool', false);
+
+        this.log.info(`Release provider ${name} has been added`);
+        this.emit('onNewProviderAvailable', name);
     }
 
     /**
      * Checks for new releases and exposes them in the tree
      * /releases/$VERSION_NUMBER
-     *  - codename (string) - either a code name or the semver
-     *  - date (string)
-     *  - downloaded (bool)
-     *  - installed (bool)
+     *  - version (string) - either a code name or the semver
+     *  - name (string) - an optional release name
+     *  - path (string) - the path to the version
+     *  - isdownloaded (bool)
+     *  - isinstalled (bool) - whether or not the zip files are already unpacked.
      */
     checkForNewReleases() {
-        this.fetching = true;
         this.log.info('Checking for new releases');
-        this.fetchReleases().then((releases) => {
-            releases.forEach((release) => {
-                debuglog(release);
-                this.createRelease(release.name, release.tag_name, release.published_at, false, false, release.assets);
-            })
-        })
-        this.fetching = false;
+        this.fetchReleases();
     }
 
     /**
@@ -294,29 +460,47 @@ class ReleaseManager extends EventEmitter {
     /**
      * Downloads a release for the specific version
      * @param {string} version
+     * @param {bool} install
      * @throws "Download in progress"
      */
-    downloadRelease(version) {
+    downloadRelease(version, install = true) {
         if (this.downloading[version]) {
             this.log.error(`Downloading of release ${version} is already in progress`);
-        } else {
-            this.downloading[version] = true;
-            let releaseNode = this.releasesNode.getChild(version);
-            let assetNode = releaseNode.getChild('asset');
-            let urlNode = assetNode.getChild('url');
-            let nameNode = assetNode.getChild('name');
-            let downloadNode = releaseNode.getChild('downloaded');
+            return;
+        }
+        this.downloading[version] = true;
+        let releaseNode = this.releasesTreeNode.getChild(version);
 
-            try {
-                this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
-                    downloadNode.set(true);
-                    this.downloading[version] = false;
-                    this.log.info('Release with version %s has been downloaded', version);
-                    this.emit('onReleaseDownloaded', version);
-                })
-            } catch (e) {
-                this.log.error(e);
-            }
+        if(this.releasesTreeNode.hasChild(version)) {
+            this.log.error(`There is no ${version}. Did you fetch?`);
+            return;
+        }
+
+        releaseNode.getChild('version', 'string', version);
+        releaseNode.getChild('path', 'string', path);
+        releaseNode.getChild('name', 'string', name);
+        releaseNode.getChild('provider', 'string', provider);
+        releaseNode.getChild('isdownloaded', 'bool', isdownloaded);
+        releaseNode.getChild('isinstalled', 'bool', isinstalled);
+
+
+        let assetNode = releaseNode.getChild('asset');
+        let urlNode = assetNode.getChild('url');
+        let nameNode = assetNode.getChild('name');
+        let downloadNode = releaseNode.getChild('downloaded');
+
+        try {
+            this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
+                downloadNode.set(true);
+                this.downloading[version] = false;
+                this.log.info(`Release with version ${version} has been downloaded`);
+                this.emit('onReleaseDownloaded', version);
+                if(install) {
+                    this.installRelease(version);
+                }
+            })
+        } catch (e) {
+            this.log.error(e);
         }
     }
 
@@ -353,24 +537,29 @@ class ReleaseManager extends EventEmitter {
     installRelease(version) {
         if (this.installing[version]) {
             this.log.error(`Installing of release ${version} is already in progress`);
-        } else {
-            this.installing[version] = true;
-            let releaseNode = this.releasesNode.getChild(version);
-            let assetNode = releaseNode.getChild('asset');
-            let nameNode = assetNode.getChild('name');
-            let installedNode = releaseNode.getChild('installed');
-
-            this.installArchive(nameNode.get()).then((done) => {
-                try {
-                    installedNode.set(true);
-                    this.installing[version] = false;
-                    this.log.info('Release with version %s has been installed', version);
-                    this.emit('onReleaseInstalled', version);
-                } catch (e) {
-                    this.log.error(e);
-                }
-            })
+            return;
         }
+        this.installing[version] = true;
+        let releaseNode = this.releasesNode.getChild(version);
+        let assetNode = releaseNode.getChild('asset');
+        let nameNode = assetNode.getChild('name');
+        let installedNode = releaseNode.getChild('isinstalled');
+
+        if (installedNode.get()) {
+            this.log.info(`Release ${version} is already installed`);
+            return;
+        }
+
+        this.installArchive(nameNode.get()).then((done) => {
+            try {
+                installedNode.set(true);
+                this.installing[version] = false;
+                this.log.info('Release with version %s has been installed', version);
+                this.emit('onReleaseInstalled', version);
+            } catch (e) {
+                this.log.error(e);
+            }
+        })
     }
 
     /**
