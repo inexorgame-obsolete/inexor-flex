@@ -12,7 +12,7 @@ const https = require('follow-redirects').https;
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
 
-const releaseURL = 'https://api.github.com/repos/inexorgame/code/releases';
+const releaseURL = 'https://api.github.com/repos/inexorgame/inexor-core/releases';
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
 
 class ReleaseManager extends EventEmitter {
