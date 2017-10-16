@@ -22,14 +22,17 @@ explicit_release_folders = [
 
 # It takes the provider which is higher up in the list first (if both provide the same version)
 
-# The first provider with type "filesystem" is the download destination of every provider which needs a download
+# The name of a provider with type "filesystem" which acts as the download destination of every provider which needs a download
+cache_provider = "local_cache"
 
 [[releases.provider]]
+name = "local_cache"
 type = filesystem
 path = "releases"
 needsunpacking = false # Whether or not we need to unpack .zip files or not first
 
 [[releases.provider]]
+name = "inexor_github"
 type = REST
-path = https://github.com/inexorgame/inexor-core/releases
+path = "https://api.github.com/repos/inexorgame/inexor-core/releases"
 needsunpacking = true # we download .zip files
