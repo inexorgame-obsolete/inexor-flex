@@ -91,8 +91,9 @@ class ReleaseManager extends EventEmitter {
      * @returns true if yes
      */
     isfetching() {
-        for(let providerobj of this.releaseprovidersTreeNode) {
-            if(provider.getChild("isfetching") == true) return true;
+        let providersobj = this.releaseprovidersTreeNode.toObject();
+        for(let name of Object.keys(providersobj)) {
+            if(providersobj[name].getChild("isfetching") == true) return true;
         }
         return false;
     }
@@ -134,6 +135,23 @@ class ReleaseManager extends EventEmitter {
         }
 
         return platform
+    }
+
+    /**
+     * @function
+     * Get Version from the Zip file name uploaded by Travis/Appveyor currently.
+     * Returns 0.8.10 from Inexor-0.8.10-alpha-Linux.zip
+     * valid input is everything fulfilling the pattern Inexor-<characters>-<this.platform><characters> (so also non-zips)
+     * @param {string} name - the input string.
+     * @param {string} - the version or "" if pattern isn't matched
+     */
+    getVersionFromZipName(name)
+    {
+        const version_start_index = 7; // Inexor-
+        const version_end_index = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
+        if(version_end_index == -1 || version_end_index < 8)
+            return ""
+        return name.substring(version_start_index, version_end_index);
     }
 
     /**
@@ -236,25 +254,32 @@ class ReleaseManager extends EventEmitter {
     fetchfromFilesystemProvider(provider){
         return new Promise((resolve, reject) => {
             var absolute_path = provider["path"];
-            this.log.info(`starting to scan folder ${absolute_path}`);
+            this.log.info(`Starting to scan folder ${absolute_path}`);
             fs.readdir(absolute_path, (err, items) => {
                 if (err) {
                     this.log.error(`Failed to scan folder ${absolute_path} for subfolders: ${err}`);
                     reject(false)
                 }
 
-                let folders = items.filter((item) => {
+                for(let item of items)
+                {
                     let fullpath = path.join(absolute_path, item);
-                    return fs.statSync(fullpath).isFolder;
-                });
-
-                this.log.info(`Successfully scanned ${absolute_path} for subfolders (found ${folders.length}`);
-                folders.forEach(function (folder) {
-                    this.addRelease(folder, path.join(absolute_path, folder), true, true, folder, provider["name"]);
-                });
-                //// @Fohlen: Ive no idea why folders is empty while items is not.. even when i have folders and files.
-                this.log.warn(folders);
-                this.log.warn(items);
+                    let isfolder = fs.statSync(fullpath).isDirectory()
+                    // add all subfolders as releases
+                    if(isfolder)
+                    {
+                        this.addRelease(item, fullpath, true, true, item, provider["name"]);
+                        continue;
+                    }
+                    // add all zips which have the right name as not-installed releases
+                    let iszip = path.extname(item) == ".zip";
+                    if(iszip)
+                    {
+                        let version = this.getVersionFromZipName(item);
+                        this.addRelease(version, fullpath, true, false, version, provider["name"]);
+                        continue;
+                    }
+                };
                 resolve(true);
             });
         });
@@ -329,7 +354,6 @@ class ReleaseManager extends EventEmitter {
         this.log.info(`providers ${providers.length}`)
         for (let i of Object.keys(providers))
         {
-            this.log.info("da");
             let provider_obj = providers[i];
             this.log.info(`Fetching from ${provider_obj["name"]}`);
 
