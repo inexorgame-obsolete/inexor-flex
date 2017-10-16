@@ -296,29 +296,24 @@ class ReleaseManager extends EventEmitter {
                     response.on('end', () => {
                         let parsed = JSON.parse(body);
                         debuglog(parsed);
-                        resolve(parsed);
+                        isfetchingNode = false;
+                        parsed.forEach((release) => {
+                            debuglog(release);
+
+                            // find asset path for our platform from json
+                            let asset = release.assets.filter((a) => {
+                                if(a.content_type != "application/zip")
+                                    return false;
+                                return a.name.includes(this.platform);
+                            });
+                            if (asset[0] != null) {
+                                this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider["name"]);
+                            }
+                        });
+                        resolve(true)
                     })
                 }
             )
-        });
-        promise.then((releases) => {
-            isfetchingNode = false;
-            releases.forEach((release) => {
-                debuglog(release);
-
-                // find asset path for our platform from json
-                let asset = release.assets.filter((a) => {
-                    if(a.content_type != "application/zip")
-                        return false;
-                    return a.name.includes(this.platform);
-                });
-
-                if (asset[0] !== null) {
-                    this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider["name"]);
-                }
-                resolve(true)
-                //// @Fohlen: ive no idea how to chain the promise here so i both: get the release as input and can call resolve/reject.
-            });
         });
         return promise;
     }
@@ -371,7 +366,7 @@ class ReleaseManager extends EventEmitter {
         releaseNode.addChild('isinstalled', 'bool', isinstalled);
 
         this.emit('onNewReleaseAvailable', version);
-        this.log.info(`A release with version ${version} has been added (provider: ${provider}`);
+        this.log.info(`A release with version ${version} has been added (provider: ${provider})`);
     }
 
     /**
