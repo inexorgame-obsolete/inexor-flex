@@ -322,7 +322,9 @@ class ReleaseManager extends EventEmitter {
                         let parsed = JSON.parse(body);
                         debuglog(parsed);
                         isfetchingNode = false;
-                        parsed.forEach((release) => {
+
+                        for(let release of parsed)
+                        {
                             debuglog(release);
 
                             // find asset path for our platform from json
@@ -334,7 +336,7 @@ class ReleaseManager extends EventEmitter {
                             if (asset[0] != null) {
                                 this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider["name"]);
                             }
-                        });
+                        };
                         resolve(true)
                     })
                 }
