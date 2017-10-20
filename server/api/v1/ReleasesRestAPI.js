@@ -111,21 +111,22 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     downloadRelease(req, res) {
-        if (this.releasesTreeNode.hasChild(req.params.version)) {
-            let releaseNode = this.releasesTreeNode.getChild(req.params.version);
-            let downloadedNode = releaseNode.getChild('downloaded');
-
-            if (!downloadedNode.get() && !this.releaseManager.downloading[req.params.version]) {
-                this.log.info(`Downloading release ${req.params.version}`);
-                res.status(200).send(`Release with version ${req.params.version} is being downloaded`); // This is asynchronous, listen to WS API
-                this.releaseManager.downloadRelease(req.params.version);
-            } else {
-                res.status(400).send(`Release with version ${req.params.version} has already been downloaded`);
-            }
-        } else {
-            this.log.warn(`Release with version ${req.params.version} does not exist`);
-            res.status(404).send(util.format('Release with version %s was not found', req.params.version));
+        if (!this.releasesTreeNode.hasChild(req.params.version)) {
+            let errmsg = `Release with version ${req.params.version} does not exist`
+            this.log.warn(errmsg);
+            res.status(404).send(errmsg);
+            return
         }
+        let releaseNode = this.releasesTreeNode.getChild(req.params.version);
+        let downloadedNode = releaseNode.getChild('isdownloaded');
+
+        if (downloadedNode.get() || this.releaseManager.downloading[req.params.version]) {
+            res.status(400).send(`Release with version ${req.params.version} has already been downloaded`);
+            return;
+        }
+        this.log.info(`Downloading release ${req.params.version}`);
+        res.status(200).send(`Release with version ${req.params.version} is being downloaded`); // This is asynchronous, listen to WS API
+        this.releaseManager.downloadRelease(req.params.version);
     }
 
     installRelease(req, res) {
