@@ -59,7 +59,7 @@ class ReleaseManager extends EventEmitter {
 
         /// The Inexor Tree node containing releases
         this.releaseManagerTreeNode = this.root.getOrCreateNode('release');
-        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('releases');
+        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('versions');
         this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
         /// The class logger
@@ -93,7 +93,7 @@ class ReleaseManager extends EventEmitter {
     isfetching() {
         let providersobj = this.releaseprovidersTreeNode.toObject();
         for(let name of Object.keys(providersobj)) {
-            if(providersobj[name].getChild("isfetching") == true) return true;
+            if(providersobj[name]["isfetching"] == true) return true;
         }
         return false;
     }
@@ -119,7 +119,7 @@ class ReleaseManager extends EventEmitter {
      * @function
      * Determines the function name as uploaded by Travis currently
      * NOTE: Keep this up-to date!
-     * @returns {string}
+     * @return {string}
      */
     determinePlatform() {
         let platform = ''
@@ -143,7 +143,7 @@ class ReleaseManager extends EventEmitter {
      * Returns 0.8.10 from Inexor-0.8.10-alpha-Linux.zip
      * valid input is everything fulfilling the pattern Inexor-<characters>-<this.platform><characters> (so also non-zips)
      * @param {string} name - the input string.
-     * @param {string} - the version or "" if pattern isn't matched
+     * @return {string} - the version or "" if pattern isn't matched
      */
     getVersionFromZipName(name)
     {
@@ -152,6 +152,19 @@ class ReleaseManager extends EventEmitter {
         if(version_end_index == -1 || version_end_index < 8)
             return ""
         return name.substring(version_start_index, version_end_index);
+    }
+
+    /**
+     * @function
+     * Get the Zip file name uploaded by Travis/Appveyor currently.
+     * Returns Inexor-0.8.10-alpha-Linux.zip if you give it the version 0.8.10-alpha.
+     *
+     * @param {string} version - the input string.
+     * @return {string} - Inexor-<version>-<this.platform>.zip
+     */
+    makeZipNamefromVersion(version)
+    {
+        return `Inexor-${version}-${this.platform}.zip`;
     }
 
     /**
@@ -353,7 +366,6 @@ class ReleaseManager extends EventEmitter {
     fetchReleases() {
         let promises = []
         let providers = this.releaseprovidersTreeNode.toObject();
-        this.log.info(`providers ${providers.length}`)
         for (let i of Object.keys(providers))
         {
             let provider_obj = providers[i];
@@ -451,10 +463,10 @@ class ReleaseManager extends EventEmitter {
      * Downloads an archive to a given destination
      * @param  {string} archiveURL
      * @param  {string} fileName
-     * @param  {string} destinationPath [destinationPath=process.cwd(] - where the file should go
+     * @param  {string} destinationPath - where the file should go
      * @return {Promise<boolean>}
      */
-    downloadArchive(archiveURL, fileName, destinationPath = inexor_path.releases_path) {
+    downloadArchive(archiveURL, fileName, destinationPath) {
         return new Promise((resolve, reject) => {
             let URL = url.parse(archiveURL)
             let filePath = path.resolve(destinationPath, fileName)
@@ -481,42 +493,44 @@ class ReleaseManager extends EventEmitter {
     /**
      * Downloads a release for the specific version
      * @param {string} version
-     * @param {bool} install
-     * @throws "Download in progress"
+     * @param {bool} doinstall
      */
-    downloadRelease(version, install = true) {
+    downloadRelease(version, doinstall = true) {
         if (this.downloading[version]) {
             this.log.error(`Downloading of release ${version} is already in progress`);
             return;
         }
-        this.downloading[version] = true;
         let releaseNode = this.releasesTreeNode.getChild(version);
 
-        if(this.releasesTreeNode.hasChild(version)) {
+        if(!releaseNode) {
             this.log.error(`There is no ${version}. Did you fetch?`);
             return;
         }
+        this.downloading[version] = true;
 
-        releaseNode.getChild('version', 'string', version);
-        releaseNode.getChild('path', 'string', path);
-        releaseNode.getChild('name', 'string', name);
-        releaseNode.getChild('provider', 'string', provider);
-        releaseNode.getChild('isdownloaded', 'bool', isdownloaded);
-        releaseNode.getChild('isinstalled', 'bool', isinstalled);
-
-
-        let assetNode = releaseNode.getChild('asset');
-        let urlNode = assetNode.getChild('url');
-        let nameNode = assetNode.getChild('name');
-        let downloadNode = releaseNode.getChild('downloaded');
+        // releaseNode.getChild('version', 'string', version);
+        // releaseNode.getChild('name', 'string', name);
+        let isdownloadedNode = releaseNode.getChild('isdownloaded'); // The TreeNode on a bool
+        const isinstalled = releaseNode.getChild('isinstalled').get(); // a bool
 
         try {
-            this.downloadArchive(urlNode.get(), nameNode.get()).then((done) => {
-                downloadNode.set(true);
+            // its already downloaded but not yet downloaded.
+            if(isdownloadedNode.get() && !isinstalled && doinstall) {
+                this.installRelease(version);
+                return
+            }
+
+            // only REST providers come here
+
+            const urlNode = releaseNode.getChild('path');
+            const zipfilename = makeZipNamefromVersion(version);
+
+            this.downloadArchive(urlNode.get(), zipfilename, this.cache_folder).then((done) => {
+                isdownloadedNode.set(true);
                 this.downloading[version] = false;
                 this.log.info(`Release with version ${version} has been downloaded`);
                 this.emit('onReleaseDownloaded', version);
-                if(install) {
+                if(doinstall) {
                     this.installRelease(version);
                 }
             })
@@ -529,19 +543,20 @@ class ReleaseManager extends EventEmitter {
      * @private
      * @function installArchive
      * Unzips a release at the given path
-     * @param {fileName} fileName
-     * @param {extractionPath} path - the default app data location
+     * @param {string} filePath - the absolute path to the file.
+     * @param {string} extractionPath - the name of the folder we unpack everything into.
      * @return {Promise<boolean>}
      */
-    installArchive(fileName, extractionPath=inexor_path.releases_path) {
+    installArchive(filePath, extractionPath) {
         return new Promise((resolve, reject) => {
-            let filePath = path.join(extractionPath, fileName);
-            let folderPath = path.join(extractionPath, fileName.replace('.zip', ''));
-            let archive = AdmZip(filePath);
+            // the folder which comes out of the zip is named like the zip
+            let folderPath = filePath.replace('.zip', '');
+            let folderParentPath = path.dirname(folderPath);
 
-            archive.extractAllToAsync(extractionPath, true, (done) => {
-                fs.rename(path.join(folderPath, 'bin'), inexor_path.getBinaryPath(), (done) => {
-                    this.log.debug(`Moved folder ${path.join(folderPath, 'bin')} to ${inexor_path.getBinaryPath()})`);
+            let archive = AdmZip(filePath);
+            archive.extractAllToAsync(folderParentPath, true, (done) => {
+                fs.rename(folderPath, extractionPath, (done) => {
+                    this.log.debug(`Moved folder ${folderPath} to ${extractionPath})`);
                     fs.remove(folderPath, (done) => {
                         resolve(true);
                     })
@@ -561,21 +576,27 @@ class ReleaseManager extends EventEmitter {
             return;
         }
         this.installing[version] = true;
-        let releaseNode = this.releasesNode.getChild(version);
-        let assetNode = releaseNode.getChild('asset');
-        let nameNode = assetNode.getChild('name');
+        let releaseNode = this.releasesTreeNode[version];
         let installedNode = releaseNode.getChild('isinstalled');
 
         if (installedNode.get()) {
             this.log.info(`Release ${version} is already installed`);
             return;
         }
+        const providerNode = this.releaseprovidersTreeNode.getChild(releaseNode.getChild("provider"));
 
-        this.installArchive(nameNode.get()).then((done) => {
+        const zipName = this.makeZipNamefromVersion(version);
+        let zipFilePath = path.join(this.cache_folder, zipName);
+      //  if(providerNode["type"] == "filesystem")
+       //     zipFilePath = path.join(providerNode["path"], zipName);
+
+        const installFolder = path.join(this.cache_folder, version);
+
+        this.installArchive(zipFilePath, installFolder).then((done) => {
             try {
                 installedNode.set(true);
                 this.installing[version] = false;
-                this.log.info('Release with version %s has been installed', version);
+                this.log.info(`Release with version ${version} has been installed`);
                 this.emit('onReleaseInstalled', version);
             } catch (e) {
                 this.log.error(e);
