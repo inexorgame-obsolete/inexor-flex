@@ -394,6 +394,21 @@ class ReleaseManager extends EventEmitter {
     addRelease(version, path, isdownloaded = false, isinstalled = false, name="", provider = "explicit_path") {
         if (this.releasesTreeNode.hasChild(version)) {
             return;
+            let old_was_downloaded = this.releasesTreeNode.getChild('isdownloaded').get();
+            let old_was_installed = this.releasesTreeNode.getChild('isinstalled').get();
+
+            if((isinstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded))
+            {
+                // this release is actually "better" than the saved one (its downloaded/installed already)
+
+                let oldreleaseNode = this.releasesTreeNode[version];
+                oldreleaseNode['path'] = path;
+                if(name.length(name)) oldreleaseNode['name'] = name;
+                oldreleaseNode['provider'] = provider;
+                oldreleaseNode['isdownloaded'] = isdownloaded;
+                oldreleaseNode['isinstalled'] = isinstalled;
+                return
+            }
         }
         let releaseNode = this.releasesTreeNode.addNode(version);
         releaseNode.addChild('version', 'string', version);
