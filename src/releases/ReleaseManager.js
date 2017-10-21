@@ -187,6 +187,17 @@ class ReleaseManager extends EventEmitter {
         return binaryPath;
     }
 
+
+    /**
+     * Returns the Name of the executable given its instance type.
+     *
+     * @param {string} instance_type - either client or server: the InexorCore gameserver or gameclient.
+     * @return {string} - inexor-core-${instance_type}.exe (on all platforms)
+     */
+    getExecutableName(instance_type) {
+        return `inexor-core-${instance_type}.exe`);
+    }
+
     /**
      * Loads releases from a TOML file.
      * @function
@@ -626,6 +637,10 @@ class ReleaseManager extends EventEmitter {
 
         this.installArchive(zipFilePath, installFolder).then((done) => {
             try {
+                for (let type in ["server", "client"]) {
+                    let executable = path.join(this.getBinaryPath(version), this.getExecutableName(type));
+                    fs.chmodSync(executable, 0o755);
+                }
                 installedNode.set(true);
                 this.installing[version] = false;
                 this.log.info(`Release with version ${version} has been installed`);
