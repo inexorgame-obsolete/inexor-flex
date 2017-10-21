@@ -16,6 +16,8 @@ class PidManager {
     this.argv = argv;
     this.pid = null;
     this.log = inexor_logger('flex.server.PidManager', argv.console, argv.file, argv.level);
+
+    process.on('exit', this.removePid.bind(this));
   }
 
   /**

@@ -33,8 +33,8 @@ if (!fs.existsSync(pid_path)) {
     'start'
   ], {
     detached: true,
-    stdio: 'ignore',
-    cwd: __dirname // Ensures stuff to run correctly
+    stdio: 'inherit',
+    cwd: __dirname // Ensures stuff to run correctly,
   });
   child.unref();
 }
