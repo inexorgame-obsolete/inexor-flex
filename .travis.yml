@@ -6,11 +6,15 @@ node_js:
 script:
   - npm test
   - npm run lint
-  - npm run docs
 
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: ${GH_TOKEN}
-  on:
-    branch: master
+jobs:
+  include:
+    - stage: npm release
+      node_js: "7"
+      script: npm run docs && git add docs
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: ${GH_TOKEN}
+        on:
+          branch: master
