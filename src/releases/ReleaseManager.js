@@ -18,11 +18,10 @@ const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won
 /* whats missing?
 - releases always need to get fetched, but its not clear which one are already downloaded.
 - download + install should be doable in one step
-- release-semversion-string -> exact release version -> exact bin path
-- more than one release/folders
-- remove determinePlatform hack
-- maybe rename pakete zu inexor-core-only-{windows/linux/darwin}-{32/64}-alpha.zip vllt
-- installation does not rename unpacked folder
+- instance should have a "version" field
+- resolve_version(semantic_version_str) -> real version
+- replace all inexor_path.GetBinaryPath() with ReleaseManager.get_bin_path(semantic_version_str)
+- maybe rename pakete zu inexor-core-only-{windows/linux/darwin}-{32/64}-alpha.zip
 */
 
 class ReleaseManager extends EventEmitter {
@@ -165,6 +164,33 @@ class ReleaseManager extends EventEmitter {
     makeZipNamefromVersion(version)
     {
         return `Inexor-${version}-${this.platform}.zip`;
+    }
+
+    /**
+     * @function
+     * Return the bin folder path of a version.
+     *
+     * @param {string} version - the input string.
+     * @return {string} - the binary folder of the specific version or ""
+     */
+    getBinaryPath(version)
+    {
+        const releaseNode = this.releasesTreeNode.getChild(version);
+        if(!releaseNode) {
+            this.log.error(`Could not find binary path for non-existent version ${version}`)
+            return ""
+        }
+
+        const providerName = releaseNode.getChild("provider");
+        const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
+
+        let binaryPath = path.join(this.cache_folder, version);
+
+        if(providerNode && providerNode["type"] == "filesystem") {
+            binaryPath = path.join(providerNode["path"], version);
+        }
+
+        return binaryPath;
     }
 
     /**
@@ -446,7 +472,7 @@ class ReleaseManager extends EventEmitter {
         if (lower_case_type == "filesystem"){
             absolute_path = path.isAbsolute(provider_path) ? provider_path : path.join(inexor_path.releases_path, provider_path);
         }
-      //  this.log.warn(`Len before: ${Object(this.releaseprovidersTreeNode).keys.length}`)
+        //  this.log.warn(`Len before: ${Object(this.releaseprovidersTreeNode).keys.length}`)
         let providerNode = this.releaseprovidersTreeNode.addNode(name);
         providerNode.addChild('name', 'string', name);
         providerNode.addChild('type', 'string', lower_case_type);
@@ -538,7 +564,7 @@ class ReleaseManager extends EventEmitter {
             // only REST providers come here
 
             const urlNode = releaseNode.getChild('path');
-            const zipfilename = makeZipNamefromVersion(version);
+            const zipfilename = this.makeZipNamefromVersion(version);
 
             this.downloadArchive(urlNode.get(), zipfilename, this.cache_folder).then((done) => {
                 isdownloadedNode.set(true);
@@ -598,12 +624,19 @@ class ReleaseManager extends EventEmitter {
             this.log.info(`Release ${version} is already installed`);
             return;
         }
-        const providerNode = this.releaseprovidersTreeNode.getChild(releaseNode.getChild("provider"));
+
+        this.log.info(`Installing release ${version} started`);
+
+        const providerName = releaseNode.getChild("provider");
+        const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
+
 
         const zipName = this.makeZipNamefromVersion(version);
         let zipFilePath = path.join(this.cache_folder, zipName);
-      //  if(providerNode["type"] == "filesystem")
-       //     zipFilePath = path.join(providerNode["path"], zipName);
+
+        if(providerNode && providerNode["type"] == "filesystem") {
+            zipFilePath = path.join(providerNode["path"], zipName);
+        }
 
         const installFolder = path.join(this.cache_folder, version);
 
@@ -626,19 +659,19 @@ class ReleaseManager extends EventEmitter {
     uninstallRelease(version) {
         if (this.uninstalling[version]) {
             this.log.error(`Uninstalling of release ${version} is already in progress`);
-        } else {
-            this.uninstalling[version] = true;
-            let releaseNode = this.releasesNode.getChild(version);
-            let assetNode = releaseNode.getChild('asset');
-            let installedNode = assetNode.getChild('installed');
-
-            fs.remove(inexor_path.getBinaryPath(), (done) => {
-                installedNode.set(false);
-                this.uninstalling[version] = false;
-                this.log.info("Uninstalled release with version %s", version)
-                this.emit('onReleaseUninstalled', version);
-            })
+            return
         }
+        this.uninstalling[version] = true;
+        let releaseNode = this.releasesTreeNode.getChild(version);
+        let installedNode = releaseNode.getChild('isinstalled');
+        const installFolder = path.join(this.cache_folder, version);
+        // TODO: remove zip file if downloaded.
+        fs.remove(installFolder, (done) => {
+            installedNode.set(false);
+            this.uninstalling[version] = false;
+            this.log.info(`Uninstalled release with version ${version}`)
+            this.emit('onReleaseUninstalled', version);
+        })
     }
 }
 
