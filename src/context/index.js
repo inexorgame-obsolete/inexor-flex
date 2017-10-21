@@ -16,6 +16,12 @@ class ApplicationContext {
     return this.register(name, component);
   }
 
+  /**
+   * Registers a component
+   * @param name {string}
+   * @param component {mixed}
+   * @returns {mixed}
+   */
   register(name, component) {
     component.applicationContext = this;
     this.components[name] = component;
@@ -24,12 +30,30 @@ class ApplicationContext {
     return component;
   }
 
+  /**
+   * Unregisters a component
+   * @param name {string}
+   */
   unregister(name) {
-    delete this.components[name];
+    if (name in this.components)
+      delete this.components[name];
   }
 
   get(name) {
-    return this.components[name];
+    if (name in this.components) {
+      return this.components[name];
+    } else {
+      throw `Component ${name} is not defined`
+    }
+  }
+
+  set(name, value) {
+    if (name in this.components) {
+      this.components[name] = value;
+      return this.components[name];
+    } else {
+      throw `Component ${name} is not defined`
+    }
   }
 
   /**

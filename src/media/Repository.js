@@ -370,32 +370,36 @@ class GitRepositoryManager extends EventEmitter {
    * @param {string} name - The name of the media repository
    * @param {string} repositoryPath - The absolute path to the base folder of the media repository.
    * @param {string} url - The url of the remote GIT repository.
-   * @return {Node} The repository node.
+   * @return {Promise<Node>} The repository node.
    */
   createRepository(name, repositoryPath, url) {
-    if (name != null && repositoryPath != null) {
-      if (!this.exists(name)) {
-        if (!fs.existsSync(repositoryPath)) {
-          let node = this.repositoriesNode.addNode(name);
-          // TODO: use the javascript getter/setter magic!
-          // node.type = 'git';
-          node.addChild('type', 'string', 'git');
-          node.addChild('path', 'string', repositoryPath);
-          node.addChild('url', 'string', url);
-          node.addChild('branch', 'string', 'master');
-          node.addNode('branches');
-          // Initially clone the repository
-          this.update(name, null, true);
-          return node;
+    return new Promise((resolve, reject) => {
+        if (name != null && repositoryPath != null) {
+            if (!this.exists(name)) {
+                if (!fs.existsSync(repositoryPath)) {
+                    let node = this.repositoriesNode.addNode(name);
+                    // TODO: use the javascript getter/setter magic!
+                    // node.type = 'git';
+                    node.addChild('type', 'string', 'git');
+                    node.addChild('path', 'string', repositoryPath);
+                    node.addChild('url', 'string', url);
+                    node.addChild('branch', 'string', 'master');
+                    node.addNode('branches');
+                    // Initially clone the repository
+                    this.update(name, null, true);
+                    this.update(name, null, true).then((branch) => {
+                      resolve(node);
+                    })
+                } else {
+                    reject(new Error(`Directory already exist: ${repositoryPath}`));
+                }
+            } else {
+                reject(new Error(`A repository with name ${name} already exists!`));
+            }
         } else {
-          throw new Error('Directory already exist: ' + repositoryPath);
+            reject(new Error('Name and path are mandatory!'));
         }
-      } else {
-        throw new Error('A repository with name ' + name + ' already exists!');
-      }
-    } else {
-      throw new Error('Name and path are mandatory!');
-    }
+    })
   }
 
   /**
@@ -405,64 +409,68 @@ class GitRepositoryManager extends EventEmitter {
    * @param {string} name - The repository name.
    * @param {string} branch_name - If true, the repository will be cloned.
    * @param {boolean} clone - If true, the repository will be cloned.
+   * @return {Promise<string>} Returns the name of the current branch
    */
   update(name, branch_name = null, clone = false) {
-    let repositoryNode = this.repositoriesNode.getChild(name);
-    let repositoryPath = this.repositoriesNode.getChild(name).path;
-    var self = this;
-    if (clone) {
-      // git clone
-      this.log.info(util.format('Cloning media repository %s from %s to local path %s', name, repositoryNode.url, repositoryNode.path));
-      var repository;
-      git.Clone(repositoryNode.url, repositoryNode.path, {
-        fetchOpts: {
-          callbacks: {
-            certificateCheck: function() {
-              return 1;
-            }
-          }
+    return new Promise((resolve, reject) => {
+        let repositoryNode = this.repositoriesNode.getChild(name);
+        let repositoryPath = this.repositoriesNode.getChild(name).path;
+        var self = this;
+        if (clone) {
+            // git clone
+            this.log.info(util.format('Cloning media repository %s from %s to local path %s', name, repositoryNode.url, repositoryNode.path));
+            var repository;
+            git.Clone(repositoryNode.url, repositoryNode.path, {
+                fetchOpts: {
+                    callbacks: {
+                        certificateCheck: function() {
+                            return 1;
+                        }
+                    }
+                }
+            }).then(function(repo) {
+                repository = repo;
+                self.log.info(util.format('Successfully cloned media repository %s', name));
+                return self.getBranches(name, repository);
+            }).then(function(repository) {
+                resolve(self.getCurrentBranch(name, repository));
+            }).catch(function(err) {
+                self.log.error(err);
+            });
+        } else {
+            // git pull
+            // TODO: Resolve the repository url first!
+            this.log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repositoryNode.url, repositoryNode.path));
+            git.Repository
+                .open(repositoryPath)
+                .then(function(repo) {
+                    repository = repo;
+                    self.log.trace(util.format('[%s] Opened media repository', name));
+                    return self.getBranches(name, repository);
+                })
+                .then(function(repository) {
+                    return self.getCurrentBranch(name, repository);
+                })
+                .then(function(repository) {
+                    return self.fetchAll(name, repository);
+                })
+                .then(function(repository) {
+                    return self.mergeBranches(name, repository);
+                })
+                .then(function(repository) {
+                    if (branch_name != null) {
+                        return self.checkoutBranch(name, repository, branch_name);
+                    } else {
+                        return repository;
+                    }
+                })
+                .done(function() {
+                    let msg = `Successfully updated media repository ${name}`;
+                    self.log.info(msg);
+                    resolve(msg);
+                });
         }
-      }).then(function(repo) {
-        repository = repo;
-        self.log.info(util.format('Successfully cloned media repository %s', name));
-        return self.getBranches(name, repository);
-      }).then(function(repository) {
-        return self.getCurrentBranch(name, repository);
-      }).catch(function(err) {
-        self.log.error(err);
-      });
-    } else {
-      // git pull
-      // TODO: Resolve the repository url first!
-      this.log.debug(util.format('[%s] Updating media repository (url: %s local: %s)', name, repositoryNode.url, repositoryNode.path));
-      let repository; // eslint-disable-line
-      git.Repository
-        .open(repositoryPath)
-        .then(function(repo) {
-          repository = repo;
-          self.log.trace(util.format('[%s] Opened media repository', name));
-          return self.getBranches(name, repository);
-        })
-        .then(function(repository) {
-          return self.getCurrentBranch(name, repository);
-        })
-        .then(function(repository) {
-          return self.fetchAll(name, repository);
-        })
-        .then(function(repository) {
-          return self.mergeBranches(name, repository);
-        })
-        .then(function(repository) {
-          if (branch_name != null) {
-            return self.checkoutBranch(name, repository, branch_name);
-          } else {
-            return repository;
-          }
-        })
-        .done(function() {
-          self.log.info(util.format('[%s] Successfully updated media repository', name));
-        });
-    }
+    })
   }
 
   /**
@@ -821,11 +829,6 @@ class MediaRepositoryManager extends EventEmitter {
 
     /// Print the scan result
     this.log.debug(util.format('Repository scan result:\n%s', this.repositoriesNode.toJson()));
-
-    if (!this.exists('essential')) {
-      // Clones the media-essential repository
-      this.gitRepositoryManager.createRepository('essential', this.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git');
-    }
 
     if (!this.exists('additional')) {
       this.gitRepositoryManager.createRepository('additional', this.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git');
