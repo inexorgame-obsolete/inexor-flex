@@ -7,14 +7,15 @@ script:
   - npm test
   - npm run lint
 
-jobs:
-  include:
-    - stage: npm release
-      node_js: "7"
-      script: npm run docs && git add docs
-      deploy:
-        provider: pages
-        skip_cleanup: true
-        github_token: ${GH_TOKEN}
-        on:
-          branch: master
+# Maybe have a loot at https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
+#jobs:
+#  include:
+#    - stage: docs
+#      node_js: "6"
+#      script: npm run docs
+#      deploy:
+#        provider: pages
+#        skip_cleanup: true
+#        github_token: ${GH_TOKEN}
+#        on:
+#          branch: master

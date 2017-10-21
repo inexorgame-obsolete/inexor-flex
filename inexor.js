@@ -17,17 +17,17 @@ if (process.argv.length == 3 && process.argv[2].startsWith('inexor:')) {
 }
 
 let serverDir = path.join(__dirname, 'server');
-log.info(`The server dir is at ${serverDir}`);
+log.debug(`The server dir is at ${serverDir}`);
 
 const hostname = 'localhost' // This will comfort >90% of our users
 const pid_path = path.join(inexor_path.pid_path, util.format('flex.%s.%s.pid', hostname, inexor_path.DEFAULT_PORT));
-log.info(`Checking wether the flex pid exists at ${pid_path} exists`)
+log.debug(`Checking wether the flex pid exists at ${pid_path} exists`)
 
 if (!fs.existsSync(pid_path)) {
   log.warn('Inexor Flex is not running! Starting Inexor Flex...');
   // Starting Inexor Flex detached without stdio
   let serverPath = path.join(serverDir, 'index.js');
-  log.info(`Trying to start the server via ${serverPath}`)
+  log.debug(`Trying to start the server via ${serverPath}`)
 
   const child = child_process.spawn('npm', [
     'start'

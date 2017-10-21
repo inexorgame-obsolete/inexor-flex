@@ -19,7 +19,8 @@ class ConsoleWsAPI {
    */
   constructor(applicationContext) {
 
-    // The express router
+    // The express router and app
+    this.app = applicationContext.get('app');
     this.router = applicationContext.get('router');
 
     // The console manager
@@ -32,7 +33,7 @@ class ConsoleWsAPI {
     this.websockets = applicationContext.get('websockets');
 
     // Returns the value of the tree node.
-    this.router.ws('/ws/console', this.handleRequest.bind(this));
+    this.app.ws('/ws/console', this.handleRequest.bind(this));
 
     // The web socket server
     this.wss = this.websockets.getWss('/ws/console');

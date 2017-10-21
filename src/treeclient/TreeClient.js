@@ -59,7 +59,8 @@ class TreeClient {
           remove: this.createEndpoint('/media/repositories/${name}', this.removeMediaRepository.name, 'DELETE')
         }
       },
-      shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name)
+      shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name),
+      version: this.createEndpoint('/flex/version', this.getFlexVersion.name)
     },
     this.releases = { // Since this does not fetch flex releases
       fetch: this.createEndpoint('/releases/fetch', this.fetchReleases.name),
@@ -310,6 +311,15 @@ class TreeClient {
    */
   shutdownFlex(callback) {
     this.callEndpoint(this.shutdownFlex.name, callback);
+  }
+
+  /**
+   * Get's the flex version from the API
+   * @function
+   * @param {function} callback
+   */
+  getFlexVersion(callback) {
+    this.callEndpoint(this.getFlexVersion.name, callback);
   }
 
   /**

@@ -3,6 +3,7 @@
   "version": "0.9.0-preview17",
   "description": "Scripting environment for Inexor.",
   "scripts": {
+    "prestart": "npm up -g",
     "start": "node server/index.js --profile  $npm_package_config_profile",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",

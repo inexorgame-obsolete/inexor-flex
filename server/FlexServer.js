@@ -1,6 +1,5 @@
 const cors = require('cors');
 const express = require('express');
-const express_ws = require('express-ws');
 const util = require('util');
 
 const inexor_api = require('@inexorgame/api');
@@ -55,8 +54,9 @@ class FlexServer {
    * Create API instances.
    */
   createApiInstances() {
-    this.websockets = express_ws(express());
-    this.app = this.websockets.app;
+    let app = express();
+    this.websockets = require('express-ws')(app);
+    this.app = app;
     this.apis = {};
     for (let i = 0; i < this.apiNames.length; i += 1) {
       let apiName = this.apiNames[i];

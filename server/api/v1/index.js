@@ -42,9 +42,11 @@ module.exports = function(argv, app, websockets) {
   applicationContext.register('argv', argv);
   applicationContext.register('app', app);
   applicationContext.register('websockets', websockets);
-  let router = applicationContext.register('router', express.Router());
-  router.use(bodyParser.urlencoded({ extended: true }));
+
+  let router = express.Router();
+  router.use(bodyParser.urlencoded({ extended: true}))
   router.use(bodyParser.json());
+  applicationContext.register('router', router);
 
   applicationContext.construct('tree', function() { return new tree.Root(applicationContext); });
   applicationContext.construct('logManager', function() { return new logging.LogManager(applicationContext); });
