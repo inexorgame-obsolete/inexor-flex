@@ -417,17 +417,16 @@ class ReleaseManager extends EventEmitter {
                 oldreleaseNode['provider'] = provider;
                 oldreleaseNode['isdownloaded'] = isdownloaded;
                 oldreleaseNode['isinstalled'] = isinstalled;
-                return
             }
-        } else {
-            let releaseNode = this.releasesTreeNode.addNode(version);
-            releaseNode.addChild('version', 'string', version);
-            releaseNode.addChild('path', 'string', path);
-            releaseNode.addChild('name', 'string', name);
-            releaseNode.addChild('provider', 'string', provider);
-            releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
-            releaseNode.addChild('isinstalled', 'bool', isinstalled);
+            return
         }
+        let releaseNode = this.releasesTreeNode.addNode(version);
+        releaseNode.addChild('version', 'string', version);
+        releaseNode.addChild('path', 'string', path);
+        releaseNode.addChild('name', 'string', name);
+        releaseNode.addChild('provider', 'string', provider);
+        releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
+        releaseNode.addChild('isinstalled', 'bool', isinstalled);
 
         this.emit('onNewReleaseAvailable', version);
         this.log.info(`A release with version ${version} has been added (provider: ${provider})`);
