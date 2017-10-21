@@ -32,6 +32,9 @@ class Connector extends EventEmitter {
     /// The profile manager service
     this.profileManager = this.applicationContext.get('profileManager');
 
+    /// The InexorCore releases manager
+    this.releaseManager = this.applicationContext.get('releaseManager');
+
     /** @private */
     this.instanceNode = instanceNode;
 
@@ -58,7 +61,7 @@ class Connector extends EventEmitter {
     this.log.level(this.logManager.getLogger('flex.instances.Connector').level());
 
     /** @private */
-    this._protoPath = this.getProtoPath(instanceNode.type);
+    this._protoPath = this.getProtoPath(instanceNode.version, instanceNode.type);
     this.log.info('Path to the .proto file: %s', this._protoPath);
 
     if (!fs.existsSync(this._protoPath)) {
@@ -638,17 +641,12 @@ class Connector extends EventEmitter {
    * Returns the path to the proto file by instance type.
    * @function
    * @name Connector.getProtoPath
+   * @param {string} version - the exact version string.
    * @param {string} instanceType - The instance type - either client or server.
    * @return {string} the path to the proto file.
    */
-  getProtoPath(instanceType) {
-    switch (instanceType) {
-      case 'client':
-      default:
-        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-inexor.proto');
-      case 'server':
-        return path.join(inexor_path.getBinaryPath(), 'RPCTreeData-server.proto');
-    }
+  getProtoPath(version, instanceType) {
+      return path.join(this.releaseManager.getBinaryPath(version), `inexor-tree-${instance_type}.proto`);
   }
 
 }

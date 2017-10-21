@@ -616,36 +616,37 @@ class InstanceManager extends EventEmitter {
      * @return {boolean} - True if the given state transition is valid.
      */
     transist(instanceNode, oldState, newState) {
-        if (instance_states.includes(oldState)) {
-            if (instance_states.includes(newState)) {
-                if (instanceNode.state == oldState) {
-                    let transition = this.getTransition(oldState, newState);
-                    if (transition != null) {
-                        instanceNode.state = newState;
-                        this.log.info(util.format('%s changes state: %s ---> %s', this.getInstanceName(instanceNode), oldState, newState));
-                        try {
-                            instanceNode.emit(transition.eventName, instanceNode);
-                        } catch (err) {
-                            this.log.error(err);
-                        }
-                        return true;
-                    } else {
-                        this.log.error(util.format('%s ---> %s is not a valid transition', oldState, newState));
-                        return false;
-                    }
-                } else {
-                    this.log.error(util.format('Source state of %s is not %s', this.getInstanceName(instanceNode), oldState));
-                    return false;
-                }
-            } else {
-                this.log.error(util.format('%s is not a valid state', oldState));
-                return false;
-            }
-        } else {
-            this.log.error(util.format('%s is not a valid state', newState));
+
+        if (!instance_states.includes(newState)) {
+            this.log.error(`${newState} is not a valid state`);
             return false;
         }
+        if (!instance_states.includes(oldState)) {
+            this.log.error(`${oldState} is not a valid state`);
+            return false;
+        }
+        if (instanceNode.state != oldState) {
+            this.log.error(`Source state of ${this.getInstanceName(instanceNode)} is not ${oldState}`);
+            return false;
+        }
+
+        let transition = this.getTransition(oldState, newState);
+        if (transition == null) {
+            this.log.error(`${oldState} ---> ${newState} is not a valid transition`);
+            return false;
+        }
+
+        this.log.info(`${this.getInstanceName(instanceNode)} changes state: ${oldState} ---> ${newState}`);
+        try {
+            instanceNode.state = newState;
+            instanceNode.emit(transition.eventName, instanceNode);
+        } catch (err) {
+            this.log.error(err);
+            instanceNode.state = oldState;
+        }
+        return true;
     }
+
 
     /**
      * Returns the state transistion.
