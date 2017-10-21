@@ -2,7 +2,6 @@ const EventEmitter = require('events');
 const fs = require('fs-extra');
 const path = require('path');
 const toml = require('toml');
-const tomlify = require('tomlify');
 const url = require('url');
 const os = require('os');
 const util = require('util');
@@ -12,7 +11,6 @@ const https = require('follow-redirects').https;
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
 
-const releaseURL = 'https://api.github.com/repos/inexorgame/inexor-core/releases';
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
 
 /* whats missing?
@@ -35,7 +33,7 @@ class ReleaseManager extends EventEmitter {
         // Hopefully we will support more platforms in the future
         this.platform = '';
         this.platform = this.determinePlatform();
-        this.platform = (this.platform.length === 0) ? 'win64': this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
+        this.platform = (this.platform.length === 0) ? 'win64' : this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
 
         // The provider which acts as local cache. needs to be of type filesystem
         this.cache_folder = "";
@@ -76,8 +74,7 @@ class ReleaseManager extends EventEmitter {
             fs.mkdir(this.cache_folder, (err) => {
                 if (!err)
                     this.log.info(`Created releases directory at ${this.cache_folder}`)
-                else
-                if (err.code !== 'EEXIST')
+                else if (err.code !== 'EEXIST')
                     this.log.error(err)
             })
             this.checkForNewReleases();
@@ -91,8 +88,8 @@ class ReleaseManager extends EventEmitter {
      */
     isfetching() {
         let providersobj = this.releaseprovidersTreeNode.toObject();
-        for(let name of Object.keys(providersobj)) {
-            if(providersobj[name]["isfetching"] == true) return true;
+        for (let name of Object.keys(providersobj)) {
+            if (providersobj[name]["isfetching"] == true) return true;
         }
         return false;
     }
@@ -103,10 +100,10 @@ class ReleaseManager extends EventEmitter {
      * @param {string} [filename] - The filename.
      * @return {string} - The path to the configuration file.
      */
-    getConfigPath(filename = "releases.toml"){
+    getConfigPath(filename = "releases.toml") {
         let config_paths = inexor_path.getConfigPaths();
         for (var i = 0; i < config_paths.length; i++) {
-            var config_path =  path.join(config_paths[i], filename);
+            var config_path = path.join(config_paths[i], filename);
             if (fs.existsSync(config_path)) {
                 return config_path;
             }
@@ -144,11 +141,10 @@ class ReleaseManager extends EventEmitter {
      * @param {string} name - the input string.
      * @return {string} - the version or "" if pattern isn't matched
      */
-    getVersionFromZipName(name)
-    {
+    getVersionFromZipName(name) {
         const version_start_index = 7; // Inexor-
         const version_end_index = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
-        if(version_end_index == -1 || version_end_index < 8)
+        if (version_end_index == -1 || version_end_index < 8)
             return ""
         return name.substring(version_start_index, version_end_index);
     }
@@ -161,8 +157,7 @@ class ReleaseManager extends EventEmitter {
      * @param {string} version - the input string.
      * @return {string} - Inexor-<version>-<this.platform>.zip
      */
-    makeZipNamefromVersion(version)
-    {
+    makeZipNamefromVersion(version) {
         return `Inexor-${version}-${this.platform}.zip`;
     }
 
@@ -173,10 +168,9 @@ class ReleaseManager extends EventEmitter {
      * @param {string} version - the input string.
      * @return {string} - the binary folder of the specific version or ""
      */
-    getBinaryPath(version)
-    {
+    getBinaryPath(version) {
         const releaseNode = this.releasesTreeNode.getChild(version);
-        if(!releaseNode) {
+        if (!releaseNode) {
             this.log.error(`Could not find binary path for non-existent version ${version}`)
             return ""
         }
@@ -186,7 +180,7 @@ class ReleaseManager extends EventEmitter {
 
         let binaryPath = path.join(this.cache_folder, version);
 
-        if(providerNode && providerNode["type"] == "filesystem") {
+        if (providerNode && providerNode["type"] == "filesystem") {
             binaryPath = path.join(providerNode["path"], version);
         }
 
@@ -212,7 +206,7 @@ class ReleaseManager extends EventEmitter {
                 let config = ""
                 try {
                     config = toml.parse(data.toString());
-                } catch(e) {
+                } catch (e) {
                     let errormsg = `Error parsing ${config_path} on line ${e.line}, column ${e.column}: ${e.message}`
                     this.log.error(errormsg);
                     reject(errormsg);
@@ -220,8 +214,7 @@ class ReleaseManager extends EventEmitter {
                 }
                 this.log.info(config);
 
-                if(config.releases["explicit_release_folders"])
-                {
+                if (config.releases["explicit_release_folders"]) {
                     for (let i = 0; i < config.releases.explicit_release_folders.length; i++) {
                         // we say the version name is the folder.
                         let fullpath = config.releases.explicit_release_folders[i];
@@ -240,13 +233,10 @@ class ReleaseManager extends EventEmitter {
 
                 // if no cache_folder_provider entry exists, fall back to using the last provider with type filesystem.
                 // if none exist: reject
-                if(!cache_folder_provider)
-                {
+                if (!cache_folder_provider) {
                     let providers_obj = this.releaseprovidersTreeNode.toObject();
-                    for (let name of Object.keys(providers_obj))
-                    {
-                        if(providers_obj[name].type == "filesystem")
-                        {
+                    for (let name of Object.keys(providers_obj)) {
+                        if (providers_obj[name].type == "filesystem") {
                             this.cache_folder = providers_obj[name].path;
                             resolve(true);
                             return;
@@ -278,19 +268,20 @@ class ReleaseManager extends EventEmitter {
      * @param {string} [filename] - The filename.
      * @return {Promise<bool|string>} - either true or the error reason
      */
-    saveConfig(filename="releases.toml") {
+    saveConfig(filename = "releases.toml") {
         return new Promise((resolve, reject) => {
             this.log.warn(`Saving ${filename} is currently not supported.`);
             reject(`Failed to write releases to ${filename}: not supported atm.`);
         });
     }
+
     /**
      * @private
      * Scans folder for subfolders.
      * @param {Object} provider
      * @return {Promise<bool>}
      */
-    fetchfromFilesystemProvider(provider){
+    fetchfromFilesystemProvider(provider) {
         return new Promise((resolve, reject) => {
             var absolute_path = provider["path"];
             this.log.info(`Starting to scan folder ${absolute_path}`);
@@ -300,25 +291,23 @@ class ReleaseManager extends EventEmitter {
                     reject(false)
                 }
 
-                for(let item of items)
-                {
+                for (let item of items) {
                     let fullpath = path.join(absolute_path, item);
                     let isfolder = fs.statSync(fullpath).isDirectory()
                     // add all subfolders as releases
-                    if(isfolder)
-                    {
+                    if (isfolder) {
                         this.addRelease(item, fullpath, true, true, item, provider["name"]);
                         continue;
                     }
                     // add all zips which have the right name as not-installed releases
                     let iszip = path.extname(item) == ".zip";
-                    if(iszip)
-                    {
+                    if (iszip) {
                         let version = this.getVersionFromZipName(item);
                         this.addRelease(version, fullpath, true, false, version, provider["name"]);
                         continue;
                     }
-                };
+                }
+
                 resolve(true);
             });
         });
@@ -331,14 +320,13 @@ class ReleaseManager extends EventEmitter {
      * @param {Object} provider - the provider object in the Tree.
      * @return {Promise<bool>}
      */
-    fetchfromRestProvider(provider){
+    fetchfromRestProvider(provider) {
         const path = provider["path"];
         let isfetchingNode = provider["isfetching"];
 
         let promise = new Promise((resolve, reject) => {
 
-            if(isfetchingNode == true)
-            {
+            if (isfetchingNode == true) {
                 this.log.error(`Already fetching latest releases from  ${path} (provider:${provider["name"]})`);
                 reject(false);
             }
@@ -362,20 +350,20 @@ class ReleaseManager extends EventEmitter {
                         debuglog(parsed);
                         isfetchingNode = false;
 
-                        for(let release of parsed)
-                        {
+                        for (let release of parsed) {
                             debuglog(release);
 
                             // find asset path for our platform from json
                             let asset = release.assets.filter((a) => {
-                                if(a.content_type != "application/zip")
+                                if (a.content_type != "application/zip")
                                     return false;
                                 return a.name.includes(this.platform);
                             });
                             if (asset[0] != null) {
                                 this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider["name"]);
                             }
-                        };
+                        }
+
                         resolve(true)
                     })
                 }
@@ -392,12 +380,11 @@ class ReleaseManager extends EventEmitter {
     fetchReleases() {
         let promises = []
         let providers = this.releaseprovidersTreeNode.toObject();
-        for (let i of Object.keys(providers))
-        {
+        for (let i of Object.keys(providers)) {
             let provider_obj = providers[i];
             this.log.info(`Fetching from ${provider_obj["name"]}`);
 
-            if(provider_obj["type"] == "filesystem")
+            if (provider_obj["type"] == "filesystem")
                 promises.push(this.fetchfromFilesystemProvider(provider_obj));
             else
                 promises.push(this.fetchfromRestProvider(provider_obj));
@@ -417,32 +404,30 @@ class ReleaseManager extends EventEmitter {
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
      */
-    addRelease(version, path, isdownloaded = false, isinstalled = false, name="", provider = "explicit_path") {
+    addRelease(version, path, isdownloaded = false, isinstalled = false, name = "", provider = "explicit_path") {
         if (this.releasesTreeNode.hasChild(version)) {
-            return;
             let old_was_downloaded = this.releasesTreeNode.getChild('isdownloaded').get();
             let old_was_installed = this.releasesTreeNode.getChild('isinstalled').get();
 
-            if((isinstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded))
-            {
+            if ((isinstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded)) {
                 // this release is actually "better" than the saved one (its downloaded/installed already)
-
                 let oldreleaseNode = this.releasesTreeNode[version];
                 oldreleaseNode['path'] = path;
-                if(name.length(name)) oldreleaseNode['name'] = name;
+                if (name.length(name)) oldreleaseNode['name'] = name;
                 oldreleaseNode['provider'] = provider;
                 oldreleaseNode['isdownloaded'] = isdownloaded;
                 oldreleaseNode['isinstalled'] = isinstalled;
                 return
             }
+        } else {
+            let releaseNode = this.releasesTreeNode.addNode(version);
+            releaseNode.addChild('version', 'string', version);
+            releaseNode.addChild('path', 'string', path);
+            releaseNode.addChild('name', 'string', name);
+            releaseNode.addChild('provider', 'string', provider);
+            releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
+            releaseNode.addChild('isinstalled', 'bool', isinstalled);
         }
-        let releaseNode = this.releasesTreeNode.addNode(version);
-        releaseNode.addChild('version', 'string', version);
-        releaseNode.addChild('path', 'string', path);
-        releaseNode.addChild('name', 'string', name);
-        releaseNode.addChild('provider', 'string', provider);
-        releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
-        releaseNode.addChild('isinstalled', 'bool', isinstalled);
 
         this.emit('onNewReleaseAvailable', version);
         this.log.info(`A release with version ${version} has been added (provider: ${provider})`);
@@ -464,12 +449,12 @@ class ReleaseManager extends EventEmitter {
             return;
         }
         const lower_case_type = type.toLowerCase();
-        if (lower_case_type != "filesystem" && lower_case_type != "rest"){
+        if (lower_case_type != "filesystem" && lower_case_type != "rest") {
             this.log.error(`The release provider ${name} is of unknown type ${type} (supported: rest and filesystem)`);
             return;
         }
         let absolute_path = provider_path;
-        if (lower_case_type == "filesystem"){
+        if (lower_case_type == "filesystem") {
             absolute_path = path.isAbsolute(provider_path) ? provider_path : path.join(inexor_path.releases_path, provider_path);
         }
         //  this.log.warn(`Len before: ${Object(this.releaseprovidersTreeNode).keys.length}`)
@@ -543,7 +528,7 @@ class ReleaseManager extends EventEmitter {
         }
         let releaseNode = this.releasesTreeNode.getChild(version);
 
-        if(!releaseNode) {
+        if (!releaseNode) {
             this.log.error(`There is no ${version}. Did you fetch?`);
             return;
         }
@@ -556,7 +541,7 @@ class ReleaseManager extends EventEmitter {
 
         try {
             // its already downloaded but not yet downloaded.
-            if(isdownloadedNode.get() && !isinstalled && doinstall) {
+            if (isdownloadedNode.get() && !isinstalled && doinstall) {
                 this.installRelease(version);
                 return
             }
@@ -571,7 +556,7 @@ class ReleaseManager extends EventEmitter {
                 this.downloading[version] = false;
                 this.log.info(`Release with version ${version} has been downloaded`);
                 this.emit('onReleaseDownloaded', version);
-                if(doinstall) {
+                if (doinstall) {
                     this.installRelease(version);
                 }
             })
@@ -634,7 +619,7 @@ class ReleaseManager extends EventEmitter {
         const zipName = this.makeZipNamefromVersion(version);
         let zipFilePath = path.join(this.cache_folder, zipName);
 
-        if(providerNode && providerNode["type"] == "filesystem") {
+        if (providerNode && providerNode["type"] == "filesystem") {
             zipFilePath = path.join(providerNode["path"], zipName);
         }
 
