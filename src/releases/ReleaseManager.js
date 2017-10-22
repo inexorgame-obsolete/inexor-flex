@@ -112,21 +112,24 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * @function
-     * Determines the function name as uploaded by Travis currently
+     * Determines the platform name as uploaded by Travis currently
      * NOTE: Keep this up-to date!
-     * @return {string}
+     * @return {string} - "{Windows|Linux|Darwin}{32|64}" first is the CMAKE_SYSTEM_NAME, then 32 or 64
      */
     determinePlatform() {
         let platform = ''
         if (os.platform() == 'win32') {
-            platform += 'win'
+            platform += 'Windows'
         } else if (os.platform() == 'linux') {
             platform += 'Linux'
+        } else if (os.platform() == 'darwin') {
+            platform += 'Darwin'
         }
 
         if (['arm64', 'x64'].includes(os.arch())) {
-            if (platform == 'win')
-                platform += '64' // NOTE: We only do this for Windows currently, that sucks
+            platform += '64'
+        } else {
+            platform += '32'
         }
 
         return platform
@@ -141,9 +144,9 @@ class ReleaseManager extends EventEmitter {
      * @return {string} - the version or "" if pattern isn't matched
      */
     getVersionFromZipName(name) {
-        const version_start_index = 7; // Inexor-
+        const version_start_index = 12; // inexor-core-
         const version_end_index = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
-        if (version_end_index == -1 || version_end_index < 8)
+        if (version_end_index == -1 || version_end_index < 13)
             return ""
         return name.substring(version_start_index, version_end_index);
     }
@@ -151,13 +154,13 @@ class ReleaseManager extends EventEmitter {
     /**
      * @function
      * Get the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns Inexor-0.8.10-alpha-Linux.zip if you give it the version 0.8.10-alpha.
+     * Returns inexor-core-0.8.10-alpha-Linux32.zip if you give it the version 0.8.10-alpha.
      *
      * @param {string} version - the input string.
-     * @return {string} - Inexor-<version>-<this.platform>.zip
+     * @return {string} - inexor-core-<version>-<this.platform>.zip
      */
     makeZipNamefromVersion(version) {
-        return `Inexor-${version}-${this.platform}.zip`;
+        return `inexor-core-${version}-${this.platform}.zip`;
     }
 
     /**
