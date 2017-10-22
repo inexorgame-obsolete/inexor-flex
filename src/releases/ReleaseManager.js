@@ -190,12 +190,12 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * Returns the Name of the executable given its instance type.
-     *
+     * @function
      * @param {string} instance_type - either client or server: the InexorCore gameserver or gameclient.
      * @return {string} - inexor-core-${instance_type}.exe (on all platforms)
      */
     getExecutableName(instance_type) {
-        return `inexor-core-${instance_type}.exe`);
+        return `inexor-core-${instance_type}.exe`;
     }
 
     /**
