@@ -30,10 +30,11 @@ class ReleasesRestAPI extends EventEmitter {
         this.router.get('/releases', this.listReleases.bind(this));
 
         // Fetch new releases
+        // NOTE: This is not needed manually anymore
         this.router.get('/releases/fetch', this.fetchReleases.bind(this));
 
-        // Save release config
-        this.router.get('/releases/save', this.saveReleases.bind(this));
+        // Install latest release
+        this.router.get('/releases/latest/install', this.installLatestRelease.bind(this));
 
         // Load release config
         this.router.get('/releases/load', this.loadReleases.bind(this));
@@ -86,7 +87,7 @@ class ReleasesRestAPI extends EventEmitter {
      * Lists all releases
      */
     listReleases(req, res) {
-        if (!this.releaseManager.isfetching()) {
+        if (!this.releaseManager.fetching) {
             this.log.info('Listing available releases');
             res.status(200).json(this.releasesTreeNode.getChildNames());
         } else {
@@ -151,6 +152,11 @@ class ReleasesRestAPI extends EventEmitter {
         this.log.info(`Installing release ${req.params.version}`);
         res.status(200).send(`Release with version ${req.params.version} is getting installed`); // This is asynchronous, listen to WS API
         this.releaseManager.installRelease(req.params.version);
+    }
+
+    installLatestRelease(req, res) {
+        this.releaseManager.installLatest();
+        req.status(200).send(`Latest release is being installed`)
     }
 
     uninstallRelease(req, res) {
