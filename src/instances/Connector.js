@@ -646,7 +646,7 @@ class Connector extends EventEmitter {
    * @return {string} the path to the proto file.
    */
   getProtoPath(version, instanceType) {
-      return path.join(this.releaseManager.getBinaryPath(version), `inexor-tree-${instance_type}.proto`);
+      return path.join(this.releaseManager.getBinaryPath(version), `inexor-tree-${instanceType}.proto`);
   }
 
 }
