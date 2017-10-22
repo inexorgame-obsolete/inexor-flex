@@ -7,6 +7,7 @@ const os = require('os');
 const util = require('util');
 const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
+const semver = require('semver');
 
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
@@ -77,16 +78,16 @@ class ReleaseManager extends EventEmitter {
                 else if (err.code !== 'EEXIST')
                     this.log.error(err)
             })
-            this.checkForNewReleases();
         });
+
+        this.checkForNewReleases() // this can happen simultaneously
     }
 
     /**
-     * @function
-     * Checks if any of the providers is currently fetching.
-     * @returns true if yes
+     * @property
+     * Is any of the providers currently fetching?
      */
-    isfetching() {
+    get fetching() {
         let providersobj = this.releaseprovidersTreeNode.toObject();
         for (let name of Object.keys(providersobj)) {
             if (providersobj[name]["isfetching"] == true) return true;
@@ -487,10 +488,15 @@ class ReleaseManager extends EventEmitter {
      *  - path (string) - the path to the version
      *  - isdownloaded (bool)
      *  - isinstalled (bool) - whether or not the zip files are already unpacked.
+     * @function
+     * @return {Promise<bool>} - have a look at {link ReleaseManager.fetchReleases}
      */
     checkForNewReleases() {
-        this.log.info('Checking for new releases');
-        this.fetchReleases();
+        const vm = this;
+        return new Promise((resolve, reject) => {
+            vm.log.info('Checking for new releases');
+            resolve(vm.fetchReleases());
+        })
     }
 
     /**
@@ -649,6 +655,20 @@ class ReleaseManager extends EventEmitter {
                 this.log.error(e);
             }
         })
+    }
+
+    /**
+     * Installs the latest release. Optionally specify a channel
+     * TODO: Add tag support
+     * @function
+     */
+    installLatest() {
+        let releases = this.releasesTreeNode.getChildNames();
+
+        releases = releases.sort(semver.compare) // Sort according to semver
+        let releaseNode = this.releasesTreeNode[releases[0]];
+
+        this.downloadRelease(releaseNode.version);
     }
 
     /**
