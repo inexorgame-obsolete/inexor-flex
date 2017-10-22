@@ -87,7 +87,7 @@ module.exports = function(argv, app, websockets) {
   applicationContext.afterPropertiesSet();
 
   // Load and start the flex instances after all mandatory features have been fullfilled
-  let essentialPromise = new Promise((resolve, reject) => {
+  let essentialMediaPromise = new Promise((resolve, reject) => {
     let mediaRepositoryManager = applicationContext.get('mediaRepositoryManager');
     let mediaNode = applicationContext.get('tree').getChild('media');
     let repositoriesNode = mediaNode.getChild('repositories');
@@ -99,7 +99,19 @@ module.exports = function(argv, app, websockets) {
     }
   })
 
-  Promise.all([essentialPromise]).then((values) => {
+  let additionalMediaPromise = new Promise((resolve, reject) => {
+      let mediaRepositoryManager = applicationContext.get('mediaRepositoryManager');
+      let mediaNode = applicationContext.get('tree').getChild('media');
+      let repositoriesNode = mediaNode.getChild('repositories');
+
+      if (!repositoriesNode.hasChild('additional')) {
+        resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('additional', this.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git'));
+      } else {
+        `Already satisfied additional repository`
+      }
+  })
+
+  Promise.all([essentialMediaPromise, additionalMediaPromise]).then((values) => {
     this.apis.v1.get('instanceManager').loadInstances();
   })
 

@@ -830,10 +830,6 @@ class MediaRepositoryManager extends EventEmitter {
     /// Print the scan result
     this.log.debug(util.format('Repository scan result:\n%s', this.repositoriesNode.toJson()));
 
-    if (!this.exists('additional')) {
-      this.gitRepositoryManager.createRepository('additional', this.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git');
-    }
-
     if (!this.exists('user')) {
         // Creates a personal media repository for the current user
         this.filesystemRepositoryManager.createRepository('user', this.getRepositoryPath('user'));
