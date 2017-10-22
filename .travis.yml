@@ -12,15 +12,12 @@ script:
   - npm test
   - npm run lint
 
-# Maybe have a loot at https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
-#jobs:
-#  include:
-#    - stage: docs
-#      node_js: "6"
-#      script: npm run docs
-#      deploy:
-#        provider: pages
-#        skip_cleanup: true
-#        github_token: ${GH_TOKEN}
-#        on:
-#          branch: master
+jobs:
+  include:
+    - stage: docs
+      node_js: "6"
+      script: ./deploy_documentation.sh
+      skip_cleanup: true
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      on:
+        branch: master
