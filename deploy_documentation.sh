@@ -40,6 +40,9 @@ cd out
 git config user.name ${GITHUB_USER}
 git config user.email ${GITHUB_EMAIL}
 
+# Use a shadow commit to add differences in previously uncommited files
+git add -A --intent-to-add .
+
 # If there are no changes to the compiled out (e.g. this is a README update) then just bail.
 if git diff --quiet; then
     echo "No changes to the output on this push; exiting."

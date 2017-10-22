@@ -1,6 +1,6 @@
 {
     "opts": {
-        "destination": "./out/docs/",
+        "destination": "./out/",
         "encoding": "utf8",
         "recurse": true,
         "template": "node_modules/minami",
