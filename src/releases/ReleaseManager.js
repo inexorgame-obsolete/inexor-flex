@@ -77,9 +77,8 @@ class ReleaseManager extends EventEmitter {
                 else if (err.code !== 'EEXIST')
                     this.log.error(err)
             })
+            this.checkForNewReleases()
         });
-
-        this.checkForNewReleases() // this can happen simultaneously
     }
 
     /**
