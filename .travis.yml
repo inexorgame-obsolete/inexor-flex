@@ -3,6 +3,11 @@ node_js:
   - "6"
   - "7"
   - "8"
+
+os:
+  - linux
+  - osx
+
 script:
   - npm test
   - npm run lint
