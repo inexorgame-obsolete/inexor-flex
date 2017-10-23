@@ -19,7 +19,6 @@ const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won
 - download + install should be doable in one step
 - instance should have a "version" field
 - resolve_version(semantic_version_str) -> real version
-- replace all inexor_path.GetBinaryPath() with ReleaseManager.get_bin_path(semantic_version_str)
 - maybe rename pakete zu inexor-core-only-{windows/linux/darwin}-{32/64}-alpha.zip
 */
 
