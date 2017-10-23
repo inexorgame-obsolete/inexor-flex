@@ -58,78 +58,6 @@ const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : 
 const interfaces_path = (process.env.INTERFACES_PATH) ? process.env.INTERFACES_PATH : path.join(standardPaths.appDataLocation[0], 'interfaces');
 
 /**
- * Returns the binary directory of an Inexor installation.
- * Can be overwritten with the environment variable BINARY_PATH (absolute path)
- * @return {string}
- */
-function getBinaryPath() {
-  if (process.env.BINARY_PATH) {
-    return path.resolve(process.env.BINARY_PATH);
-  } else {
-    let binaryAppDataPath = path.resolve(path.join(standardPaths.appDataLocation[0], 'bin'));
-    if (fs.existsSync(binaryAppDataPath)) {
-      return binaryAppDataPath;
-    } else {
-      let fallbackPaths = ['../bin', 'bin'];
-
-      fallbackPaths.forEach((fallbackPath) => {
-        if (fs.existsSync(path.join(flex_path, fallbackPath))) {
-          return path.resolve(path.join(flex_path, fallbackPath))
-        }
-      })
-    }
-
-    fs.mkdirSync(binaryAppDataPath); // If no path at all is found
-    return binaryAppDataPath;
-  }
-}
-
-/**
- * Returns the path of the executable.
- *
- * TODO: use naming scheme for executables: inexor-[instance_type]-[platform][.extension]
- *       examples:
- *       - inexor-client-win32.exe
- *       - inexor-server-linux
- *
- * @return {string}
- */
-function getExecutablePath(instance_type) {
-  let platform = os.platform();
-  switch (platform) {
-    case 'linux':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    case 'win32':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server.exe');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor.exe');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    case 'darwin':
-      switch (instance_type) {
-        case 'server':
-          return path.join(getBinaryPath(), 'server');
-        case 'client':
-          return path.join(getBinaryPath(), 'inexor');
-        default:
-          throw new Error('${instance_type} is not currently supported')
-      }
-    default:
-      throw new Error('${platform} is not currently supported')
-  }
-}
-
-/**
  * Returns a preference-ordered array of base directories to search for media
  * files in addition to the default media path.
  * @return {string}
@@ -165,8 +93,6 @@ module.exports = {
   media_path: media_path,
   releases_path: releases_path,
   interfaces_path: interfaces_path,
-  getBinaryPath: getBinaryPath,
-  getExecutablePath: getExecutablePath,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT
