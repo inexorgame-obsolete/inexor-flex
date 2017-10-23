@@ -21,6 +21,6 @@
     "adm-zip": "^0.4.7",
     "follow-redirects": "^1.2.3",
     "fs-extra": "^4.0.0",
-    "semver": "^5.4.1"
+    "semver-extra": "^2.0.1"
   }
 }
