@@ -7,7 +7,7 @@ const os = require('os');
 const util = require('util');
 const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
-const semver = require('semver');
+const semver = require('semver-extra');
 
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
@@ -225,12 +225,12 @@ class ReleaseManager extends EventEmitter {
                 }
             }
             return true
-        }).sort(semver.compare) // Sort according to semver
-
+        });
         if (releases.length < 1) {
             return null
         }
-        return this.releasesTreeNode[releases[0]];
+        const maxrelease = semver.max(releases);
+        return this.releasesTreeNode[maxrelease];
     }
 
     /**
@@ -711,9 +711,9 @@ class ReleaseManager extends EventEmitter {
      */
     installLatest() {
         let releases = this.releasesTreeNode.getChildNames();
+        let newest_release = semver.max(releases); // Sort according to semver
 
-        releases = releases.sort(semver.compare) // Sort according to semver
-        let releaseNode = this.releasesTreeNode[releases[0]];
+        let releaseNode = this.releasesTreeNode[newest_release];
 
         this.downloadRelease(releaseNode.version);
     }
