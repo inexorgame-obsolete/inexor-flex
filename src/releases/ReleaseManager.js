@@ -201,6 +201,39 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
+     * Searches through all releases and returns the one fulfilling the semantic version range the best (and is in the same channel).
+     * @function
+     * @param {string} version_range - Either:
+     *                                    A) the semantic version range it needs to fulfill (">0.5.2 || 0.3.8")
+     *                                    B) an exact non-semantic version ("build", "buildnew", "testbinaries")
+     * @param {string} channel - additonally you can specify a channel. Only if that channel matches, the release is a match.
+     * @return {Node|null} - this.releasesTreeNode entry or null
+     */
+    getRelease(version_range, channel = "") {
+        let releases = this.releasesTreeNode.getChildNames();
+
+        releases = releases.filter( (rel) => {
+            if (!semver.satisfies(rel, version_range)) {
+                // filter out versions which do not fulfill the version range
+                return false;
+            }
+            // only filter out version if channel is not empty and not matching
+            if (channel != "") {
+                let relNode = this.releasesTreeNode[rel];
+                if (relNode.getChild("channel") != channel) {
+                    return false;
+                }
+            }
+            return true
+        }).sort(semver.compare) // Sort according to semver
+
+        if (releases.length < 1) {
+            return null
+        }
+        return this.releasesTreeNode[releases[0]];
+    }
+
+    /**
      * Loads releases from a TOML file.
      * @function
      * @param {string} [filename] - The filename.
@@ -410,15 +443,26 @@ class ReleaseManager extends EventEmitter {
      * @private
      * Inserts a release into the tree (a virtual one on a remote server, or a filesystem one).
      * If the release already exists, it returns.
-     * @param {string} version - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
+     * @param {string} version_str - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
+     *                           Note: in the Tree two fields will be set: version and channel (i.e. 0.1.1 and stable)
      * @param {string} path - the filepath to the release on the harddisk or online.
      * @param {bool} isdownloaded - if the release is already on the harddisk.
      * @param {bool} isinstalled - if the release is a zip or already a directory.
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
      */
-    addRelease(version, path, isdownloaded = false, isinstalled = false, name = "", provider = "explicit_path") {
-        if (this.releasesTreeNode.hasChild(version)) {
+    addRelease(version_str, path, isdownloaded = false, isinstalled = false, name = "", provider = "explicit_path") {
+        // get the version from a version@channel string:
+        let version = version_str;
+        let channel = "";
+        const channel_index = version_str.indexOf(`@`);  // Gets the index where @ occurs in the version_str
+        if (channel_index != -1) {
+            version = version_str.substring(0, channel_index);
+            channel = version_str.substring(channel_index+1);
+        }
+
+        // handle that the release is already provided by another provider
+        if (this.releasesTreeNode.hasChild(version) && this.releasesTreeNode[version]["channel"] == channel) {
             let old_was_downloaded = this.releasesTreeNode.getChild('isdownloaded').get();
             let old_was_installed = this.releasesTreeNode.getChild('isinstalled').get();
 
@@ -433,8 +477,10 @@ class ReleaseManager extends EventEmitter {
             }
             return
         }
+        // handle that the release is not yet provided
         let releaseNode = this.releasesTreeNode.addNode(version);
         releaseNode.addChild('version', 'string', version);
+        releaseNode.addChild('channel', 'string', channel);
         releaseNode.addChild('path', 'string', path);
         releaseNode.addChild('name', 'string', name);
         releaseNode.addChild('provider', 'string', provider);
@@ -442,7 +488,7 @@ class ReleaseManager extends EventEmitter {
         releaseNode.addChild('isinstalled', 'bool', isinstalled);
 
         this.emit('onNewReleaseAvailable', version);
-        this.log.info(`A release with version ${version} has been added (provider: ${provider})`);
+        this.log.info(`A release with version ${version} in channel "${channel}" has been added (provider: ${provider})`);
     }
 
     /**
