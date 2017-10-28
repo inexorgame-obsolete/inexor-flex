@@ -192,58 +192,57 @@ class WebUserInterfaceManager extends EventEmitter {
       this.log.info(`Updating interface at ${interfacePath}`);
 
       if (fs.existsSync(interfacePath)) {
-          NodeGit.Repository.open(interfacePath).then((repo) => {
-              repo.fetchAll({
-                  callbacks: {
-                      certificateCheck: function() {
-                          return 1;
-                      }
-                  }
-              }).then(() => {
-                  repo.mergeBranches("master", "origin/master").then(() => {
-                      this.log.info(`Checked out latest master`);
-                      resolve(true);
-                  }).catch((err) => {
-                    this.log.warn(`Failed to merge branch master into origin/master because of ${err}`)
-                  });
-              }).catch((err) => {
-                this.log.warn(`Failed to fetch branches for ${name} because of ${err}`)
-              });
+        NodeGit.Repository.open(interfacePath).then((repo) => {
+          repo.fetchAll({
+            callbacks: {
+              certificateCheck: function() {
+                return 1;
+              }
+            }
+          }).then(() => {
+            repo.mergeBranches('master', 'origin/master').then(() => {
+              this.log.info(`[${name}] Checked out latest master`);
+              resolve(true);
+            }).catch((err) => {
+              this.log.warn(`[${name}] Failed to merge branch master into origin/master because of ${err}`);
+            });
           }).catch((err) => {
-              this.log.warn(`Something went wrong while opening repository of ${name} at ${interfacePath}`);
-              reject(err);
-          })
+            this.log.warn(`[${name}] Failed to fetch branches because of ${err}`);
+          });
+        }).catch((err) => {
+          this.log.warn(`[${name}] Something went wrong while opening repository at ${interfacePath}`);
+          reject(err);
+        });
       } else {
-          let repositoryUri = interfaceNode.repository;
+        let repositoryUri = interfaceNode.repository;
 
-          if (repositoryUri == null) {
-              this.log.warn(`Trying to clone interface without repository uri ${name}`)
-          } else {
-              this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
+        if (repositoryUri == null) {
+          this.log.error(`[${name}] Trying to clone interface without repository uri`);
+        } else {
+          this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
 
-              NodeGit.Clone(repositoryUri, interfacePath, {
-                  fetchOpts: {
-                      callbacks: {
-                          certificateCheck: function() {
-                              return 1;
-                          }
-                      }
-                  }
-              }).then((repo) => {
-                  this.log.info(`Successfully cloned interface ${name} to ${interfacePath}`)
-                  // TODO: Currently we ALWAYS use master branch
-                  repo.getBranch('refs/remotes/origin/master').then((ref) => {
-                      return repo.checkoutRef(ref);
-                  })
-
-                  resolve(true);
-              }).catch((err) => {
-                  this.log.warn(`Failed cloning interface ${name} to ${interfacePath} because ${err}`)
-                  reject(err);
-              })
-          }
+          NodeGit.Clone(repositoryUri, interfacePath, {
+            fetchOpts: {
+              callbacks: {
+                certificateCheck: function() {
+                  return 1;
+                }
+              }
+            }
+          }).then((repo) => {
+            this.log.info(`[${name}] Successfully cloned interface to ${interfacePath}`);
+            // TODO: Currently we ALWAYS use master branch
+            repo.getBranch('refs/remotes/origin/master').then((ref) => {
+              return repo.checkoutRef(ref);
+            })
+            resolve(true);
+          }).catch((err) => {
+            this.log.warn(`[${name}] Failed cloning interface to ${interfacePath} because ${err}`);
+            reject(err);
+          });
+        }
       }
-  })
+    });
   }
 
   /**
@@ -273,14 +272,14 @@ class WebUserInterfaceManager extends EventEmitter {
 
           for (let name of Object.keys(config.interfaces)) {
             this.createInterface(
-                config.interfaces[name].name,
-                config.interfaces[name].description,
-                config.interfaces[name].path,
-                inexor_path.interfaces_path,
-                config.interfaces[name].repository
+              config.interfaces[name].name,
+              config.interfaces[name].description,
+              config.interfaces[name].path,
+              inexor_path.interfaces_path,
+              config.interfaces[name].repository
             );
           }
-        }))
+        }));
     })
   }
 
