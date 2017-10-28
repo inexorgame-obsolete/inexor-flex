@@ -277,8 +277,8 @@ class WebUserInterfaceManager extends EventEmitter {
                 config.interfaces[name].description,
                 config.interfaces[name].path,
                 inexor_path.interfaces_path,
-                config.interfaces[name].repository,
-            )
+                config.interfaces[name].repository
+            );
           }
         }))
     })
