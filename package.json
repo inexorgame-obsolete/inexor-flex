@@ -42,7 +42,7 @@
     "@inexorgame/gameclient": "^1.0.1",
     "@inexorgame/gameserver": "^1.0.1",
     "@inexorgame/instances": "^1.0.1",
-    "@inexorgame/interfaces": "^1.0.1",
+    "@inexorgame/interfaces": "^1.0.2",
     "@inexorgame/logger": "^1.0.1",
     "@inexorgame/logging": "^1.0.1",
     "@inexorgame/media": "^1.0.1",
