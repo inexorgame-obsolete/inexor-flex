@@ -8,12 +8,6 @@ description = "The Inexor Web Console is a web interface for the Inexor Flex com
 path = "console"
 repository = "https://github.com/inexorgame/ui-console.git"
 
-[interfaces.ui-client-interface]
-name = "Inexor Web Interface"
-description = "The web user interface used in the Inexor Core Client."
-path = "client-interface"
-repository = "https://github.com/inexorgame/ui-client-interface.git"
-
 [interfaces.ui-flex]
 name = "The Flex user interface"
 description = "The flex user interface used for managing flex"
