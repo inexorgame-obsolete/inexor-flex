@@ -10,10 +10,14 @@ const fs = require('fs');
 const standardPaths = require('./standardpaths');
 
 /**
- * The path of the flex folder
+ * The path of the flex folder.
+ * Developer note: DON'T change this or you'll break cross platform compatibility!
  * @property {string} flex_path
  */
-const flex_path = process.env.PWD; // This should not change
+let flex_path = process.env.PWD;
+if (process.platform == 'win32') {
+  flex_path = process.cwd()
+}
 
 /**
  * The pid file that Inexor Flex uses
