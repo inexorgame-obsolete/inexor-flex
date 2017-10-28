@@ -62,7 +62,7 @@ class ReleaseManager extends EventEmitter {
      * @function
      */
     afterPropertiesSet() {
-        this.log.debug(`Checking wether the releases directory exists at ${inexor_path.releases_path}`)
+        this.log.debug(`Checking whether the releases directory exists at ${inexor_path.releases_path}`)
         fs.mkdir(inexor_path.releases_path, (err) => {
             if (!err)
                 this.log.info(`Created releases directory at ${inexor_path.releases_path}`)
