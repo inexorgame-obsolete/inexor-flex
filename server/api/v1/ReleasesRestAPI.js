@@ -22,7 +22,7 @@ class ReleasesRestAPI extends EventEmitter {
 
         // The tree node which contains all instance nodes
         this.releaseManagerTreeNode = this.root.getOrCreateNode('releases');
-        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('versions');
+        this.releaseChannelsTreeNode = this.releaseManagerTreeNode.getOrCreateNode('channels');
         this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
         // List all releases via semver
@@ -84,7 +84,7 @@ class ReleasesRestAPI extends EventEmitter {
     listReleases(req, res) {
         if (!this.releaseManager.fetching) {
             this.log.info('Listing available releases');
-            res.status(200).json(this.releasesTreeNode.getChildNames());
+            res.status(200).json(this.releaseChannelsTreeNode.toJson());
         } else {
             this.log.warn('Fetching releases is in progress. Wait until releases are fetched.');
             res.status(412).send(`New releases are currently fetched. Hang on.`);

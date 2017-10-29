@@ -49,7 +49,7 @@ class ReleaseManager extends EventEmitter {
 
         /// The Inexor Tree node containing releases
         this.releaseManagerTreeNode = this.root.getOrCreateNode('releases');
-        this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('versions');
+        this.releaseChannelsTreeNode = this.releaseManagerTreeNode.getOrCreateNode('channels');
         this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
         /// The class logger
@@ -422,26 +422,31 @@ class ReleaseManager extends EventEmitter {
             version = version_str.substring(0, channel_index);
             channel = version_str.substring(channel_index+1);
         }
-        version_str = `${version}@${channel}`;
+
+        let channelNode = this.releaseChannelsTreeNode.getOrCreateNode(channel);
 
         // handle that the release is already provided by another provider
-        if (this.releasesTreeNode.hasChild(version_str)) {
-            let old_was_downloaded = this.releasesTreeNode.getChild('isdownloaded').get();
-            let old_was_installed = this.releasesTreeNode.getChild('isinstalled').get();
+        if (channelNode.hasChild(version)) {
 
+            let oldreleaseNode = channelNode[version];
+            let old_was_downloaded = oldreleaseNode.getChild('isdownloaded').get();
+            let old_was_installed = oldreleaseNode.getChild('isinstalled').get();
+
+            // this release is actually "better" than the saved one (its downloaded/installed already)
             if ((isinstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded)) {
-                // this release is actually "better" than the saved one (its downloaded/installed already)
-                let oldreleaseNode = this.releasesTreeNode[version_str];
                 oldreleaseNode['path'] = path;
-                if (name.length(name)) oldreleaseNode['name'] = name;
+                if (name.length(name)) {
+                    oldreleaseNode['name'] = name;
+                }
                 oldreleaseNode['provider'] = provider;
                 oldreleaseNode['isdownloaded'] = isdownloaded;
                 oldreleaseNode['isinstalled'] = isinstalled;
             }
-            return
+            return;
         }
+
         // handle that the release is not yet provided
-        let releaseNode = this.releasesTreeNode.addNode(version_str);
+        let releaseNode = channelNode.addNode(version);
         releaseNode.addChild('version', 'string', version);
         releaseNode.addChild('channel', 'string', channel);
         releaseNode.addChild('path', 'string', path);
@@ -498,41 +503,47 @@ class ReleaseManager extends EventEmitter {
      *                                    B) an exact non-semantic version ("build", "buildnew", "testbinaries")
      * @param {string} channel - additonally you can specify a channel. Only if that channel matches, the release is a match.
      * @param {bool} only_installed - only return release which is installed (meaning no remote one, no zip one)
-     * @return {Node|null} - this.releasesTreeNode entry or null
+     * @return {Node|null} - the InexorTree node or null
      */
     getRelease(version_range, channel = "", only_installed = false) {
         let returnNode = null;
 
-        for (let version_str of this.releasesTreeNode.getChildNames()) {
+        for (let channel_name of this.releaseChannelsTreeNode.getChildNames()) {
 
-            const releaseNode = this.releasesTreeNode[version_str];
+            const releaseChannelNode = this.releaseChannelsTreeNode[channel_name];
 
-            if (only_installed && !releaseNode.getChild('isinstalled').get()) {
-                // skip not installed ones if "only_installed" parameter is true.
+            // filter out version if channel is not empty and not matching
+            if (channel && channel_name != channel) {
+                this.log.debug(`version channel ${channel_name} not matching channel: ${channel}`);
                 continue;
             }
 
-            if (!semver.valid(releaseNode.version)) {
-                // all version names not being semantic releases are matched for exactness (i.e. "build")
-                if (releaseNode.version == version_range) {
+            for (let version_name of releaseChannelNode.getChildNames()) {
+                const releaseNode = releaseChannelNode[version_name];
+
+                if (only_installed && !releaseNode.getChild('isinstalled').get()) {
+                    // skip not installed ones if "only_installed" parameter is true.
+                    continue;
+                }
+
+                if (!semver.valid(releaseNode.version)) {
+                    // all version names not being semantic releases are matched for exactness (i.e. "build")
+                    if (releaseNode.version == version_range) {
+                        returnNode = releaseNode;
+                    }
+                    continue;
+                }
+
+                // filter out versions which do not fulfill the version range
+                if (!semver.satisfies(releaseNode.version, version_range)) {
+                    this.log.debug(`${version_name}@${channel_name} not fulfilling version range: ${version_range}`);
+                    continue;
+                }
+
+                // only set if the specific release is of newer version.
+                if (!returnNode || semver.gt(releaseNode.version, returnNode.version)) {
                     returnNode = releaseNode;
                 }
-                continue;
-            }
-
-            // filter out versions which do not fulfill the version range
-            if (!semver.satisfies(releaseNode.version, version_range)) {
-                this.log.info(`${version_str} not fulfilling version range: ${version_range}`);
-                continue;
-            }
-            // filter out version if channel is not empty and not matching
-            if (channel != "" && releaseNode.channel != channel) {
-                this.log.info(`${version_str} not matching channel: ${channel}`);
-                continue;
-            }
-            // only set if the specific release is of newer version.
-            if (!returnNode || semver.gt(releaseNode.version, returnNode.version)) {
-                returnNode = releaseNode;
             }
         }
         if(returnNode) {
