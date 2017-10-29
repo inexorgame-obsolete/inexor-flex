@@ -48,7 +48,7 @@ class ReleaseManager extends EventEmitter {
         this.router = this.applicationContext.get('router');
 
         /// The Inexor Tree node containing releases
-        this.releaseManagerTreeNode = this.root.getOrCreateNode('release');
+        this.releaseManagerTreeNode = this.root.getOrCreateNode('releases');
         this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('versions');
         this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
