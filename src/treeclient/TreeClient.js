@@ -461,35 +461,38 @@ class TreeClient {
       this.callEndpoint(this.listReleases.name, callback);
   }
 
-  /**
-   * Downloads the release
-   * @function
-   * @param {string} version - the release version
-   * @param {function} callback
-   */
-  downloadRelease(version, callback) {
-      this.callEndpoint(this.downloadRelease.name, callback, { version: version });
-  }
+    /**
+     * Downloads the release
+     * @function
+     * @param {string} version - the release version range
+     * @param {string} channel - the release channel
+     * @param {function} callback
+     */
+    downloadRelease(version, channel, callback) {
+        this.callEndpoint(this.downloadRelease.name, callback, { version: version, channel: channel});
+    }
 
-  /**
-   * Installs the release
-   * @function
-   * @param {string} version - the release version
-   * @param {function} callback
-   */
-  installRelease(version, callback) {
-      this.callEndpoint(this.installRelease.name, callback, { version: version });
-  }
+    /**
+     * Installs the release
+     * @function
+     * @param {string} version - the release version range
+     * @param {string} channel - the release channel
+     * @param {function} callback
+     */
+    installRelease(version, channel, callback) {
+        this.callEndpoint(this.installRelease.name, callback, { version: version, channel: channel});
+    }
 
-  /**
-   * Uninstalls the release
-   * @function
-   * @param {string} version - the release version
-   * @param {function} callback
-   */
-  uninstallRelease(version, callback) {
-      this.callEndpoint(this.uninstallRelease.name, callback, { version: version });
-  }
+    /**
+     * Uninstalls the release
+     * @function
+     * @param {string} version - the release version range
+     * @param {string} channel - the release channel
+     * @param {function} callback
+     */
+    uninstallRelease(version, channel, callback) {
+        this.callEndpoint(this.uninstallRelease.name, callback, { version: version, channel: channel});
+    }
 
     /**
      * Saves the release config
