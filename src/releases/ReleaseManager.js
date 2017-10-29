@@ -235,7 +235,7 @@ class ReleaseManager extends EventEmitter {
                     this.addProvider(providerNode.name, providerNode.type, providerNode.path, needsunpacking);
                 }
 
-                let cache_folder_provider = config.releases["cache_provider"];
+                let cache_folder_provider = config.releases["download_destination_provider"];
 
                 // if no cache_folder_provider entry exists, fall back to using the last provider with type filesystem.
                 // if none exist: reject
