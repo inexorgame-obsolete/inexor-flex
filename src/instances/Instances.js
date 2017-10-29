@@ -166,13 +166,17 @@ class InstanceManager extends EventEmitter {
      * @param {string} [type] - the instance type - either server or client
      * @param {string} [name] - the name of the instance
      * @param {string} [description] - the description of the instance
+     * @param {string} [versionrange] - the semantic version range. The release the instance starts need to match with its version.
+     * @param {string} [channel] -  the version channel. The release has to have the same channel.
+     *                              It is determined by the version name (the github tag or the name of the folder/zip):
+     *                              version@channel, e.g. 0.2.3-alpha@stable
      * @param {boolean} persistent - True, if the instance should be persisted.
      * @param {boolean} autostart - True, if the instance should be started automatically on startup.
      * @param {boolean} autoconnect - True, if the instance should be connected automatically on startup.
      * @param {boolean} autorestart - True, if the instance should be restarted automatically on shutdown of the instance.
      * @return {Promise<tree.Node>} - the tree node which represents the instance
      */
-    create(identifier = null, type = default_instance_type, name = '', description = '', persistent = false, autostart = false, autoconnect = false, autorestart = false) {
+    create(identifier = null, type = default_instance_type, name = '', description = '', versionrange = '', channel = '', persistent = false, autostart = false, autoconnect = false, autorestart = false) {
         return new Promise((resolve, reject) => {
             if (identifier == null) {
                 reject(new Error('Failed to create instance: No identifier'));
@@ -197,6 +201,14 @@ class InstanceManager extends EventEmitter {
 
             // The port of the GRPC server
             instanceNode.addChild('port', 'int64', identifier);
+
+            // The semantic version range. The release the instance starts need to match with its version.
+            instanceNode.addChild('versionrange', 'string', versionrange);
+
+            // The version channel. The release has to have the same channel.
+            // It is determined by the version name (the github tag or the name of the folder/zip):
+            // version@channel, e.g. 0.2.3-alpha@stable
+            instanceNode.addChild('channel', 'string', channel);
 
             // The instance automatically starts on startup
             instanceNode.addChild('autostart', 'bool', autostart);
@@ -251,17 +263,17 @@ class InstanceManager extends EventEmitter {
 
             // Resolve executable
             try {
-
-                const version = "build"
-                const executable_folder = this.releaseManager.getBinaryPath(version);
-                if (executable_folder == "") {
-                    reject(new Error(`Version ${version} does not exist`));
+                const releaseNode = this.releaseManager.getRelease(instanceNode.versionrange, instanceNode.channel, true);
+                if (!releaseNode) {
+                    reject(new Error(`No version fulfills ${instanceNode.versionrange} @ ${instanceNode.channel}.`));
                     return
                 }
-                const executable_path = path.join(executable_folder, "inexor-core-client.exe"); //this.releaseManager.getExecutableName(instance_type));
+
+                const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
+                const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
 
                 if (!fs.existsSync(executable_path)) {
-                    this.log.warn(`Executable ${executable_path} does not exist`)
+                    this.log.warn(`Executable ${executable_path} does not exist`);
                     reject(new Error(`Executable does not exist: ${executable_path}`));
                 }
                 fs.chmodSync(executable_path, 0o755);
@@ -531,6 +543,8 @@ class InstanceManager extends EventEmitter {
                             config.instances[instanceId].type,
                             config.instances[instanceId].name,
                             config.instances[instanceId].description,
+                            config.instances[instanceId].versionrange,
+                            config.instances[instanceId].channel,
                             false,
                             config.instances[instanceId].autostart,
                             config.instances[instanceId].autoconnect,

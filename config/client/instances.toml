@@ -6,6 +6,8 @@
 type = "server"
 name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
+versionrange = "*"
+channel = ""
 autostart = false
 autoconnect = false
 autorestart = false
@@ -15,6 +17,8 @@ enet_port = 31415
 type = "client"
 name = "Default production client"
 description = "Badly Configurated Clients Inc. proudly presents your first Inexor Client"
+versionrange = "*"
+channel = ""
 autostart = true
 autoconnect = true
 autorestart = false
