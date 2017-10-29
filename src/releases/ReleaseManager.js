@@ -7,7 +7,7 @@ const os = require('os');
 const util = require('util');
 const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
-const semver = require('semver-extra');
+const semver = require('semver');
 
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
