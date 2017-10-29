@@ -259,6 +259,8 @@ class Connector extends EventEmitter {
 
               // Set package dir
               self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
+              // temporary workaround
+              self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
 
               // Send signal that the tree initialization has been finished
               self.sendFinishedTreeIntro();
@@ -277,6 +279,8 @@ class Connector extends EventEmitter {
 
               // Set package dir
               self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
+              // temporary workaround
+              self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
 
               // Send signal that the tree initialization has been finished
               self.sendFinishedTreeIntro();
