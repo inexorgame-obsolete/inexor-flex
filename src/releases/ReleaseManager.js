@@ -181,26 +181,12 @@ class ReleaseManager extends EventEmitter {
             return;
         }
 
-        const version = releaseNode.version;
-        let version_path = version;
-        if (channel) {
-            version_path = `${version}@${channel}`;
-        }
-
-        const providerName = releaseNode.getChild("provider");
-        if (providerName.toString() == "explicit_path") {
+        const providerName = releaseNode.getChild("provider").toString();
+        if (providerName == "explicit_path") {
             return releaseNode.path;
         }
 
-        const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
-
-        let binaryPath = path.join(this.cache_folder, version_path, "bin");
-
-        if (providerNode && providerNode["type"] == "filesystem") {
-            binaryPath = path.join(providerNode["path"], version_path, "bin");
-        }
-
-        return binaryPath;
+        return path.join(releaseNode.path, "bin");
     }
 
 
@@ -310,7 +296,7 @@ class ReleaseManager extends EventEmitter {
      */
     fetchfromFilesystemProvider(provider) {
         return new Promise((resolve, reject) => {
-            var absolute_path = provider["path"];
+            let absolute_path = provider["path"];
             this.log.info(`Starting to scan folder ${absolute_path}`);
             fs.readdir(absolute_path, (err, items) => {
                 if (err) {
@@ -523,7 +509,7 @@ class ReleaseManager extends EventEmitter {
      */
     getRelease(version_range, channel = "", only_installed = false) {
         let returnNode = null;
-        if(!version_range) returnNode.info();
+
         for (let version_str of this.releasesTreeNode.getChildNames()) {
 
             const releaseNode = this.releasesTreeNode[version_str];
@@ -532,7 +518,6 @@ class ReleaseManager extends EventEmitter {
                 // skip not installed ones if "only_installed" parameter is true.
                 continue;
             }
-            this.log.warn(`${version_str} returnNode: ${releaseNode}`);
 
             if (!semver.valid(releaseNode.version)) {
                 // all version names not being semantic releases are matched for exactness (i.e. "build")
@@ -552,15 +537,14 @@ class ReleaseManager extends EventEmitter {
                 this.log.info(`${version_str} not matching channel: ${channel}`);
                 continue;
             }
-            this.log.info("came here for the " + version_str + " r " + releaseNode.version);
             // only set if the specific release is of newer version.
             if (!returnNode || semver.gt(releaseNode.version, returnNode.version)) {
-                this.log.warn("set it!");
                 returnNode = releaseNode;
             }
         }
-        if(returnNode)
-                this.log.info(`${returnNode.version} @ ${returnNode.channel} does version range: ${version_range}`);
+        if(returnNode) {
+            this.log.debug(`getRelease: ${returnNode.version} @ ${returnNode.channel} does fulfill "${version_range}" @ ${channel}`);
+        }
 
         return returnNode;
     }
@@ -660,6 +644,8 @@ class ReleaseManager extends EventEmitter {
             this.downloadArchive(urlNode.get(), zipfilename, this.cache_folder).then((done) => {
                 isdownloadedNode.set(true);
                 this.downloading[version_str] = false;
+                releaseNode.path = path.join(this.cache_folder, zipfilename);
+
                 this.log.info(`Release with version ${version_str} has been downloaded`);
                 this.emit('onReleaseDownloaded', version);
                 if (doinstall) {
@@ -711,7 +697,14 @@ class ReleaseManager extends EventEmitter {
         }
         version = releaseNode.version;
         channel = releaseNode.channel;
+        // this one is here to do the lookup in the maps of installed releases.. key is always version@channel here, even if channel is ""
         const version_str = `${version}@${channel}`;
+
+        // the release folder however should get named "version" if channel is "", not "version@"
+        let version_folder_name = version;
+        if (channel) {
+            version_folder_name = `${version}@${channel}`;
+        }
 
         let installedNode = releaseNode.getChild('isinstalled');
 
@@ -730,27 +723,21 @@ class ReleaseManager extends EventEmitter {
 
         this.log.info(`Installing release ${version_str} started`);
 
-        const providerName = releaseNode.getChild("provider");
-        const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
+        let zipFilePath = releaseNode.path;
 
-
-        const zipName = this.makeZipNamefromVersion(version, channel);
-        let zipFilePath = path.join(this.cache_folder, zipName);
-
-        if (providerNode && providerNode["type"] == "filesystem") {
-            zipFilePath = path.join(providerNode["path"], zipName);
-        }
-
-        const installFolder = path.join(this.cache_folder, version_str);
+        const installFolder = path.join(this.cache_folder, version_folder_name);
 
         this.installArchive(zipFilePath, installFolder).then((done) => {
             try {
-                for (let type in ["server", "client"]) {
-                    let executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
-                    fs.chmodSync(executable, 0o755);
-                }
                 installedNode.set(true);
                 this.installing[version_str] = false;
+                releaseNode.path = installFolder;
+
+                // make the executables executable on Unix
+                for (let type in ["server", "client"]) {
+                    const executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
+                    fs.chmodSync(executable, 0o755);
+                }
                 this.log.info(`Release with version ${version_str} has been installed`);
                 this.emit('onReleaseInstalled', version);
             } catch (e) {
@@ -779,12 +766,12 @@ class ReleaseManager extends EventEmitter {
         }
         this.uninstalling[version_str] = true;
         let installedNode = releaseNode.getChild('isinstalled');
-        const installFolder = path.join(this.cache_folder, version_str);
-        // TODO: remove zip file if downloaded.
+        const installFolder = releaseNode.getChild('path');
+
         fs.remove(installFolder, (done) => {
             installedNode.set(false);
             this.uninstalling[version_str] = false;
-            this.log.info(`Uninstalled release with version ${version_str}`)
+            this.log.info(`Uninstalled release with version ${version_str}`);
             this.emit('onReleaseUninstalled', version);
         })
     }
