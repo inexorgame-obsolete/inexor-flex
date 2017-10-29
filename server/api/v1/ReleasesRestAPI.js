@@ -21,7 +21,7 @@ class ReleasesRestAPI extends EventEmitter {
         this.releaseManager = applicationContext.get('releaseManager');
 
         // The tree node which contains all instance nodes
-        this.releaseManagerTreeNode = this.root.getOrCreateNode('release');
+        this.releaseManagerTreeNode = this.root.getOrCreateNode('releases');
         this.releasesTreeNode = this.releaseManagerTreeNode.getOrCreateNode('versions');
         this.releaseprovidersTreeNode = this.releaseManagerTreeNode.getOrCreateNode('release_providers');
 
