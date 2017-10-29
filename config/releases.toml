@@ -24,7 +24,7 @@ explicit_release_folders = [
 
 # The download destination of every download
 # The name of a provider with type "filesystem". If cache_provider isn't given, the first provider of type filesystem is used.
-cache_provider = "local_cache"
+download_destination_provider = "local_cache"
 
 [[releases.provider]]
 name = "local_cache"
