@@ -1,5 +1,4 @@
 const EventEmitter = require('events');
-const util = require('util');
 
 /**
  * REST API for managing releases of Inexor Core.
@@ -37,16 +36,16 @@ class ReleasesRestAPI extends EventEmitter {
         this.router.get('/releases/load', this.loadReleases.bind(this));
 
         // Get infos about a release
-        this.router.get('/releases/:version/:channel', this.getRelease.bind(this));
+        this.router.get('/releases/info/:version/:channel', this.getRelease.bind(this));
 
         // Download release via semver
-        this.router.get('/releases/:version/:channel/download', this.downloadRelease.bind(this));
+        this.router.get('/releases/download/:version/:channel', this.downloadRelease.bind(this));
 
         // Install release via semver
-        this.router.get('/releases/:version/:channel/install', this.installRelease.bind(this));
+        this.router.get('/releases/install/:version/:channel', this.installRelease.bind(this));
 
         // Uninstall release via semver
-        this.router.get('/releases/:version/:channel/uninstall', this.uninstallRelease.bind(this));
+        this.router.get('/releases/uninstall/:version/:channel', this.uninstallRelease.bind(this));
     }
 
     /**
@@ -93,13 +92,13 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     /**
-     * Get's a release by version
+     * Get's a release by semantic version range and release channel
      * supply the :semver as an argument
      */
     getRelease(req, res) {
         let releaseNode = this.releaseManager.getRelease(req.params.version, req.params.channel);
         if (!releaseNode) {
-            let errmsg = `Release with version ${req.params.version}@${req.params.channel} does not exist`;
+            let errmsg = `Release of version range ${req.params.version} in channel ${req.params.channel} does not exist`;
             this.log.warn(errmsg);
             res.status(404).send(errmsg);
             return

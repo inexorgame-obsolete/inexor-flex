@@ -726,12 +726,12 @@ class ReleaseManager extends EventEmitter {
                 this.installing[version_str] = false;
                 releaseNode.path = installFolder;
 
+                this.log.info(`Release with version ${version_str} has been installed to ${installFolder}`);
                 // make the executables executable on Unix
-                for (let type in ["server", "client"]) {
-                    const executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
+                for (let type of ["server", "client"]) {
+                    let executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
                     fs.chmodSync(executable, 0o755);
                 }
-                this.log.info(`Release with version ${version_str} has been installed`);
                 this.emit('onReleaseInstalled', version);
             } catch (e) {
                 this.log.error(e);
