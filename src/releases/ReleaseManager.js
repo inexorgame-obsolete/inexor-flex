@@ -14,13 +14,6 @@ const inexor_path = require('@inexorgame/path');
 
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
 
-/* whats missing?
-- releases always need to get fetched, but its not clear which one are already downloaded.
-- download + install should be doable in one step
-- instance should have a "version" field
-- resolve_version(semantic_version_str) -> real version
-- maybe rename pakete zu inexor-core-only-{windows/linux/darwin}-{32/64}-alpha.zip
-*/
 
 class ReleaseManager extends EventEmitter {
 
@@ -138,7 +131,7 @@ class ReleaseManager extends EventEmitter {
     /**
      * @function
      * Get version string from the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns 0.8.10-alpha@stable from inexor-core-0.8.10-alpha@stable-Linux.zip
+     * Returns 0.8.10@stable from inexor-core-0.8.10@stable-Linux.zip
      * valid input is everything fulfilling the pattern inexor-core-<characters>-<this.platform><characters> (so also non-zips)
      * @param {string} name - the input string.
      * @return {string|null} - the version or "" if pattern isn't matched
@@ -156,7 +149,7 @@ class ReleaseManager extends EventEmitter {
     /**
      * @function
      * Get the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns inexor-core-0.8.10-alpha@latest-Linux32.zip if you give it the version 0.8.10-alpha and the channel @latest.
+     * Returns inexor-core-0.8.10@latest-Linux32.zip if you give it the version 0.8.10 and the channel @latest.
      *
      * @param {string} version - the exact version string.
      * @param {string} channel - the release channel.
