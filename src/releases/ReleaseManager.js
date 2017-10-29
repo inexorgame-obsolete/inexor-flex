@@ -73,7 +73,7 @@ class ReleaseManager extends EventEmitter {
             this.log.debug(`Checking whether the releases directory exists at ${this.cache_folder}`)
             fs.mkdir(this.cache_folder, (err) => {
                 if (!err)
-                    this.log.info(`Created releases directory at ${this.cache_folder}`)
+                    this.log.info(`Created releases directory at ${this.cache_folder}`);
                 else if (err.code !== 'EEXIST')
                     this.log.error(err)
             })
@@ -137,53 +137,67 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * @function
-     * Get Version from the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns 0.8.10 from Inexor-0.8.10-alpha-Linux.zip
-     * valid input is everything fulfilling the pattern Inexor-<characters>-<this.platform><characters> (so also non-zips)
+     * Get version string from the Zip file name uploaded by Travis/Appveyor currently.
+     * Returns 0.8.10-alpha@stable from inexor-core-0.8.10-alpha@stable-Linux.zip
+     * valid input is everything fulfilling the pattern inexor-core-<characters>-<this.platform><characters> (so also non-zips)
      * @param {string} name - the input string.
-     * @return {string} - the version or "" if pattern isn't matched
+     * @return {string|null} - the version or "" if pattern isn't matched
      */
-    getVersionFromZipName(name) {
+    getVersionStrFromZipName(name) {
         const version_start_index = 12; // inexor-core-
         const version_end_index = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
+        const version_str = name.substring(version_start_index, version_end_index);
+        this.log.debug(`version found out for ${name}: ${version_str} (start: ${version_start_index}, end: ${version_end_index}`);
         if (version_end_index == -1 || version_end_index < 13)
-            return ""
-        return name.substring(version_start_index, version_end_index);
+            return null;
+        return version_str
     }
 
     /**
      * @function
      * Get the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns inexor-core-0.8.10-alpha-Linux32.zip if you give it the version 0.8.10-alpha.
+     * Returns inexor-core-0.8.10-alpha@latest-Linux32.zip if you give it the version 0.8.10-alpha and the channel @latest.
      *
-     * @param {string} version - the input string.
+     * @param {string} version - the exact version string.
+     * @param {string} channel - the release channel.
      * @return {string} - inexor-core-<version>-<this.platform>.zip
      */
-    makeZipNamefromVersion(version) {
-        return `inexor-core-${version}-${this.platform}.zip`;
+    makeZipNamefromVersion(version, channel) {
+        return `inexor-core-${version}@${channel}-${this.platform}.zip`;
     }
 
     /**
      * @function
      * Return the bin folder path of a version.
      *
-     * @param {string} version - the input string.
+     * @param {string} versionrange, the semantic version range.
+     * @param {string} channel, the release channel.
      * @return {string} - the binary folder of the specific version or ""
      */
-    getBinaryPath(version) {
-        const releaseNode = this.releasesTreeNode.getChild(version);
+    getBinaryPath(versionrange, channel) {
+        let releaseNode = this.getRelease(versionrange, channel, true);
         if (!releaseNode) {
-            this.log.error(`Could not find binary path for non-existent version ${version}`)
-            return ""
+            this.log.error(`Could not find installed release for version range ${versionrange} in channel ${channel}`);
+            return;
+        }
+
+        const version = releaseNode.version;
+        let version_path = version;
+        if (channel) {
+            version_path = `${version}@${channel}`;
         }
 
         const providerName = releaseNode.getChild("provider");
+        if (providerName.toString() == "explicit_path") {
+            return releaseNode.path;
+        }
+
         const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
 
-        let binaryPath = path.join(this.cache_folder, version);
+        let binaryPath = path.join(this.cache_folder, version_path, "bin");
 
         if (providerNode && providerNode["type"] == "filesystem") {
-            binaryPath = path.join(providerNode["path"], version);
+            binaryPath = path.join(providerNode["path"], version_path, "bin");
         }
 
         return binaryPath;
@@ -198,39 +212,6 @@ class ReleaseManager extends EventEmitter {
      */
     getExecutableName(instance_type) {
         return `inexor-core-${instance_type}.exe`;
-    }
-
-    /**
-     * Searches through all releases and returns the one fulfilling the semantic version range the best (and is in the same channel).
-     * @function
-     * @param {string} version_range - Either:
-     *                                    A) the semantic version range it needs to fulfill (">0.5.2 || 0.3.8")
-     *                                    B) an exact non-semantic version ("build", "buildnew", "testbinaries")
-     * @param {string} channel - additonally you can specify a channel. Only if that channel matches, the release is a match.
-     * @return {Node|null} - this.releasesTreeNode entry or null
-     */
-    getRelease(version_range, channel = "") {
-        let releases = this.releasesTreeNode.getChildNames();
-
-        releases = releases.filter( (rel) => {
-            if (!semver.satisfies(rel, version_range)) {
-                // filter out versions which do not fulfill the version range
-                return false;
-            }
-            // only filter out version if channel is not empty and not matching
-            if (channel != "") {
-                let relNode = this.releasesTreeNode[rel];
-                if (relNode.getChild("channel") != channel) {
-                    return false;
-                }
-            }
-            return true
-        });
-        if (releases.length < 1) {
-            return null
-        }
-        const maxrelease = semver.max(releases);
-        return this.releasesTreeNode[maxrelease];
     }
 
     /**
@@ -249,7 +230,7 @@ class ReleaseManager extends EventEmitter {
                     reject(`Failed to load releases config from ${config_path}: ${err.message}`);
                     return
                 }
-                let config = ""
+                let config = "";
                 try {
                     config = toml.parse(data.toString());
                 } catch (e) {
@@ -348,8 +329,10 @@ class ReleaseManager extends EventEmitter {
                     // add all zips which have the right name as not-installed releases
                     let iszip = path.extname(item) == ".zip";
                     if (iszip) {
-                        let version = this.getVersionFromZipName(item);
-                        this.addRelease(version, fullpath, true, false, version, provider["name"]);
+                        let version_str = this.getVersionStrFromZipName(item);
+                        if (version_str) {
+                            this.addRelease(version_str, fullpath, true, false, version_str, provider["name"]);
+                        }
                         continue;
                     }
                 }
@@ -424,7 +407,7 @@ class ReleaseManager extends EventEmitter {
      * @return {Promise<bool>}
      */
     fetchReleases() {
-        let promises = []
+        let promises = [];
         let providers = this.releaseprovidersTreeNode.toObject();
         for (let i of Object.keys(providers)) {
             let provider_obj = providers[i];
@@ -460,15 +443,16 @@ class ReleaseManager extends EventEmitter {
             version = version_str.substring(0, channel_index);
             channel = version_str.substring(channel_index+1);
         }
+        version_str = `${version}@${channel}`;
 
         // handle that the release is already provided by another provider
-        if (this.releasesTreeNode.hasChild(version) && this.releasesTreeNode[version]["channel"] == channel) {
+        if (this.releasesTreeNode.hasChild(version_str)) {
             let old_was_downloaded = this.releasesTreeNode.getChild('isdownloaded').get();
             let old_was_installed = this.releasesTreeNode.getChild('isinstalled').get();
 
             if ((isinstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded)) {
                 // this release is actually "better" than the saved one (its downloaded/installed already)
-                let oldreleaseNode = this.releasesTreeNode[version];
+                let oldreleaseNode = this.releasesTreeNode[version_str];
                 oldreleaseNode['path'] = path;
                 if (name.length(name)) oldreleaseNode['name'] = name;
                 oldreleaseNode['provider'] = provider;
@@ -478,7 +462,7 @@ class ReleaseManager extends EventEmitter {
             return
         }
         // handle that the release is not yet provided
-        let releaseNode = this.releasesTreeNode.addNode(version);
+        let releaseNode = this.releasesTreeNode.addNode(version_str);
         releaseNode.addChild('version', 'string', version);
         releaseNode.addChild('channel', 'string', channel);
         releaseNode.addChild('path', 'string', path);
@@ -525,6 +509,60 @@ class ReleaseManager extends EventEmitter {
 
         this.log.info(`Release provider ${name} has been added`);
         this.emit('onNewProviderAvailable', name);
+    }
+
+    /**
+     * Searches through all releases and returns the one fulfilling the semantic version range the best (and is in the same channel).
+     * @function
+     * @param {string} version_range - Either:
+     *                                    A) the semantic version range it needs to fulfill (">0.5.2 || 0.3.8")
+     *                                    B) an exact non-semantic version ("build", "buildnew", "testbinaries")
+     * @param {string} channel - additonally you can specify a channel. Only if that channel matches, the release is a match.
+     * @param {bool} only_installed - only return release which is installed (meaning no remote one, no zip one)
+     * @return {Node|null} - this.releasesTreeNode entry or null
+     */
+    getRelease(version_range, channel = "", only_installed = false) {
+        let returnNode = null;
+        if(!version_range) returnNode.info();
+        for (let version_str of this.releasesTreeNode.getChildNames()) {
+
+            const releaseNode = this.releasesTreeNode[version_str];
+
+            if (only_installed && !releaseNode.getChild('isinstalled').get()) {
+                // skip not installed ones if "only_installed" parameter is true.
+                continue;
+            }
+            this.log.warn(`${version_str} returnNode: ${releaseNode}`);
+
+            if (!semver.valid(releaseNode.version)) {
+                // all version names not being semantic releases are matched for exactness (i.e. "build")
+                if (releaseNode.version == version_range) {
+                    returnNode = releaseNode;
+                }
+                continue;
+            }
+
+            // filter out versions which do not fulfill the version range
+            if (!semver.satisfies(releaseNode.version, version_range)) {
+                this.log.info(`${version_str} not fulfilling version range: ${version_range}`);
+                continue;
+            }
+            // filter out version if channel is not empty and not matching
+            if (channel != "" && releaseNode.channel != channel) {
+                this.log.info(`${version_str} not matching channel: ${channel}`);
+                continue;
+            }
+            this.log.info("came here for the " + version_str + " r " + releaseNode.version);
+            // only set if the specific release is of newer version.
+            if (!returnNode || semver.gt(releaseNode.version, returnNode.version)) {
+                this.log.warn("set it!");
+                returnNode = releaseNode;
+            }
+        }
+        if(returnNode)
+                this.log.info(`${returnNode.version} @ ${returnNode.channel} does version range: ${version_range}`);
+
+        return returnNode;
     }
 
     /**
@@ -581,21 +619,26 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * Downloads a release for the specific version
-     * @param {string} version
+     * @param {string} version, the semantic version range.
+     * @param {string} channel, the release channel.
      * @param {bool} doinstall
      */
-    downloadRelease(version, doinstall = true) {
-        if (this.downloading[version]) {
-            this.log.error(`Downloading of release ${version} is already in progress`);
-            return;
-        }
-        let releaseNode = this.releasesTreeNode.getChild(version);
-
+    downloadRelease(version, channel, doinstall = true) {
+        let releaseNode = this.getRelease(version, channel);
         if (!releaseNode) {
-            this.log.error(`There is no ${version}. Did you fetch?`);
+            this.log.error(`There is no ${version} @ ${channel}. Did you fetch?`);
             return;
         }
-        this.downloading[version] = true;
+
+        version = releaseNode.version;
+        channel = releaseNode.channel;
+        const version_str = `${version}@${channel}`;
+
+        if (this.downloading[version_str]) {
+            this.log.error(`Downloading of release ${version_str} is already in progress`);
+            return;
+        }
+        this.downloading[version_str] = true;
 
         // releaseNode.getChild('version', 'string', version);
         // releaseNode.getChild('name', 'string', name);
@@ -605,22 +648,22 @@ class ReleaseManager extends EventEmitter {
         try {
             // its already downloaded but not yet downloaded.
             if (isdownloadedNode.get() && !isinstalled && doinstall) {
-                this.installRelease(version);
+                this.installRelease(version, channel);
                 return
             }
 
             // only REST providers come here
 
             const urlNode = releaseNode.getChild('path');
-            const zipfilename = this.makeZipNamefromVersion(version);
+            const zipfilename = this.makeZipNamefromVersion(version, channel);
 
             this.downloadArchive(urlNode.get(), zipfilename, this.cache_folder).then((done) => {
                 isdownloadedNode.set(true);
-                this.downloading[version] = false;
-                this.log.info(`Release with version ${version} has been downloaded`);
+                this.downloading[version_str] = false;
+                this.log.info(`Release with version ${version_str} has been downloaded`);
                 this.emit('onReleaseDownloaded', version);
                 if (doinstall) {
-                    this.installRelease(version);
+                    this.installRelease(version, channel);
                 }
             })
         } catch (e) {
@@ -656,47 +699,59 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * Installs a release for the given version
-     * @param {string} version
+     * @param {string} version_str, the semantic version range.
+     * @param {string} channel, the release channel.
      * @throws "Install in progress"
      */
-    installRelease(version) {
-        if (this.installing[version]) {
-            this.log.error(`Installing of release ${version} is already in progress`);
+    installRelease(version, channel) {
+        let releaseNode = this.getRelease(version, channel);
+        if (!releaseNode) {
+            this.log.error(`There is no ${version} @ ${channel}. Did you fetch?`);
             return;
         }
-        this.installing[version] = true;
-        let releaseNode = this.releasesTreeNode[version];
+        version = releaseNode.version;
+        channel = releaseNode.channel;
+        const version_str = `${version}@${channel}`;
+
         let installedNode = releaseNode.getChild('isinstalled');
 
         if (installedNode.get()) {
-            this.log.info(`Release ${version} is already installed`);
+            this.log.info(`Release ${version_str} is already installed`);
             return;
         }
 
-        this.log.info(`Installing release ${version} started`);
+        if (this.installing[version_str]) {
+            this.log.error(`Installing of release ${version_str} is already in progress`);
+            return;
+        }
+        this.installing[version_str] = true;
+
+
+
+        this.log.info(`Installing release ${version_str} started`);
 
         const providerName = releaseNode.getChild("provider");
         const providerNode = this.releaseprovidersTreeNode.getChild(providerName.toString());
 
 
-        const zipName = this.makeZipNamefromVersion(version);
+        const zipName = this.makeZipNamefromVersion(version, channel);
         let zipFilePath = path.join(this.cache_folder, zipName);
 
         if (providerNode && providerNode["type"] == "filesystem") {
             zipFilePath = path.join(providerNode["path"], zipName);
         }
 
-        const installFolder = path.join(this.cache_folder, version);
+        const installFolder = path.join(this.cache_folder, version_str);
 
         this.installArchive(zipFilePath, installFolder).then((done) => {
             try {
                 for (let type in ["server", "client"]) {
-                    let executable = path.join(this.getBinaryPath(version), this.getExecutableName(type));
+                    let executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
                     fs.chmodSync(executable, 0o755);
                 }
                 installedNode.set(true);
-                this.installing[version] = false;
-                this.log.info(`Release with version ${version} has been installed`);
+                this.installing[version_str] = false;
+                this.log.info(`Release with version ${version_str} has been installed`);
                 this.emit('onReleaseInstalled', version);
             } catch (e) {
                 this.log.error(e);
@@ -705,37 +760,31 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * Installs the latest release. Optionally specify a channel
-     * TODO: Add tag support
-     * @function
-     */
-    installLatest() {
-        let releases = this.releasesTreeNode.getChildNames();
-        let newest_release = semver.max(releases); // Sort according to semver
-
-        let releaseNode = this.releasesTreeNode[newest_release];
-
-        this.downloadRelease(releaseNode.version);
-    }
-
-    /**
      * Uninstalls a release for the given version
      * @param {string} version
      */
-    uninstallRelease(version) {
-        if (this.uninstalling[version]) {
+    uninstallRelease(version, channel) {
+        let releaseNode = this.getRelease(version, channel);
+        if (!releaseNode) {
+            this.log.error(`Already uninstalled ${version} @ ${channel}.`);
+            return;
+        }
+        version = releaseNode.version;
+        channel = releaseNode.channel;
+        const version_str = `${version}@${channel}`;
+
+        if (this.uninstalling[version_str]) {
             this.log.error(`Uninstalling of release ${version} is already in progress`);
             return
         }
-        this.uninstalling[version] = true;
-        let releaseNode = this.releasesTreeNode.getChild(version);
+        this.uninstalling[version_str] = true;
         let installedNode = releaseNode.getChild('isinstalled');
-        const installFolder = path.join(this.cache_folder, version);
+        const installFolder = path.join(this.cache_folder, version_str);
         // TODO: remove zip file if downloaded.
         fs.remove(installFolder, (done) => {
             installedNode.set(false);
-            this.uninstalling[version] = false;
-            this.log.info(`Uninstalled release with version ${version}`)
+            this.uninstalling[version_str] = false;
+            this.log.info(`Uninstalled release with version ${version_str}`)
             this.emit('onReleaseUninstalled', version);
         })
     }
