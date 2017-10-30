@@ -14,17 +14,23 @@ module.exports = (name = '@inexorgame/flex', console = true, file = null, level 
   let streams = [];
 
   if (console) {
-   streams.push({
-     type: 'raw',
-     stream: bunyanDebugStream({ forceColor: true })
-   })
+    streams.push({
+      type: 'raw',
+      stream: bunyanDebugStream({ forceColor: true })
+    });
   }
 
   if (file != null) {
-   streams.push({
-     path: file
-   })
+    streams.push({
+      path: file
+    });
   }
 
-  return bunyan.createLogger({name: name, level: level, streams: streams, serializers: bunyanDebugStream.serializers });
+  return bunyan.createLogger({
+    name: name,
+    level: level,
+    streams: streams,
+    serializers: bunyanDebugStream.serializers
+  });
+
 }

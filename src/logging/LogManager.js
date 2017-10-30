@@ -78,21 +78,22 @@ class LogManager extends EventEmitter {
   createLogger(name, console = true, file = null, level = null) {
     let streams = [];
     if (console) {
-     streams.push({
-       type: 'raw',
-       stream: bunyanDebugStream({ forceColor: true })
-     })
+      streams.push({
+        type: 'raw',
+        stream: bunyanDebugStream({ forceColor: true })
+      });
     }
     if (file != null && file != 'null') {
-     streams.push({
-       path: file
-     })
+      streams.push({
+        path: file
+      });
     }
     // Prio 1: method parameter
     // Prio 2: command line argument 'level'
     // Prio 3: fallback: 'info'
     let _level = level != null ? level : (this.argv.level != null ? this.argv.level : 'info');
-    return this.createStreamLogger(name, console, file, _level, streams);
+    let _file = file != null ? file : (this.argv.file != null ? this.argv.file : null);
+    return this.createStreamLogger(name, console, _file, _level, streams);
   }
 
   createStreamLogger(name, console = true, file = null, level = 'info', streams = []) {
@@ -206,9 +207,9 @@ class LogManager extends EventEmitter {
 
     var log = {
       name: lname,
-      level: 'info',
-      console: true,
-      file: null
+      level: this.argv.level != null ? this.argv.level : 'info',
+      console: this.argv.console != null ? this.argv.console : true,
+      file: this.argv.file != null ? this.argv.file : null
     };
 
     if (config.hasOwnProperty('level')) {
