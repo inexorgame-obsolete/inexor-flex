@@ -7,7 +7,7 @@ type = "server"
 name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
 # The semantic release range string to select a release.
-versionrange = "*"
+versionrange = "0.x"
 # The release channel or empty to accept all
 channel = "*"
 autostart = false
@@ -20,7 +20,7 @@ type = "client"
 name = "Default production client"
 description = "Badly Configurated Clients Inc. proudly presents your first Inexor Client"
 # The semantic release range string to select a release.
-versionrange = "*"
+versionrange = "0.x"
 # The release channel or empty to accept all
 channel = "*"
 autostart = false
