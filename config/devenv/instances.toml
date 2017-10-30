@@ -9,7 +9,7 @@ description = "Badly Configurated Servers Inc. proudly presents your first Inexo
 # The semantic release range string to select a release.
 versionrange = "*"
 # The release channel or empty to accept all
-channel = ""
+channel = "*"
 autostart = false
 autoconnect = false
 autorestart = false
