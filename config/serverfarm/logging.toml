@@ -1,0 +1,37 @@
+# Logging configuration...
+# Can be loaded and saved by the LoggingConfigurator
+
+[logging.flex]
+
+level = "info"
+console = true
+file = "null"
+
+[logging.flex.logging.LogManager]
+
+level = "warn"
+
+[logging.flex.instances.InstanceManager]
+
+level = "info"
+
+[logging.flex.instances.Connector]
+
+level = "warn"
+
+[logging.flex.profiles.ProfileManager]
+
+level = "info"
+
+[logging.core.client.31410]
+
+level = "info"
+
+[logging.core.client.31412]
+
+level = "info"
+
+[logging.core.client.31414]
+
+level = "info"
+
