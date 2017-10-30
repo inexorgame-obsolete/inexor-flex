@@ -13,7 +13,6 @@ channel = "*"
 autostart = false
 autoconnect = false
 autorestart = false
-enet_port = 31415
 
 [instances.31417]
 type = "client"
