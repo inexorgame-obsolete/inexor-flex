@@ -15,6 +15,11 @@ description = "Only the server, without the client starting"
 hostname = "localhost"
 port = 31416
 
+[profiles.serverfarm]
+description = "A farm of servers, no client"
+hostname = "localhost"
+port = 31416
+
 [profiles.devenv]
 description = "Local development environment"
 hostname = "localhost"

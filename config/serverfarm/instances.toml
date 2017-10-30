@@ -1,0 +1,39 @@
+# Please configure your servers and clients here
+
+[instances]
+
+[instances.31410]
+type = "server"
+name = "Inexor Server Farm #1"
+description = "Badly Configurated Server Farm Inc. proudly presents your first Inexor Server"
+# The semantic release range string to select a release.
+versionrange = "0.x"
+# The release channel or empty to accept all
+channel = "*"
+autostart = true
+autoconnect = true
+autorestart = true
+
+[instances.31412]
+type = "server"
+name = "Inexor Server Farm #2"
+description = "Badly Configurated Server Farm Inc. proudly presents your second Inexor Server"
+# The semantic release range string to select a release.
+versionrange = "0.x"
+# The release channel or empty to accept all
+channel = "*"
+autostart = true
+autoconnect = true
+autorestart = true
+
+[instances.31414]
+type = "server"
+name = "Inexor Server Farm #3"
+description = "Badly Configurated Server Farm Inc. proudly presents your third Inexor Server"
+# The semantic release range string to select a release.
+versionrange = "0.x"
+# The release channel or empty to accept all
+channel = "*"
+autostart = true
+autoconnect = true
+autorestart = true
