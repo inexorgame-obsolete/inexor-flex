@@ -6,9 +6,10 @@
 type = "server"
 name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
+# The semantic release range string to select a release.
 versionrange = "0.x"
+# The release channel or empty to accept all
 channel = "*"
 autostart = true
 autoconnect = true
 autorestart = true
-enet_port = 31415
