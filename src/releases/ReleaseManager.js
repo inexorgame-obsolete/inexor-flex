@@ -501,11 +501,11 @@ class ReleaseManager extends EventEmitter {
      * @param {string} version_range - Either:
      *                                    A) the semantic version range it needs to fulfill (">0.5.2 || 0.3.8")
      *                                    B) an exact non-semantic version ("build", "buildnew", "testbinaries")
-     * @param {string} channel - additonally you can specify a channel. Only if that channel matches, the release is a match.
+     * @param {string} channel - additionally you can specify a channel. Only if that channel matches, the release is a match.
      * @param {bool} only_installed - only return release which is installed (meaning no remote one, no zip one)
      * @return {Node|null} - the InexorTree node or null
      */
-    getRelease(version_range, channel = "", only_installed = false) {
+    getRelease(version_range, channel = "*", only_installed = false) {
         let returnNode = null;
 
         for (let channel_name of this.releaseChannelsTreeNode.getChildNames()) {
@@ -513,7 +513,7 @@ class ReleaseManager extends EventEmitter {
             const releaseChannelNode = this.releaseChannelsTreeNode[channel_name];
 
             // filter out version if channel is not empty and not matching
-            if (channel && channel_name != channel) {
+            if (channel && channel != "*" && channel_name != channel) {
                 this.log.debug(`version channel ${channel_name} not matching channel: ${channel}`);
                 continue;
             }
