@@ -584,21 +584,11 @@ class ReleaseManager extends EventEmitter {
                     const channel = availableReleaseNode.getChild('channel').get();
                     // Download release by release node
                     this.downloadRelease(version, channel, false);
-//                    const onReleaseDownloadedHandler = () => {
-//                        // Install release by release node
-//                        this.log.trace(`Downloaded release ${version} @ ${channel}. Starting installation...`);
-//                        this.installRelease(version, channel);
-//                        this.once('onReleaseInstalled', () => {
-//                            this.log.trace(`Successfully installed release ${version} @ ${channel}`);
-//                            resolve(availableReleaseNode);
-//                        });
-//                    };
-//                    this.once('onReleaseDownloaded', onReleaseDownloadedHandler);
-                    this.on('onReleaseDownloaded', () => {
+                    this.once('onReleaseDownloaded', () => {
                         // Install release by release node
                         this.log.trace(`Downloaded release ${version} @ ${channel}. Starting installation...`);
                         this.installRelease(version, channel);
-                        this.on('onReleaseInstalled', () => {
+                        this.once('onReleaseInstalled', () => {
                             this.log.trace(`Successfully installed release ${version} @ ${channel}`);
                             resolve(availableReleaseNode);
                         });
