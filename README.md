@@ -2,12 +2,49 @@
 
 [![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexor-game/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex)
 
-Inexor Flex is platform for managing Inexor Core instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
-Documentation can be found at [GitHub pages](https://inexorgame.github.io/inexor-flex/docs)
+Inexor Flex is platform for managing [Inexor Core](https://github.com/inexorgame/inexor-core) instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
+
+The reference documentation can be found at [GitHub pages](https://inexorgame.github.io/inexor-flex/docs)
+
+## Introduction
+Hello there and welcome to the `inexor-flex` documentation!
+
+Now, you're wondering what `inexor-flex` actually is, and what it does?
+
+Below is a brief explanation about `inexor-flex`:
+
+- we wanted to create a way in which we can easily configure and extend our game
+- that's why we created _the `tree`_. It means that all the settings (variables) in the game can be edited in real-time in a tree structure
+- but this tree was hard to access. It's sent over the wire in a compressed format, that's hard to work with for _"casual users"_
+- next: we created `inexor-flex`. It makes this tree available via a web service (and webviewer). On your local computer.
+- not only can you edit the game in real time with `flex`, it also does a bunch of things for you
+  - read configuration. e.g for maps, or servers
+  - read the server list
+  - only your imagination is the limit (...)
 
 ## How to set up inexor-flex
-Install via `npm install -g @inexorgame/inexor-flex`
-You can start flex via `inexor-flex`
+You can choose from one of our graphical installers [at our website](http://inexor.org/download).
+
+If you're a little bit more of a techy, here are the command line instructions to install flex
+
+- you need to have `Node.js` installed from [nodejs.org](nodejs.org). The latest stable release is recommended.
+- open a terminal/shell
+- install flex via `npm i -g @inexorgame/inexor-flex`
+- you can start flex via `inexor-flex` directly at your fingertips
+
+_NOTE:_ If you're curious what the graphical installer does. No suprise. Exactly the same.
+
+## What's this _"instances"_ thing?
+Since nowadays, all configuration is done via `inexor-flex`, we have introduced a system called `instances`.
+Each Inexor client or server is an instance. You can have multiple clients (or servers), with different configurations, even running different versions of the game. No problemo.
+
+## Now let's go fancy. Right at your browser.
+If you want to be little bit more of a power user, we also ship a graphical interface for flex. Right there. When you download it.
+
+Just go to [http://localhost:31416/api/v1/interfaces/ui-flex](http://localhost:31416/api/v1/interfaces/ui-flex)
+And even more fancy. You can see the `inexor tree` at [http://localhost:31416/api/v1/interfaces/ui-flex/#/instances/31417](http://localhost:31416/api/v1/interfaces/ui-flex/#/instances/31417)
+
+# Developer section
 
 ## How to set up inexor-flex as a developer
 To set up `inexor-flex` follow the below instructions.
@@ -16,140 +53,126 @@ Given that you have cloned `inexor-flex` and are in the `inexor-flex` directory:
 ```
 npm install
 npm start # start flex 
-
-# if you want to build interfaces to your interfaces path
-cd INTERFACES/ui-flex
-yarn # <-- currently you must have yarn installed via npm install -g yarn
-npm run build
-
-cd ../../
-./inexor
-
-# if you're developing and would like to install @inexor-game src
-# or install a specific package of your choice
-npm install @inexor-game/profiles
 ```
 
-## Architecture
+### The command line
+`inexor-flex` brings a verbose command line that can easily be accessed with it's name.
+Just call `inexor-flex` from your command line (shell, prompt, terminal), and you can have a lot of options to configure `flex` from the command line.
 
-* https://github.com/inexorgame/code/wiki/Overall-Architecture
-* https://github.com/inexorgame/code/issues/354
-* https://github.com/inexorgame/code/issues/348
+### Folder structure
 
-## Webserver
+Flex is structure in two main folders:
 
-* Exposes the Inexor Tree API via REST/JSON
-* Provides multiple web applications (HTML5/JS/CSS)
+- `src` is where the utilities of flex reside
+- `server` is where the actual `flex server` resides. The web server is started here, and all run-time functionality (such as paths) are determined here.
 
-## Web Applications (HTML5/JS/CSS)
+All of the above components are wired together using the [Application Context](https://inexorgame.github.io/inexor-flex/src_context_index.js.html) module.
 
-* Inexor Flex User Interface
-* Inexor Core (Client) Menu & Application
-* Inexor Core (Client) HUD
-* Inexor Core (Server) User Interface
+After _the "wire"_ individual components, such as the package manager are started.
 
-## Inexor Tree Client
+The API is exposed as a [RESTfull API](https://en.wikipedia.org/wiki/Representational_state_transfer).
 
-* Communication to an local or remote instance of Inexor Flex using the Inexor Tree API via REST
+### Architectual 
+`inexor-flex` was initially born to serve the tree of `inexor-core` and this is how it works nowadays.
 
-## Business Logic
+- we create a _mother inexor_ root node using the `@inexorgame/tree` module
+- each instance of Inexor Core has a `src/instances/Connector` attached
+- this Connector will create a tree at `/instance/INSTANCEID`
+- other modules can be hooked in other namespaces than `/instances`. e.g for the ReleaseManager, the namespace is `/releases`
 
-* Inexor Tree API
-* Texture-Manager
-* Map-Manager
-* Media-Manager (Music, Sound, Videos)
-* Server-List-Manager
+### Interfaces
+Interfaces are graphical user interfaces for `inexor-flex` *and* `inexor-core`.
+An interface is basically just a HTML5/CSS/JavaScript folder, which will be made available via the REST API.
 
-## Configuration Management
+Below is a list of the default interfaces shipped with `inexor-flex`:
 
-* Reads/writes configuration files from disk / database
-* Reads configuration from command line parameters
-* Populates the Inexor Tree
+- [ui-flex](https://github.com/inexorgame/ui-flex) is used to manage the flex server itself
+- [ui-console](https://github.com/inexorgame/ui-console) is an interactive console for the game
+- [ui-client-hud](https://github.com/inexorgame/ui-client-hud) is a HUD system for the game
+- [ui-client-interface](https://github.com/inexorgame/ui-client-interface) are the menu(s) for the game
 
-## Manages Inexor Core instances
+*NOTE:* For the `ui` modules we currently use [`yarn`](https://yarnpkg.com). You need to execute `yarn` instead of `npm install` to get those running.
 
-* Creates, starts, stops and destroys instances of `Inexor Core`
+#### Adding an own interface
+An interface should follow the below directory structure:
 
-## Operating System Bindings
-
-* Command line arguments parsing
-* URI-Scheme
-* Tray icon
-* Notifications
-
-# Implementation guide
-
-## Styleguide
-The coding style-guide proposed by [Airbnb](https://github.com/airbnb/javascript) is desirable.
-Since by default `node >=6.9.1` is required, most `ES6` features will work.
-Alternately, consider [node.green](http://node.green/) for reference.
-
-## Design guideline
-The Inexor Flex has been designed to be as flexible as possible, therefore following a straight design guide:
-
-- everything, if possible, is a module
-- loosely-coupled components (such as plugins) are wired using [electrolyte](https://github.com/jaredhanson/electrolyte)
-- by default unit tests with mocha are done for any file that matches `*_test.js`, though it is highly recommended to add a `test` folder to your module
-- by default documentation is done using JSDoc. don't break that.
-- if necessary (for important or big modules), we urge that you add a separate `README.md` to the respective module
-- we preserve to *force* the style-guide in the future
-
-## The core implementation
-Flex necessarily can't be decoupled as a whole, therefore the core implementation is splitted among the following parts:
-
-- `server/` containing the webserver and RESTfull API
-  - `index.js` wires up everything and takes care of the `cli`
-- `src/` containing essential modules
-  - `src/tree/` contains extensive functions to work with binary trees (*"the root of evil"*)
-  - `src/connector` is the gateway to an instance of Inexor Core
-  - `src/manager` manages Inexor Core instances
-  - `src/configurator` reads configuration files and provides them to the game
-
-Since those components tightly couple each other, and *must* work in order to start the game, components from `src` usually are *hard-loaded* via `require`. This in turn means that in order to hook into the API, code must be added manually.
-
-## The RESTfull API
-Documentation shall be done via swagger as soon as the `v3 spec` is released, which brings `AnyOf` support.
-Please track the following [pull request](https://github.com/OAI/OpenAPI-Specification/pull/741) for updates.
-
-## Flex won't start, resolving conflicts with the module manager
-If Inexor Flex won't start for strange reasons the most likely reason is that you've worked with a earlier revision in which the dependencies weren't at all ready.
-By that case you'll most likely get the `master` branch running again following down these steps:
-
-- `unlink` any globally `linked` module with `sudo npm unlink @inexor-game/modulename`
-- delete *all* `node_modules` folders using e,g: `rm -r */node_modules && rm -r */*/node_modules`
-- install the app again after all with `npm install`, which can take some time (the modules are small, but in a central dependency root they're quiet a bummer)
-
-# Adding a user interface
-To add a new user interface to flex, you must adapt the following schema
-
-- The package manager of favour is [yarn](yarnpkg.com).
-- Your interface must expose a `public` folder with all it's assets
- - `package.json`
- - `public`
+- Your interface must expose a `dist` folder with all it's assets
+- `package.json`
+- `dist`
   - `img`
   - `js`
   - `css`
   - `index.html`
   - (...)
-- Please indicate that your package is a _inexor-ui_ with the `@inexor-ui` scope on `npm`
 - Your dependencies will be served from `http(s)://flex_url/static`
-- Your interface will be served from `http(s)://flex_url/ui/UINAME`
-- `flex` is a reserved module name that will also be an alias for `http(s)://flex_url/ui`
+- Your interface will be served from `http(s)://flex_url/api/v1/interfaces/NAME`
 
-# Publishing
-We use [lerna](https://lernajs.io/) for publishing. You can use the following:
+You can then use the `interfaces` command line to add your newly written.
+
+### Documentation and style guide
+We use [JSDoc](http://usejsdoc.org/) for documentation. All modules from `src` and `server` are automatically added to the documentation, when following the standards.
+
+We endorse the [`eslint:recommended`](https://eslint.org/docs/rules/) rule set, combined with some custom rules.
+You can make sure your module matches our standard by running `npm run lint` in the main directory.
+
+When writting a module, please keep the following in mind
+
+- if you write a larger block of code or seperate functionality, consider creating a new module
+- by default unit tests with [mocha](mochajs.org) are done for any file that matches `*_test.js`, though it is highly recommended to add a `test` folder to your module
+- if necessary (for important or big modules), we urge that you add a separate `README.md` to the respective module
+
+### The REST API
+The REST API (`v1`) is wired together in `server/api/v1/index.js`
+Documentation via [swagger](https://swagger.io/) should follow soon enough.
+
+### Writing an own module
+Essentially to write your very first own module, you should go like this
+
+- `mkdir src/YOURMODULE`
+- `cd src/YOURMODULE & npm init` which will ask you a bunch of questions
+- the name of your module should ideally be `@inexorgame/YOURMODULE`
+- your module should export a `index.js` file with it's functionality
+
+Now you can use `npm link` inside the directory. Later on your module can be used via
+```
+const yourmodule = require('@inexorgame/yourmodule')
+```
+
+You can have a look at the `src/types` module, for a very simple and basic module example.
+
+#### Using the API
+We have specifically designed the module `@inexorgame/treeclient` to work with the `v1` API.
+You can have a look at one of the many command-line tasks in `server/commands/cli/` which will give a fine example on how to use the `treeclient` library.
+
+### Flex won't start. Resolving conflicts with the module manager
+If `flex` won't start for strange reasons the most likely thing is that you've worked with a earlier revision in which an individual module is broken.
+Try the following:
+
+`npm unlink @inexorgame && npm un -g @inexorgame/inexor-flex`
+`rm -rf node_modules`
+And then install again.
+
+### Publishing
+We use [lerna](https://lernajs.io/) for publishing. The lerna workflow is as following
+
+- install lerna via `npm i -g lerna`
+- start publishing via `lerna publish --skip-git`
+- this will ask you which semver tag you want to add
+- after this it will start publishing the inidividual modules on `npm`
+
+*NOTE:* This will require you to have `npm` installed, be logged in, and have appropriate permissions for the `@inexorgame` orga.
 
 ```
 npm install -g lerna
 lerna publish --skip-git
 ```
 
-# TODO
-Following is still undone:
+### Future features
+This is either to-do or nice to have
 
- - [x] add profiles
- - [x] add extensive command line arguments to `./inexor` [as described in the wiki](https://github.com/inexorgame/code/wiki/Command%20Line%20Options%20And%20Commands)
- - [x] fix the documentation
- - [x] make interfaces git-installable
- - [x] make `inexor-flex` a global command and release
- - [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
+- [ ] add example modules and user documentation a-la readthedocs
+- [ ] test everything extensively, fix passages that are marked with TODO (and add unit tests!)
+- [ ] authentication via OAuth
+- [ ] more secure server
+- [ ] sandbox-based plugin system
+- [ ] server lister and package lister
