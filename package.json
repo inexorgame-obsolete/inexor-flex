@@ -45,7 +45,7 @@
     "@inexorgame/interfaces": "^1.0.2",
     "@inexorgame/logger": "^1.0.3",
     "@inexorgame/logging": "^1.0.2",
-    "@inexorgame/media": "^1.0.1",
+    "@inexorgame/media": "^1.0.2",
     "@inexorgame/path": "^1.0.3",
     "@inexorgame/profiles": "^1.0.1",
     "@inexorgame/releases": "^1.0.1",
@@ -72,7 +72,7 @@
     "chai-iterator": "^1.1.4",
     "eslint": "^3.19.0",
     "jsdoc": "^3.4.3",
-    "lerna": "^2.4.0",
+    "lerna": "^2.5.1",
     "minami": "^1.1.1",
     "mocha": "^3.2.0",
     "mocha-junit-reporter": "^1.13.0"
