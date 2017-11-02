@@ -263,58 +263,63 @@ class InstanceManager extends EventEmitter {
 
             // Resolve executable
             try {
-                const releaseNode = this.releaseManager.getRelease(instanceNode.versionrange, instanceNode.channel, true);
-                if (!releaseNode) {
+                this.releaseManager.getOrInstallRelease(instanceNode.versionrange, instanceNode.channel).then((releaseNode) => {
+                    this.log.debug(`Starting instance using release ${releaseNode.version} @ ${releaseNode.channel}`);
+                    this.log.debug('1');
+                    const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
+                    this.log.debug('2');
+                    const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
+                    this.log.debug('3');
+    
+                    if (!fs.existsSync(executable_path)) {
+                        this.log.warn(`Executable ${executable_path} does not exist`);
+                        reject(new Error(`Executable does not exist: ${executable_path}`));
+                    }
+                    fs.chmodSync(executable_path, 0o755);
+    
+                    // Starting a new process with the instance id as only argument
+                    let args = [instanceId];
+                    let options = {
+                        cwd: executable_folder,
+                        env: process.env
+                    };
+                    this.log.info(`Starting ${executable_path} ${args.join(' ')}`);
+    
+                    // Spawn process
+                    const instanceProcess = spawn(executable_path, args, options);
+                    this.instances[instanceId] = instanceProcess;
+                    this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
+    
+                    instanceProcess.on('error', (err) => {
+                        this.onProcessError(instanceNode, err);
+                        //  delete this.instances[instanceId];
+                    });
+    
+                    instanceProcess.on('exit', (code, signal) => {
+                        this.onProcessExited(instanceNode, code, signal);
+                        //delete this.instances[instanceId];
+                    });
+    
+                    // Create a logger for the instance
+                    this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
+                        this.transist(instanceNode, 'stopped', 'started');
+                        resolve(instanceNode);
+                    }).catch((err) => {
+                        reject(new Error('Failed to create instance console'));
+                    });
+    
+    
+                    // Store the instance PID
+                    instanceNode.addChild('pid', 'int64', instanceProcess.pid);
+    
+                    // Store the process handle of the instance
+                    instanceNode.addChild('process', 'object', instanceProcess);
+                      
+                })
+                .catch((err) => {
                     reject(new Error(`No version fulfills ${instanceNode.versionrange} @ ${instanceNode.channel}.`));
-                    return
-                }
-
-                const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
-                const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
-
-                if (!fs.existsSync(executable_path)) {
-                    this.log.warn(`Executable ${executable_path} does not exist`);
-                    reject(new Error(`Executable does not exist: ${executable_path}`));
-                }
-                fs.chmodSync(executable_path, 0o755);
-
-                // Starting a new process with the instance id as only argument
-                let args = [instanceId];
-                let options = {
-                    cwd: executable_folder,
-                    env: process.env
-                };
-                this.log.info(`Starting ${executable_path} ${args.join(' ')}`);
-
-                // Spawn process
-                const instanceProcess = spawn(executable_path, args, options);
-                this.instances[instanceId] = instanceProcess;
-                this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
-
-                instanceProcess.on('error', (err) => {
-                    this.onProcessError(instanceNode, err);
-                    //  delete this.instances[instanceId];
+                    return;
                 });
-
-                instanceProcess.on('exit', (code, signal) => {
-                    this.onProcessExited(instanceNode, code, signal);
-                    //delete this.instances[instanceId];
-                });
-
-                // Create a logger for the instance
-                this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
-                    this.transist(instanceNode, 'stopped', 'started');
-                    resolve(instanceNode);
-                }).catch((err) => {
-                    reject(new Error('Failed to create instance console'));
-                });
-
-
-                // Store the instance PID
-                instanceNode.addChild('pid', 'int64', instanceProcess.pid);
-
-                // Store the process handle of the instance
-                instanceNode.addChild('process', 'object', instanceProcess);
             } catch (err) {
                 this.log.error(err);
             }
