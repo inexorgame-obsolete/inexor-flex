@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
-    "shell": "node inexor.js shell"
+    "shell": "node inexor.js shell",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "bin": {
     "inexor-flex": "inexor.js"
@@ -75,9 +77,11 @@
     "lerna": "^2.5.1",
     "minami": "^1.1.1",
     "mocha": "^3.2.0",
-    "mocha-junit-reporter": "^1.13.0"
+    "mocha-junit-reporter": "^1.13.0",
+    "snyk": "^1.46.0"
   },
   "config": {
     "profile": "client"
-  }
+  },
+  "snyk": true
 }
