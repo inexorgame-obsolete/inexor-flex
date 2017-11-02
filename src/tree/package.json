@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/tree",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A tree implementation that powers the Inexor Tree technology.",
   "main": "index.js",
   "repository": {
