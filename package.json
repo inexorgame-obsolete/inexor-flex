@@ -57,6 +57,7 @@
     "express": "^4.15.2",
     "express-ws": "^3.0.0",
     "figlet": "^1.2.0",
+    "helmet": "^3.9.0",
     "npid": "^0.4.0",
     "portscanner": "^2.1.1",
     "prettyjson": "^1.2.1",

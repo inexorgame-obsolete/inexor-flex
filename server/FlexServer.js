@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const helmet = require('helmet');
 const util = require('util');
 
 const inexor_api = require('@inexorgame/api');
@@ -55,6 +56,7 @@ class FlexServer {
    */
   createApiInstances() {
     let app = express();
+    app.use(helmet());
     this.websockets = require('express-ws')(app);
     this.app = app;
     this.apis = {};
