@@ -24,12 +24,13 @@ class ReleaseManager extends EventEmitter {
         super();
 
         // Hopefully we will support more platforms in the future
-        this.platform = '';
         this.platform = this.determinePlatform();
-        this.platform = (this.platform.length === 0) ? 'win64' : this.platform; // NOTE: This is a tiny developer hack for unsupported platforms
+        // NOTE: This is a tiny developer hack for unsupported platforms
+        this.platform = (this.platform.length === 0) ? 'win64' : this.platform;
 
         // The provider which acts as local cache. needs to be of type filesystem
         this.cache_folder = '';
+
         // Safe-locks to prevent concurrent tasks
         this.downloading = [];
         this.installing = [];
@@ -63,14 +64,15 @@ class ReleaseManager extends EventEmitter {
      */
     afterPropertiesSet() {
         this.loadConfig().then((resolve, reject) => {
-            this.log.debug(`Checking whether the releases directory exists at ${this.cache_folder}`)
+            this.log.debug(`Checking whether the releases directory exists at ${this.cache_folder}`);
             fs.mkdir(this.cache_folder, (err) => {
-                if (!err)
+                if (!err) {
                     this.log.info(`Created releases directory at ${this.cache_folder}`);
-                else if (err.code !== 'EEXIST')
-                    this.log.error(err)
-            })
-            this.checkForNewReleases()
+                } else if (err.code !== 'EEXIST') {
+                    this.log.error(err);
+                }
+            });
+            this.checkForNewReleases();
         });
     }
 
@@ -81,7 +83,9 @@ class ReleaseManager extends EventEmitter {
     get fetching() {
         let providersobj = this.releaseprovidersTreeNode.toObject();
         for (let name of Object.keys(providersobj)) {
-            if (providersobj[name]['isfetching'] == true) return true;
+            if (providersobj[name]['isfetching'] == true) {
+                return true;
+            }
         }
         return false;
     }
@@ -104,53 +108,53 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * @function
      * Determines the platform name as uploaded by Travis currently
      * NOTE: Keep this up-to date!
+     * @function
      * @return {string} - '{Windows|Linux|Darwin}{32|64}' first is the CMAKE_SYSTEM_NAME, then 32 or 64
      */
     determinePlatform() {
-        let platform = ''
+        let platform = '';
         if (os.platform() == 'win32') {
-            platform += 'Windows'
+            platform += 'Windows';
         } else if (os.platform() == 'linux') {
-            platform += 'Linux'
+            platform += 'Linux';
         } else if (os.platform() == 'darwin') {
-            platform += 'Darwin'
+            platform += 'Darwin';
         }
 
         if (['arm64', 'x64'].includes(os.arch())) {
-            platform += '64'
+            platform += '64';
         } else {
-            platform += '32'
+            platform += '32';
         }
 
-        return platform
+        return platform;
     }
 
     /**
-     * @function
      * Get version string from the Zip file name uploaded by Travis/Appveyor currently.
      * Returns 0.8.10@stable from inexor-core-0.8.10@stable-Linux.zip
      * valid input is everything fulfilling the pattern inexor-core-<characters>-<this.platform><characters> (so also non-zips)
+     * @function
      * @param {string} name - the input string.
      * @return {string|null} - the version or '' if pattern isn't matched
      */
     getVersionStrFromZipName(name) {
-        const version_start_index = 12; // inexor-core-
-        const version_end_index = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
-        const version_str = name.substring(version_start_index, version_end_index);
-        this.log.debug(`version found out for ${name}: ${version_str} (start: ${version_start_index}, end: ${version_end_index}`);
-        if (version_end_index == -1 || version_end_index < 13)
+        const versionStartIndex = 12; // inexor-core-
+        const versionEndIndex = name.indexOf(`-${this.platform}`);  // Gets the index where the platform occurs
+        const versionStr = name.substring(versionStartIndex, versionEndIndex);
+        this.log.debug(`version found out for ${name}: ${versionStr} (start: ${versionStartIndex}, end: ${versionEndIndex}`);
+        if (versionEndIndex == -1 || versionEndIndex < 13) {
             return null;
-        return version_str
+        }
+        return versionStr;
     }
 
     /**
-     * @function
      * Get the Zip file name uploaded by Travis/Appveyor currently.
      * Returns inexor-core-0.8.10@latest-Linux32.zip if you give it the version 0.8.10 and the channel @latest.
-     *
+     * @function
      * @param {string} version - the exact version string.
      * @param {string} channel - the release channel.
      * @return {string} - inexor-core-<version>-<this.platform>.zip
@@ -160,9 +164,8 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * @function
      * Return the bin folder path of a version.
-     *
+     * @function
      * @param {string} versionrange, the semantic version range.
      * @param {string} channel, the release channel.
      * @return {string} - the binary folder of the specific version or ''
@@ -207,16 +210,16 @@ class ReleaseManager extends EventEmitter {
                 if (err) {
                     this.log.error(`Failed to load releases config from ${config_path}: ${err.message}`);
                     reject(`Failed to load releases config from ${config_path}: ${err.message}`);
-                    return
+                    return;
                 }
                 let config = '';
                 try {
                     config = toml.parse(data.toString());
                 } catch (e) {
-                    let errormsg = `Error parsing ${config_path} on line ${e.line}, column ${e.column}: ${e.message}`
+                    let errormsg = `Error parsing ${config_path} on line ${e.line}, column ${e.column}: ${e.message}`;
                     this.log.error(errormsg);
                     reject(errormsg);
-                    return
+                    return;
                 }
                 this.log.info(config);
 
@@ -248,7 +251,7 @@ class ReleaseManager extends EventEmitter {
                             return;
                         }
                     }
-                    const errmsg = `There was neither a cache_folder entry nor any release providers of type filesystem in your ${config_path}`
+                    const errmsg = `There was neither a cache_folder entry nor any release providers of type filesystem in your ${config_path}`;
                     this.log.error(errmsg);
                     reject(false);
                     return;
@@ -258,14 +261,14 @@ class ReleaseManager extends EventEmitter {
                     reject(false);
                     return
                 }
-                this.cache_folder = this.releaseprovidersTreeNode.getChild(cache_folder_provider)['path']
+                this.cache_folder = this.releaseprovidersTreeNode.getChild(cache_folder_provider)['path'];
                 this.log.info(`Using the provider ${cache_folder_provider} as cache folder (${this.cache_folder})`);
 
                 resolve(true);
 
-            }))
+            }));
 
-        })
+        });
     }
 
     /**
@@ -294,12 +297,12 @@ class ReleaseManager extends EventEmitter {
             fs.readdir(absolute_path, (err, items) => {
                 if (err) {
                     this.log.error(`Failed to scan folder ${absolute_path} for subfolders: ${err}`);
-                    reject(false)
+                    reject(false);
                 }
 
                 for (let item of items) {
                     let fullpath = path.join(absolute_path, item);
-                    let isfolder = fs.statSync(fullpath).isDirectory()
+                    let isfolder = fs.statSync(fullpath).isDirectory();
                     // add all subfolders as releases
                     if (isfolder) {
                         this.addRelease(item, fullpath, true, true, item, provider['name']);
@@ -308,9 +311,9 @@ class ReleaseManager extends EventEmitter {
                     // add all zips which have the right name as not-installed releases
                     let iszip = path.extname(item) == '.zip';
                     if (iszip) {
-                        let version_str = this.getVersionStrFromZipName(item);
-                        if (version_str) {
-                            this.addRelease(version_str, fullpath, true, false, version_str, provider['name']);
+                        let versionStr = this.getVersionStrFromZipName(item);
+                        if (versionStr) {
+                            this.addRelease(versionStr, fullpath, true, false, versionStr, provider['name']);
                         }
                         continue;
                     }
@@ -372,10 +375,10 @@ class ReleaseManager extends EventEmitter {
                             }
                         }
 
-                        resolve(true)
-                    })
+                        resolve(true);
+                    });
                 }
-            )
+            );
         });
         return promise;
     }
@@ -392,10 +395,11 @@ class ReleaseManager extends EventEmitter {
             let provider_obj = providers[i];
             this.log.info(`Fetching from ${provider_obj['name']}`);
 
-            if (provider_obj['type'] == 'filesystem')
+            if (provider_obj['type'] == 'filesystem') {
                 promises.push(this.fetchfromFilesystemProvider(provider_obj));
-            else
+            } else {
                 promises.push(this.fetchfromRestProvider(provider_obj));
+            }
         }
         // we now have a promises array and return it a single promise which resolves when all promises inside are.
         return Promise.all(promises);
@@ -405,7 +409,7 @@ class ReleaseManager extends EventEmitter {
      * @private
      * Inserts a release into the tree (a virtual one on a remote server, or a filesystem one).
      * If the release already exists, it returns.
-     * @param {string} version_str - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
+     * @param {string} versionStr - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
      *                           Note: in the Tree two fields will be set: version and channel (i.e. 0.1.1 and stable)
      * @param {string} path - the filepath to the release on the harddisk or online.
      * @param {bool} isdownloaded - if the release is already on the harddisk.
@@ -413,14 +417,14 @@ class ReleaseManager extends EventEmitter {
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
      */
-    addRelease(version_str, path, isdownloaded = false, isinstalled = false, name = '', provider = 'explicit_path') {
+    addRelease(versionStr, path, isdownloaded = false, isinstalled = false, name = '', provider = 'explicit_path') {
         // get the version from a version@channel string:
-        let version = version_str;
+        let version = versionStr;
         let channel = '';
-        const channel_index = version_str.indexOf(`@`);  // Gets the index where @ occurs in the version_str
-        if (channel_index != -1) {
-            version = version_str.substring(0, channel_index);
-            channel = version_str.substring(channel_index+1);
+        const channelIndex = versionStr.indexOf(`@`);  // Gets the index where @ occurs in the versionStr
+        if (channelIndex != -1) {
+            version = versionStr.substring(0, channelIndex);
+            channel = versionStr.substring(channelIndex + 1);
         }
 
         let channelNode = this.releaseChannelsTreeNode.getOrCreateNode(channel);
@@ -514,7 +518,7 @@ class ReleaseManager extends EventEmitter {
 
             // filter out version if channel is not empty and not matching
             if (channel && channel != '*' && channel_name != channel) {
-                this.log.debug(`version channel ${channel_name} not matching channel: ${channel}`);
+                this.log.trace(`Skipping non-matching release: version channel ${channel_name} not matching requested channel: ${channel}`);
                 continue;
             }
 
@@ -546,11 +550,64 @@ class ReleaseManager extends EventEmitter {
                 }
             }
         }
-        if(returnNode) {
-            this.log.debug(`getRelease: ${returnNode.version} @ ${returnNode.channel} does fulfill '${version_range}' @ ${channel}`);
+        if (returnNode) {
+            this.log.debug(`Got matching release: ${returnNode.version} @ ${returnNode.channel} does fulfill '${version_range}' @ ${channel}`);
         }
 
         return returnNode;
+    }
+
+    /**
+     * Searches through all releases and returns the one fulfilling the semantic version range the best (and is in the same channel).
+     * If no release is installed, it checks for available releases
+     * @function
+     * @param {string} version_range - Either:
+     *                                    A) the semantic version range it needs to fulfill ('>0.5.2 || 0.3.8')
+     *                                    B) an exact non-semantic version ('build', 'buildnew', 'testbinaries')
+     * @param {string} channel - additionally you can specify a channel. Only if that channel matches, the release is a match.
+     * @return {Node|null} - the InexorTree node or null
+     */
+    getOrInstallRelease(versionrange, channel = '*') {
+        return new Promise((resolve, reject) => {
+            const releaseNode = this.getRelease(versionrange, channel, true);
+            if (releaseNode) {
+                this.log.trace(`Found already installed release ${releaseNode.version} @ ${releaseNode.channel}`);
+                resolve(releaseNode);
+            } else {
+                // Currently no release is installed: Check for release available
+                this.log.trace(`Didn't find an installed release. Searching for available releases: '${versionrange}' @ ${channel}`);
+                const availableReleaseNode = this.getRelease(versionrange, channel, false);
+                if (availableReleaseNode) {
+                    // Release is available: Download and install release
+                    this.log.trace(`Found a release which is available, but not installed: ${availableReleaseNode.version} @ ${availableReleaseNode.channel}`);
+                    const version = availableReleaseNode.getChild('version').get();
+                    const channel = availableReleaseNode.getChild('channel').get();
+                    // Download release by release node
+                    this.downloadRelease(version, channel, false);
+//                    const onReleaseDownloadedHandler = () => {
+//                        // Install release by release node
+//                        this.log.trace(`Downloaded release ${version} @ ${channel}. Starting installation...`);
+//                        this.installRelease(version, channel);
+//                        this.once('onReleaseInstalled', () => {
+//                            this.log.trace(`Successfully installed release ${version} @ ${channel}`);
+//                            resolve(availableReleaseNode);
+//                        });
+//                    };
+//                    this.once('onReleaseDownloaded', onReleaseDownloadedHandler);
+                    this.on('onReleaseDownloaded', () => {
+                        // Install release by release node
+                        this.log.trace(`Downloaded release ${version} @ ${channel}. Starting installation...`);
+                        this.installRelease(version, channel);
+                        this.on('onReleaseInstalled', () => {
+                            this.log.trace(`Successfully installed release ${version} @ ${channel}`);
+                            resolve(availableReleaseNode);
+                        });
+                    });
+                } else {
+                    reject(new Error(`No version fulfills '${instanceNode.versionrange}' @ ${instanceNode.channel}.`));
+                }
+            }
+        });
     }
 
     /**
@@ -569,7 +626,7 @@ class ReleaseManager extends EventEmitter {
         return new Promise((resolve, reject) => {
             vm.log.info('Checking for new releases');
             resolve(vm.fetchReleases());
-        })
+        });
     }
 
     /**
@@ -599,14 +656,15 @@ class ReleaseManager extends EventEmitter {
                 response.on('end', () => {
                     file.close()
                     resolve(true)
-                })
-            })
+                });
+            });
 
-        })
+        });
     }
 
     /**
      * Downloads a release for the specific version
+     * @function
      * @param {string} version, the semantic version range.
      * @param {string} channel, the release channel.
      * @param {bool} doinstall
@@ -620,13 +678,13 @@ class ReleaseManager extends EventEmitter {
 
         version = releaseNode.version;
         channel = releaseNode.channel;
-        const version_str = `${version}@${channel}`;
+        const versionStr = `${version}@${channel}`;
 
-        if (this.downloading[version_str]) {
-            this.log.error(`Downloading of release ${version_str} is already in progress`);
+        if (this.downloading.hasOwnProperty(versionStr) && this.downloading[versionStr]) {
+            this.log.error(`Downloading of release ${versionStr} is already in progress`);
             return;
         }
-        this.downloading[version_str] = true;
+        this.downloading[versionStr] = true;
 
         // releaseNode.getChild('version', 'string', version);
         // releaseNode.getChild('name', 'string', name);
@@ -637,7 +695,7 @@ class ReleaseManager extends EventEmitter {
             // its already downloaded but not yet downloaded.
             if (isdownloadedNode.get() && !isinstalled && doinstall) {
                 this.installRelease(version, channel);
-                return
+                return;
             }
 
             // only REST providers come here
@@ -647,15 +705,15 @@ class ReleaseManager extends EventEmitter {
 
             this.downloadArchive(urlNode.get(), zipfilename, this.cache_folder).then((done) => {
                 isdownloadedNode.set(true);
-                this.downloading[version_str] = false;
+                this.downloading[versionStr] = false;
                 releaseNode.path = path.join(this.cache_folder, zipfilename);
 
-                this.log.info(`Release with version ${version_str} has been downloaded`);
+                this.log.info(`Release with version ${versionStr} has been downloaded`);
                 this.emit('onReleaseDownloaded', version);
                 if (doinstall) {
                     this.installRelease(version, channel);
                 }
-            })
+            });
         } catch (e) {
             this.log.error(e);
         }
@@ -678,18 +736,19 @@ class ReleaseManager extends EventEmitter {
             let archive = AdmZip(filePath);
             archive.extractAllToAsync(folderParentPath, true, (done) => {
                 fs.rename(folderPath, extractionPath, (done) => {
-                    this.log.debug(`Moved folder ${folderPath} to ${extractionPath})`);
+                    this.log.debug(`Moved folder ${folderPath} to ${extractionPath}`);
                     fs.remove(folderPath, (done) => {
                         resolve(true);
-                    })
-                })
-            })
-        })
+                    });
+                });
+            });
+        });
     }
 
     /**
      * Installs a release for the given version
-     * @param {string} version_str, the semantic version range.
+     * @function
+     * @param {string} versionStr, the semantic version range.
      * @param {string} channel, the release channel.
      * @throws 'Install in progress'
      */
@@ -702,7 +761,7 @@ class ReleaseManager extends EventEmitter {
         version = releaseNode.version;
         channel = releaseNode.channel;
         // this one is here to do the lookup in the maps of installed releases.. key is always version@channel here, even if channel is ''
-        const version_str = `${version}@${channel}`;
+        const versionStr = `${version}@${channel}`;
 
         // the release folder however should get named 'version' if channel is '', not 'version@'
         let version_folder_name = version;
@@ -713,19 +772,19 @@ class ReleaseManager extends EventEmitter {
         let installedNode = releaseNode.getChild('isinstalled');
 
         if (installedNode.get()) {
-            this.log.info(`Release ${version_str} is already installed`);
+            this.log.info(`Release ${versionStr} is already installed`);
             return;
         }
 
-        if (this.installing[version_str]) {
-            this.log.error(`Installing of release ${version_str} is already in progress`);
+        if (this.installing.hasOwnProperty(versionStr) && this.installing[versionStr]) {
+            this.log.error(`Installing of release ${versionStr} is already in progress`);
             return;
         }
-        this.installing[version_str] = true;
+        this.installing[versionStr] = true;
 
 
 
-        this.log.info(`Installing release ${version_str} started`);
+        this.log.info(`Installing release ${versionStr} started`);
 
         let zipFilePath = releaseNode.path;
 
@@ -734,10 +793,10 @@ class ReleaseManager extends EventEmitter {
         this.installArchive(zipFilePath, installFolder).then((done) => {
             try {
                 installedNode.set(true);
-                this.installing[version_str] = false;
+                this.installing[versionStr] = false;
                 releaseNode.path = installFolder;
 
-                this.log.info(`Release with version ${version_str} has been installed to ${installFolder}`);
+                this.log.info(`Release with version ${versionStr} has been installed to ${installFolder}`);
                 // make the executables executable on Unix
                 for (let type of ['server', 'client']) {
                     let executable = path.join(this.getBinaryPath(version, channel), this.getExecutableName(type));
@@ -747,7 +806,7 @@ class ReleaseManager extends EventEmitter {
             } catch (e) {
                 this.log.error(e);
             }
-        })
+        });
     }
 
     /**
@@ -762,22 +821,22 @@ class ReleaseManager extends EventEmitter {
         }
         version = releaseNode.version;
         channel = releaseNode.channel;
-        const version_str = `${version}@${channel}`;
+        const versionStr = `${version}@${channel}`;
 
-        if (this.uninstalling[version_str]) {
+        if (this.uninstalling.hasOwnProperty(versionStr) && this.uninstalling[versionStr]) {
             this.log.error(`Uninstalling of release ${version} is already in progress`);
-            return
+            return;
         }
-        this.uninstalling[version_str] = true;
+        this.uninstalling[versionStr] = true;
         let installedNode = releaseNode.getChild('isinstalled');
         const installFolder = releaseNode.getChild('path');
 
         fs.remove(installFolder, (done) => {
             installedNode.set(false);
-            this.uninstalling[version_str] = false;
-            this.log.info(`Uninstalled release with version ${version_str}`);
+            this.uninstalling[versionStr] = false;
+            this.log.info(`Uninstalled release with version ${versionStr}`);
             this.emit('onReleaseUninstalled', version);
-        })
+        });
     }
 }
 
