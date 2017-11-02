@@ -52,7 +52,7 @@
     "@inexorgame/tree": "^1.0.5",
     "@inexorgame/treeclient": "^1.0.1",
     "@inexorgame/types": "^1.0.1  ",
-    "circular-json": "^0.3.1",
+    "circular-json": "^0.4.0",
     "cors": "^2.8.3",
     "express": "^4.15.2",
     "express-ws": "^3.0.0",
@@ -64,7 +64,7 @@
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
     "xdg-basedir": "^3.0.0",
-    "yargs": "^7.0.2"
+    "yargs": "^10.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",

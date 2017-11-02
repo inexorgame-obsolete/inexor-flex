@@ -21,6 +21,6 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "node-rest-client": "^2.0.1"
+    "node-rest-client": "^3.1.0"
   }
 }
