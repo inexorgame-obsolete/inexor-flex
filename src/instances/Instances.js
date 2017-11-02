@@ -265,11 +265,8 @@ class InstanceManager extends EventEmitter {
             try {
                 this.releaseManager.getOrInstallRelease(instanceNode.versionrange, instanceNode.channel).then((releaseNode) => {
                     this.log.debug(`Starting instance using release ${releaseNode.version} @ ${releaseNode.channel}`);
-                    this.log.debug('1');
                     const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
-                    this.log.debug('2');
                     const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
-                    this.log.debug('3');
     
                     if (!fs.existsSync(executable_path)) {
                         this.log.warn(`Executable ${executable_path} does not exist`);
