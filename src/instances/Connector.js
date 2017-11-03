@@ -61,7 +61,8 @@ class Connector extends EventEmitter {
     this.log.level(this.logManager.getLogger('flex.instances.Connector').level());
 
     /** @private */
-    this._protoPath = this.getProtoPath(instanceNode.versionrange, instanceNode.channel, instanceNode.type);
+    // Use the concrete version and channel instead of versionRange and channelSearch
+    this._protoPath = this.getProtoPath(instanceNode.version, instanceNode.channel, instanceNode.type);
     this.log.info('Path to the .proto file: %s', this._protoPath);
 
     if (!fs.existsSync(this._protoPath)) {
@@ -645,13 +646,13 @@ class Connector extends EventEmitter {
    * Returns the path to the proto file by instance type.
    * @function
    * @name Connector.getProtoPath
-   * @param {string} versionrange - the semantic version range.
-   * @param {string} channel - the channel of the release
+   * @param {string} versionRange - the semantic version range.
+   * @param {string} channelSearch - the channel of the release
    * @param {string} instanceType - The instance type - either client or server.
    * @return {string} the path to the proto file.
    */
-  getProtoPath(versionrange, channel, instanceType) {
-      return path.join(this.releaseManager.getBinaryPath(versionrange, channel), `inexor-tree-${instanceType}.proto`);
+  getProtoPath(versionRange, channelSearch, instanceType) {
+      return path.join(this.releaseManager.getBinaryPath(versionRange, channelSearch), `inexor-tree-${instanceType}.proto`);
   }
 
 }
