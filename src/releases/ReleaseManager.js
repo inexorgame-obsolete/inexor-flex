@@ -347,7 +347,7 @@ class ReleaseManager extends EventEmitter {
         let promise = new Promise((resolve, reject) => {
 
             if (isFetchingNode == true) {
-                this.log.error(`Already fetching latest releases from  ${path} (provider:${provider['name']})`);
+                this.log.error(`Already fetching latest releases from  ${path} (provider: ${provider['name']})`);
                 reject(false);
             }
             isFetchingNode = true;
@@ -367,6 +367,7 @@ class ReleaseManager extends EventEmitter {
 
                     response.on('end', () => {
                         let parsed = JSON.parse(body);
+                        this.log.info(parsed);
                         debuglog(parsed);
                         isFetchingNode = false;
 
@@ -419,14 +420,14 @@ class ReleaseManager extends EventEmitter {
      * @return {Promise<bool>}
      */
     fetchReleasesByProviderType(provider) {
-        this.log.debug(`Fetching available releases from ${provider_obj['type']} provider ${provider_obj['name']}`);
-        switch (provider['type']) {
+        this.log.debug(`Fetching available releases from ${provider['type']} provider ${provider['name']}`);
+        switch (provider['type'].toLowerCase()) {
             case 'filesystem':
                 return this.fetchFromFilesystemProvider(provider);
-            case 'REST':
+            case 'rest':
                 return this.fetchFromRestProvider(provider);
             default:
-                this.log.warn(`Skipping unknown provider type ${provider['type']} for provider ${provider_obj['name']}`);
+                this.log.warn(`Skipping unknown provider type ${provider['type']} for provider ${provider['name']}`);
                 break;
         }
     }
