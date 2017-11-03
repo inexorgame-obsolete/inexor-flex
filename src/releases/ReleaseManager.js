@@ -64,15 +64,26 @@ class ReleaseManager extends EventEmitter {
      */
     afterPropertiesSet() {
         this.loadConfig().then((resolve, reject) => {
-            this.log.debug(`Checking whether the releases directory exists at ${this.cacheFolder}`);
-            fs.mkdir(this.cacheFolder, (err) => {
-                if (!err) {
-                    this.log.info(`Created releases directory at ${this.cacheFolder}`);
-                } else if (err.code !== 'EEXIST') {
-                    this.log.error(err);
-                }
-            });
+            this.mkdirLocalCache();
+            // TODO: Move this task to a scheduler (post start tasks)
             this.checkForNewReleases();
+        });
+    }
+
+    /**
+     * Ensures that the local cache folder is available.
+     * @function
+     */
+    mkdirLocalCache() {
+        this.log.debug(`Checking whether the releases directory exists at ${this.cacheFolder}`);
+        fs.mkdir(this.cacheFolder, (err) => {
+            if (!err) {
+                this.log.debug(`Created releases directory at ${this.cacheFolder}`);
+            } else if (err.code == 'EEXIST') {
+                this.log.trace(`Found existing releases directory at ${this.cacheFolder}`);
+            } else if (err.code !== 'EEXIST') {
+                this.log.error(`Failed to create releases directory at ${this.cacheFolder}`, err);
+            }
         });
     }
 
@@ -277,8 +288,8 @@ class ReleaseManager extends EventEmitter {
      */
     saveConfig(filename = 'releases.toml') {
         return new Promise((resolve, reject) => {
-            this.log.warn(`Saving ${filename} is currently not supported.`);
-            reject(`Failed to write releases to ${filename}: not supported atm.`);
+            this.log.warn(`Saving ${filename} is currently not supported`);
+            reject(`Failed to write releases to ${filename}: not supported atm`);
         });
     }
 
@@ -288,10 +299,10 @@ class ReleaseManager extends EventEmitter {
      * @param {Object} provider
      * @return {Promise<bool>}
      */
-    fetchfromFilesystemProvider(provider) {
+    fetchFromFilesystemProvider(provider) {
         return new Promise((resolve, reject) => {
             let absolutePath = provider['path'];
-            this.log.info(`Starting to scan folder ${absolutePath}`);
+            this.log.info(`Scanning folder ${absolutePath} for downloaded releases`);
             fs.readdir(absolutePath, (err, items) => {
                 if (err) {
                     this.log.error(`Failed to scan folder ${absolutePath} for subfolders: ${err}`);
@@ -329,7 +340,7 @@ class ReleaseManager extends EventEmitter {
      * @param {Object} provider - the provider object in the Tree.
      * @return {Promise<bool>}
      */
-    fetchfromRestProvider(provider) {
+    fetchFromRestProvider(provider) {
         const path = provider['path'];
         let isFetchingNode = provider['isfetching'];
 
@@ -383,24 +394,41 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * @private
-     * Fetches releases from the providers.
+     * Fetches releases from all available release providers.
+     * Inexor Tree: /releases/release_providers/$PROVIDER_NAME
      * @return {Promise<bool>}
      */
     fetchReleases() {
         let promises = [];
         let providers = this.releaseprovidersTreeNode.toObject();
         for (let i of Object.keys(providers)) {
-            let provider_obj = providers[i];
-            this.log.info(`Fetching from ${provider_obj['name']}`);
-
-            if (provider_obj['type'] == 'filesystem') {
-                promises.push(this.fetchfromFilesystemProvider(provider_obj));
-            } else {
-                promises.push(this.fetchfromRestProvider(provider_obj));
+            let provider = providers[i];
+            let promise = this.fetchReleasesByProviderType(providers[i]);
+            if (promise != null) {
+                promises.push(promise);
             }
         }
-        // we now have a promises array and return it a single promise which resolves when all promises inside are.
+        // we now have a promises array and return it a single promise
+        // which resolves when all promises inside are done.
         return Promise.all(promises);
+    }
+
+    /**
+     * @private
+     * Fetches releases from the given provider by provider type.
+     * @return {Promise<bool>}
+     */
+    fetchReleasesByProviderType(provider) {
+        this.log.debug(`Fetching available releases from ${provider_obj['type']} provider ${provider_obj['name']}`);
+        switch (provider['type']) {
+            case 'filesystem':
+                return this.fetchFromFilesystemProvider(provider);
+            case 'REST':
+                return this.fetchFromRestProvider(provider);
+            default:
+                this.log.warn(`Skipping unknown provider type ${provider['type']} for provider ${provider_obj['name']}`);
+                break;
+        }
     }
 
     /**
@@ -493,7 +521,7 @@ class ReleaseManager extends EventEmitter {
         providerNode.addChild('needsunpacking', 'bool', needsunpacking);
         providerNode.addChild('isfetching', 'bool', false);
 
-        this.log.info(`Release provider ${name} has been added`);
+        this.log.trace(`Release provider ${name} has been added`);
         this.emit('onNewProviderAvailable', name);
     }
 
@@ -594,12 +622,12 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * Checks for new releases and exposes them in the tree
-     * /releases/$VERSION_NUMBER
-     *  - version (string) - either a code name or the semver
-     *  - name (string) - an optional release name
-     *  - path (string) - the path to the version
-     *  - isdownloaded (bool)
+     * Checks for new releases and exposes them in the Inexor Tree. See Inexor Tree path: /releases/channels/$CHANNEL_NAME/$VERSION_NUMBER
+     *  - version (string) - either a code name or the semver.
+     *  - channel (string) - the channel name.
+     *  - name (string) - an optional release name.
+     *  - path (string) - the path to the version. Depends on the provider type: absolute path for local_cache, URL for github.
+     *  - isdownloaded (bool) - whether or not the zip files are already downloaded.
      *  - isInstalled (bool) - whether or not the zip files are already unpacked.
      * @function
      * @return {Promise<bool>} - have a look at {link ReleaseManager.fetchReleases}
