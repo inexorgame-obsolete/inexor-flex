@@ -367,21 +367,31 @@ class ReleaseManager extends EventEmitter {
 
                     response.on('end', () => {
                         let parsed = JSON.parse(body);
-                        this.log.info(parsed);
                         debuglog(parsed);
                         isFetchingNode = false;
 
                         for (let release of parsed) {
                             debuglog(release);
+                            this.log.info(release);
 
                             // find asset path for our platform from json
                             let asset = release.assets.filter((a) => {
-                                if (a.content_type != 'application/zip')
+                                if (a.content_type != 'application/zip') {
                                     return false;
+                                }
                                 return a.name.includes(this.platform);
                             });
                             if (asset[0] != null) {
-                                this.addRelease(release.tag_name, asset[0].browser_download_url, false, false, release.name, provider['name']);
+                                this.addRelease(
+                                    release.tag_name,
+                                    asset[0].browser_download_url,
+                                    false,
+                                    false,
+                                    release.name,
+                                    provider['name'],
+                                    release.prerelease,
+                                    release.created_at
+                                );
                             }
                         }
 
@@ -439,12 +449,12 @@ class ReleaseManager extends EventEmitter {
      * @param {string} versionStr - the semantical version of the release (+ possible usage of @channel, i.e. 0.1.1@stable
      *                           Note: in the Tree two fields will be set: version and channel (i.e. 0.1.1 and stable)
      * @param {string} path - the filepath to the release on the harddisk or online.
-     * @param {bool} isdownloaded - if the release is already on the harddisk.
+     * @param {bool} isDownloaded - if the release is already on the harddisk.
      * @param {bool} isInstalled - if the release is a zip or already a directory.
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
      */
-    addRelease(versionStr, path, isdownloaded = false, isInstalled = false, name = '', provider = 'explicit_path') {
+    addRelease(versionStr, path, isDownloaded = false, isInstalled = false, name = '', provider = 'explicit_path', preRelease = null, createdAt = null) {
         // get the version from a version@channel string:
         let version = versionStr;
         let channel = '';
@@ -456,38 +466,47 @@ class ReleaseManager extends EventEmitter {
 
         let channelNode = this.releaseChannelsTreeNode.getOrCreateNode(channel);
 
-        // handle that the release is already provided by another provider
         if (channelNode.hasChild(version)) {
-
-            let oldreleaseNode = channelNode[version];
-            let old_was_downloaded = oldreleaseNode.getChild('isdownloaded').get();
-            let old_was_installed = oldreleaseNode.getChild('isinstalled').get();
+            // handle that the release is already provided by another provider
+            let oldReleaseNode = channelNode[version];
+            let old_was_downloaded = oldReleaseNode.getChild('isDownloaded').get();
+            let old_was_installed = oldReleaseNode.getChild('isInstalled').get();
 
             // this release is actually 'better' than the saved one (its downloaded/installed already)
-            if ((isInstalled && !old_was_installed) || (isdownloaded && !old_was_downloaded)) {
-                oldreleaseNode['path'] = path;
+            if ((isInstalled && !old_was_installed) || (isDownloaded && !old_was_downloaded)) {
+                oldReleaseNode['path'] = path;
                 if (name.length(name)) {
-                    oldreleaseNode['name'] = name;
+                    oldReleaseNode['name'] = name;
                 }
-                oldreleaseNode['provider'] = provider;
-                oldreleaseNode['isdownloaded'] = isdownloaded;
-                oldreleaseNode['isinstalled'] = isInstalled;
+                oldReleaseNode['provider'] = provider;
+                oldReleaseNode['isDownloaded'] = isDownloaded;
+                oldReleaseNode['isInstalled'] = isInstalled;
             }
-            return;
+            if (preRelease != null) {
+                oldReleaseNode.addChild('preRelease', 'bool', preRelease);
+            }
+            if (createdAt != null) {
+                oldReleaseNode.addChild('createdAt', 'string', createdAt);
+            }
+        } else {
+            // handle that the release is not yet provided
+            let releaseNode = channelNode.addNode(version);
+            releaseNode.addChild('version', 'string', version);
+            releaseNode.addChild('channel', 'string', channel);
+            releaseNode.addChild('path', 'string', path);
+            releaseNode.addChild('name', 'string', name);
+            releaseNode.addChild('provider', 'string', provider);
+            releaseNode.addChild('isDownloaded', 'bool', isDownloaded);
+            releaseNode.addChild('isInstalled', 'bool', isInstalled);
+            if (preRelease != null) {
+                releaseNode.addChild('preRelease', 'bool', preRelease);
+            }
+            if (createdAt != null) {
+                releaseNode.addChild('createdAt', 'string', createdAt);
+            }
+            this.emit('onNewReleaseAvailable', version);
+            this.log.info(`A release with version ${version} in channel '${channel}' has been added (provider: ${provider})`);
         }
-
-        // handle that the release is not yet provided
-        let releaseNode = channelNode.addNode(version);
-        releaseNode.addChild('version', 'string', version);
-        releaseNode.addChild('channel', 'string', channel);
-        releaseNode.addChild('path', 'string', path);
-        releaseNode.addChild('name', 'string', name);
-        releaseNode.addChild('provider', 'string', provider);
-        releaseNode.addChild('isdownloaded', 'bool', isdownloaded);
-        releaseNode.addChild('isinstalled', 'bool', isInstalled);
-
-        this.emit('onNewReleaseAvailable', version);
-        this.log.info(`A release with version ${version} in channel '${channel}' has been added (provider: ${provider})`);
     }
 
     /**
@@ -552,7 +571,7 @@ class ReleaseManager extends EventEmitter {
             for (let versionName of releaseChannelNode.getChildNames()) {
                 const releaseNode = releaseChannelNode[versionName];
 
-                if (onlyInstalled && !releaseNode.getChild('isinstalled').get()) {
+                if (onlyInstalled && !releaseNode.getChild('isInstalled').get()) {
                     // skip not installed ones if 'only_installed' parameter is true.
                     continue;
                 }
@@ -628,7 +647,7 @@ class ReleaseManager extends EventEmitter {
      *  - channel (string) - the channel name.
      *  - name (string) - an optional release name.
      *  - path (string) - the path to the version. Depends on the provider type: absolute path for local_cache, URL for github.
-     *  - isdownloaded (bool) - whether or not the zip files are already downloaded.
+     *  - isDownloaded (bool) - whether or not the zip files are already downloaded.
      *  - isInstalled (bool) - whether or not the zip files are already unpacked.
      * @function
      * @return {Promise<bool>} - have a look at {link ReleaseManager.fetchReleases}
@@ -702,8 +721,8 @@ class ReleaseManager extends EventEmitter {
         }
         this.downloading[versionStr] = true;
 
-        let isDownloadedNode = releaseNode.getChild('isdownloaded'); // The TreeNode on a bool
-        const isInstalled = releaseNode.getChild('isinstalled').get(); // a bool
+        let isDownloadedNode = releaseNode.getChild('isDownloaded'); // The TreeNode on a bool
+        const isInstalled = releaseNode.getChild('isInstalled').get(); // a bool
 
         try {
             if (isDownloadedNode.get() && !isInstalled && doInstall) {
@@ -786,7 +805,7 @@ class ReleaseManager extends EventEmitter {
             versionFolderName = `${version}@${channel}`;
         }
 
-        let installedNode = releaseNode.getChild('isinstalled');
+        let installedNode = releaseNode.getChild('isInstalled');
 
         if (installedNode.get()) {
             this.log.info(`Release ${versionStr} is already installed`);
@@ -845,7 +864,7 @@ class ReleaseManager extends EventEmitter {
             return;
         }
         this.uninstalling[versionStr] = true;
-        let installedNode = releaseNode.getChild('isinstalled');
+        let installedNode = releaseNode.getChild('isInstalled');
         const installFolder = releaseNode.getChild('path');
 
         fs.remove(installFolder, (done) => {
