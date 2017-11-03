@@ -642,34 +642,38 @@ class ReleaseManager extends EventEmitter {
 
     /**
      * @private
+     * Downloads an archive to the given destination.
      * @function downloadArchive
-     * Downloads an archive to a given destination
-     * @param  {string} archiveURL
-     * @param  {string} fileName
-     * @param  {string} destinationPath - where the file should go
+     * @param  {string} archiveURL - The URL of the archive on a remote server.
+     * @param  {string} fileName - The target local file name.
+     * @param  {string} destinationPath - The target folder where the file should go.
      * @return {Promise<boolean>}
      */
     downloadArchive(archiveURL, fileName, destinationPath) {
         return new Promise((resolve, reject) => {
-            let URL = url.parse(archiveURL)
-            let filePath = path.resolve(destinationPath, fileName)
-            let file = fs.createWriteStream(filePath)
-
-            https.get({
+            let URL = url.parse(archiveURL);
+            let filePath = path.resolve(destinationPath, fileName);
+            let file = fs.createWriteStream(filePath);
+            let request = https.get({
                 host: URL.host,
                 path: URL.path,
                 headers: {
                     'User-Agent': userAgent
                 }
             }, (response) => {
-                response.pipe(file)
-
+                response.pipe(file);
                 response.on('end', () => {
-                    file.close()
-                    resolve(true)
+                    file.close();
+                    resolve(true);
                 });
             });
-
+            request.on('error', (err) => {
+                this.log.error(`Failed to download archive from ${archiveURL}!`, err);
+                file.close();
+                fs.unlink(filePath, (err2) => {
+                    resolve(false);
+                });
+            });
         });
     }
 
@@ -713,15 +717,17 @@ class ReleaseManager extends EventEmitter {
             const urlNode = releaseNode.getChild('path');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
 
-            this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder).then((done) => {
-                isDownloadedNode.set(true);
+            this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder).then((success) => {
                 this.downloading[versionStr] = false;
-                releaseNode.path = path.join(this.cacheFolder, zipFilename);
-
-                this.log.info(`Release with version ${versionStr} has been downloaded to ${releaseNode.path}`);
-                this.emit('onReleaseDownloaded', version);
-                if (doInstall) {
-                    this.installRelease(version, channel);
+                if (success) {
+                    isDownloadedNode.set(true);
+                    releaseNode.path = path.join(this.cacheFolder, zipFilename);
+    
+                    this.log.info(`Release with version ${versionStr} has been downloaded to ${releaseNode.path}`);
+                    this.emit('onReleaseDownloaded', version);
+                    if (doInstall) {
+                        this.installRelease(version, channel);
+                    }
                 }
             });
         } catch (e) {
