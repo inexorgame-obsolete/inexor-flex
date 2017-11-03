@@ -166,8 +166,8 @@ class InstanceManager extends EventEmitter {
      * @param {string} [type] - the instance type - either server or client
      * @param {string} [name] - the name of the instance
      * @param {string} [description] - the description of the instance
-     * @param {string} [versionrange] - the semantic version range. The release the instance starts need to match with its version.
-     * @param {string} [channel] -  the version channel. The release has to have the same channel.
+     * @param {string} [versionRange] - the semantic version range. The release the instance starts need to match with its version.
+     * @param {string} [channelSearch] -  the version channel. The release has to have the same channel.
      *                              It is determined by the version name (the github tag or the name of the folder/zip):
      *                              version@channel, e.g. 0.2.3-alpha@stable
      * @param {boolean} persistent - True, if the instance should be persisted.
@@ -176,7 +176,7 @@ class InstanceManager extends EventEmitter {
      * @param {boolean} autorestart - True, if the instance should be restarted automatically on shutdown of the instance.
      * @return {Promise<tree.Node>} - the tree node which represents the instance
      */
-    create(identifier = null, type = default_instance_type, name = '', description = '', versionrange = '', channel = '', persistent = false, autostart = false, autoconnect = false, autorestart = false) {
+    create(identifier = null, type = default_instance_type, name = '', description = '', versionRange = '0.x', channelSearch = '*', persistent = false, autostart = false, autoconnect = false, autorestart = false) {
         return new Promise((resolve, reject) => {
             if (identifier == null) {
                 reject(new Error('Failed to create instance: No identifier'));
@@ -203,12 +203,12 @@ class InstanceManager extends EventEmitter {
             instanceNode.addChild('port', 'int64', identifier);
 
             // The semantic version range. The release the instance starts need to match with its version.
-            instanceNode.addChild('versionrange', 'string', versionrange);
+            instanceNode.addChild('versionRange', 'string', versionRange);
 
             // The version channel. The release has to have the same channel.
             // It is determined by the version name (the github tag or the name of the folder/zip):
             // version@channel, e.g. 0.2.3-alpha@stable
-            instanceNode.addChild('channel', 'string', channel);
+            instanceNode.addChild('channelSearch', 'string', channelSearch);
 
             // The instance automatically starts on startup
             instanceNode.addChild('autostart', 'bool', autostart);
@@ -263,11 +263,23 @@ class InstanceManager extends EventEmitter {
 
             // Resolve executable
             try {
-                this.releaseManager.getOrInstallRelease(instanceNode.versionrange, instanceNode.channel).then((releaseNode) => {
+                this.releaseManager.getOrInstallRelease(instanceNode.versionRange, instanceNode.channelSearch).then((releaseNode) => {
                     this.log.debug(`Starting instance using release ${releaseNode.version} @ ${releaseNode.channel}`);
                     const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
                     const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
-    
+                    
+                    if (instanceNode.hasChild('version')) {
+                        instanceNode.getChild('version').set(releaseNode.version);
+                    } else {
+                        instanceNode.addChild('version', 'string', releaseNode.version);
+                    }
+
+                    if (instanceNode.hasChild('channel')) {
+                        instanceNode.getChild('channel').set(releaseNode.channel);
+                    } else {
+                        instanceNode.addChild('channel', 'string', releaseNode.channel);
+                    }
+
                     if (!fs.existsSync(executable_path)) {
                         this.log.warn(`Executable ${executable_path} does not exist`);
                         reject(new Error(`Executable does not exist: ${executable_path}`));
@@ -314,7 +326,7 @@ class InstanceManager extends EventEmitter {
                       
                 })
                 .catch((err) => {
-                    reject(new Error(`No version fulfills ${instanceNode.versionrange} @ ${instanceNode.channel}.`));
+                    reject(new Error(`No version fulfills ${instanceNode.versionRange} @ ${instanceNode.channelSearch}.`));
                     return;
                 });
             } catch (err) {
@@ -545,8 +557,8 @@ class InstanceManager extends EventEmitter {
                             config.instances[instanceId].type,
                             config.instances[instanceId].name,
                             config.instances[instanceId].description,
-                            config.instances[instanceId].versionrange,
-                            config.instances[instanceId].channel,
+                            config.instances[instanceId].versionRange,
+                            config.instances[instanceId].channelSearch,
                             false,
                             config.instances[instanceId].autostart,
                             config.instances[instanceId].autoconnect,
@@ -594,6 +606,8 @@ class InstanceManager extends EventEmitter {
                     'type': instanceNode.type,
                     'name': instanceNode.name,
                     'description': instanceNode.description,
+                    'versionRange': instanceNode.versionRange,
+                    'channelSearch': instanceNode.channelSearch,
                     'autostart': instanceNode.autostart,
                     'autoconnect': instanceNode.autoconnect,
                     'autorestart': instanceNode.autorestart
