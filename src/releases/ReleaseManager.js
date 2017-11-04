@@ -12,7 +12,8 @@ const semver = require('semver');
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
 
-const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)'; // It won't let us use a custom API agent, take IE5 than
+// It won't let us use a custom API agent, take IE5 than
+const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)';
 
 
 class ReleaseManager extends EventEmitter {
@@ -92,9 +93,9 @@ class ReleaseManager extends EventEmitter {
      * Is any of the providers currently fetching?
      */
     get fetching() {
-        let providersobj = this.releaseprovidersTreeNode.toObject();
-        for (let name of Object.keys(providersobj)) {
-            if (providersobj[name]['isfetching'] == true) {
+        let providers = this.releaseprovidersTreeNode.toObject();
+        for (let name of Object.keys(providers)) {
+            if (providers[name]['isfetching'] == true) {
                 return true;
             }
         }
@@ -121,6 +122,7 @@ class ReleaseManager extends EventEmitter {
     /**
      * Determines the platform name as uploaded by Travis currently
      * NOTE: Keep this up-to date!
+     * TODO: This is a generic function. Move it to server/util!
      * @function
      * @return {string} - '{Windows|Linux|Darwin}{32|64}' first is the CMAKE_SYSTEM_NAME, then 32 or 64
      */
@@ -147,6 +149,9 @@ class ReleaseManager extends EventEmitter {
      * Get version string from the Zip file name uploaded by Travis/Appveyor currently.
      * Returns 0.8.10@stable from inexor-core-0.8.10@stable-Linux.zip
      * valid input is everything fulfilling the pattern inexor-core-<characters>-<this.platform><characters> (so also non-zips)
+     * 
+     * TODO: remove magic numbers!
+     * 
      * @function
      * @param {string} name - the input string.
      * @return {string|null} - the version or '' if pattern isn't matched
@@ -163,8 +168,16 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * Get the Zip file name uploaded by Travis/Appveyor currently.
-     * Returns inexor-core-0.8.10@latest-Linux32.zip if you give it the version 0.8.10 and the channel @latest.
+     * Returns the ZIP file name. This file name scheme for ZIP files is mandatory. The
+     * releases provided by the Inexor Team are created by Travis and Appveyor and
+     * uploaded to GitHub.
+     * 
+     * Returns inexor-core-0.8.10@alpha-Linux32.zip if you give it the version 0.8.10 and the channel @alpha.
+     * 
+     * TODO: can we split the release distribution ZIP files into multiple files?
+     * - inexor-core-server-${version}@${channel}-${this.platform}.zip
+     * - inexor-core-client-${version}@${channel}-${this.platform}.zip
+     * 
      * @function
      * @param {string} version - the exact version string.
      * @param {string} channel - the exact release channel.
@@ -175,11 +188,11 @@ class ReleaseManager extends EventEmitter {
     }
 
     /**
-     * Return the bin folder path of a version.
+     * Returns the bin folder path of a version.
      * @function
      * @param {string} versionRange -  the semantic version range.
      * @param {string} channelSearch - the release channel.
-     * @return {string} - the binary folder of the specific version or ''
+     * @return {string} The binary folder of the specific version or null if no release is installed matching the given versionRange and channelSearch.
      */
     getBinaryPath(versionRange, channelSearch) {
         let releaseNode = this.getRelease(versionRange, channelSearch, true);
@@ -314,15 +327,15 @@ class ReleaseManager extends EventEmitter {
                     let isFolder = fs.statSync(fullPath).isDirectory();
                     // add all subfolders as releases
                     if (isFolder) {
-                        this.addRelease(item, fullPath, true, true, item, provider['name']);
+                        this.addRelease(item, fullPath, true, true, item, provider['name'], null, null);
                         continue;
                     }
                     // add all zips which have the right name as not-installed releases
-                    let iszip = path.extname(item) == '.zip';
-                    if (iszip) {
+                    let isZip = path.extname(item) == '.zip';
+                    if (isZip) {
                         let versionStr = this.getVersionStrFromZipName(item);
                         if (versionStr) {
-                            this.addRelease(versionStr, fullPath, true, false, versionStr, provider['name']);
+                            this.addRelease(versionStr, fullPath, true, false, versionStr, provider['name'], null, null);
                         }
                         continue;
                     }
@@ -372,11 +385,13 @@ class ReleaseManager extends EventEmitter {
 
                         for (let release of parsed) {
                             debuglog(release);
-                            this.log.info(release);
+                            // this.log.info(release);
 
                             // find asset path for our platform from json
                             let asset = release.assets.filter((a) => {
-                                if (a.content_type != 'application/zip') {
+                                // TODO: why is the content_type of windows releases 'application/octet-stream' instead of 'application/zip' ?
+                                // see: https://api.github.com/repos/inexorgame/inexor-core/releases/8371800/assets
+                                if (a.content_type != 'application/zip' && a.content_type != 'application/octet-stream') {
                                     return false;
                                 }
                                 return a.name.includes(this.platform);
@@ -390,7 +405,8 @@ class ReleaseManager extends EventEmitter {
                                     release.name,
                                     provider['name'],
                                     release.prerelease,
-                                    release.created_at
+                                    release.created_at,
+                                    asset[0].size
                                 );
                             }
                         }
@@ -453,8 +469,11 @@ class ReleaseManager extends EventEmitter {
      * @param {bool} isInstalled - if the release is a zip or already a directory.
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
+     * @param {bool} preRelease - if the release is a pre release.
+     * @param {string} createdAt - the ISO8603 date when the release was created.
+     * @param {number} fileSize - the file size of the release.
      */
-    addRelease(versionStr, path, isDownloaded = false, isInstalled = false, name = '', provider = 'explicit_path', preRelease = null, createdAt = null) {
+    addRelease(versionStr, path, isDownloaded = false, isInstalled = false, name = '', provider = 'explicit_path', preRelease = null, createdAt = null, fileSize = 0) {
         // get the version from a version@channel string:
         let version = versionStr;
         let channel = '';
@@ -475,6 +494,7 @@ class ReleaseManager extends EventEmitter {
             // this release is actually 'better' than the saved one (its downloaded/installed already)
             if ((isInstalled && !old_was_installed) || (isDownloaded && !old_was_downloaded)) {
                 oldReleaseNode['path'] = path;
+                oldReleaseNode['fileSize'] = fileSize != 0 ? fileSize : this.getFileSize(path, version, channel);
                 if (name.length(name)) {
                     oldReleaseNode['name'] = name;
                 }
@@ -483,10 +503,10 @@ class ReleaseManager extends EventEmitter {
                 oldReleaseNode['isInstalled'] = isInstalled;
             }
             if (preRelease != null) {
-                oldReleaseNode.addChild('preRelease', 'bool', preRelease);
+                oldReleaseNode['preRelease'] = preRelease;
             }
             if (createdAt != null) {
-                oldReleaseNode.addChild('createdAt', 'string', createdAt);
+                oldReleaseNode['createdAt'] = createdAt;
             }
         } else {
             // handle that the release is not yet provided
@@ -494,16 +514,13 @@ class ReleaseManager extends EventEmitter {
             releaseNode.addChild('version', 'string', version);
             releaseNode.addChild('channel', 'string', channel);
             releaseNode.addChild('path', 'string', path);
+            releaseNode.addChild('fileSize', 'int64', fileSize != 0 ? fileSize : this.getFileSize(path, version, channel));
             releaseNode.addChild('name', 'string', name);
             releaseNode.addChild('provider', 'string', provider);
             releaseNode.addChild('isDownloaded', 'bool', isDownloaded);
             releaseNode.addChild('isInstalled', 'bool', isInstalled);
-            if (preRelease != null) {
-                releaseNode.addChild('preRelease', 'bool', preRelease);
-            }
-            if (createdAt != null) {
-                releaseNode.addChild('createdAt', 'string', createdAt);
-            }
+            releaseNode.addChild('preRelease', 'bool', preRelease != null ? preRelease : true);
+            releaseNode.addChild('createdAt', 'string', createdAt != null ? createdAt : '');
             this.emit('onNewReleaseAvailable', version);
             this.log.info(`A release with version ${version} in channel '${channel}' has been added (provider: ${provider})`);
         }
@@ -742,7 +759,7 @@ class ReleaseManager extends EventEmitter {
                 if (success) {
                     isDownloadedNode.set(true);
                     releaseNode.path = path.join(this.cacheFolder, zipFilename);
-    
+                    releaseNode.fileSize = this.getFileSize(releaseNode.path, version, channel);
                     this.log.info(`Release with version ${versionStr} has been downloaded to ${releaseNode.path}`);
                     this.emit('onReleaseDownloaded', version);
                     if (doInstall) {
@@ -752,6 +769,33 @@ class ReleaseManager extends EventEmitter {
             });
         } catch (e) {
             this.log.error(e);
+        }
+    }
+
+    /**
+     * @private
+     * @function getFileSize
+     * Returns the file size of the given absolute path.
+     * @param {string} filePath - the absolute path to the file.
+     * @return {number} The file size in bytes.
+     */
+    getFileSize(filePath, version, channel) {
+        this.log.info(filePath);
+        try {
+            const isZip = path.extname(filePath) == '.zip';
+            const isUrl = filePath.startsWith('http');
+            if (isZip) {
+                this.log.info(fs.statSync(filePath).size);
+                return fs.statSync(filePath).size;
+            } else if (isUrl) {
+            } else {
+                const parentFolder = path.resolve(filePath, '..');
+                const filePathZip = path.join(parentFolder, `inexor-core-${version}@${channel}-${this.platform}.zip`);
+                this.log.info(fs.statSync(filePathZip).size);
+                return fs.statSync(filePathZip).size;
+            }
+        } catch (err) {
+            return 0;
         }
     }
 
