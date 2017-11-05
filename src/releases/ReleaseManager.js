@@ -429,7 +429,6 @@ class ReleaseManager extends EventEmitter {
         let promises = [];
         let providers = this.releaseprovidersTreeNode.toObject();
         for (let i of Object.keys(providers)) {
-            let provider = providers[i];
             let promise = this.fetchReleasesByProviderType(providers[i]);
             if (promise != null) {
                 promises.push(promise);
@@ -798,6 +797,7 @@ class ReleaseManager extends EventEmitter {
                 this.log.info(fs.statSync(filePath).size);
                 return fs.statSync(filePath).size;
             } else if (isUrl) {
+                return 0;
             } else {
                 const parentFolder = path.resolve(filePath, '..');
                 const filePathZip = path.join(parentFolder, `inexor-core-${version}@${channel}-${this.platform}.zip`);
