@@ -23,7 +23,7 @@ test_script:
   # run tests
   - npm test
   - npm run lint
-  # - npm run nsp
+  - npm run nsp
 
 # Don't actually build.
 build: off
