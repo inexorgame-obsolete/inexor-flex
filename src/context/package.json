@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/context",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Provides an application context.",
   "main": "index.js",
   "repository": {

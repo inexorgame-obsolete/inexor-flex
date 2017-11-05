@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/instances",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A module that allows for process managing, starting, stoping, of Inexor Core.",
   "main": "index.js",
   "author": "The Inexor Team",

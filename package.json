@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.0-preview19",
+  "version": "0.9.0-preview20",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "prestart": "npm up",
