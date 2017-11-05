@@ -1,6 +1,6 @@
 # Inexor Flex
 
-[![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexor-game/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex)
+[![npm version](https://badge.fury.io/js/%40inexorgame%2Finexor-flex.svg)](https://badge.fury.io/js/%40inexorgame%2Finexor-flex) [![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexor-game/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex) [![NSP Status](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303/badge)](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303)
 
 Inexor Flex is platform for managing [Inexor Core](https://github.com/inexorgame/inexor-core) instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
@@ -120,6 +120,8 @@ When writting a module, please keep the following in mind
 - if you write a larger block of code or seperate functionality, consider creating a new module
 - by default unit tests with [mocha](mochajs.org) are done for any file that matches `*_test.js`, though it is highly recommended to add a `test` folder to your module
 - if necessary (for important or big modules), we urge that you add a separate `README.md` to the respective module
+
+We also try to apply the changes detected by the [`security/recommended`] standard.
 
 ### The REST API
 The REST API (`v1`) is wired together in `server/api/v1/index.js`

@@ -12,6 +12,7 @@ install:
   # install modules
   - git submodule update --init
   - npm install -g mocha
+  - npm install -g nsp
   - npm install
 
 # Post-install test scripts.
@@ -22,6 +23,7 @@ test_script:
   # run tests
   - npm test
   - npm run lint
+  - npm run nsp
 
 # Don't actually build.
 build: off

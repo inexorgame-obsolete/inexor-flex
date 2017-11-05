@@ -3,9 +3,8 @@ const process = require('process');
 const fs = require('fs');
 const yargs = require('yargs');
 
-const child_process = require('child_process');
+const child_process = require('child_process'); // eslint-disable-line security/detect-child-process
 const wait_on = require('wait-on');
-const util = require('util');
 const path = require('path');
 const inexor_path = require('@inexorgame/path');
 const log = require('@inexorgame/logger')();
@@ -20,7 +19,7 @@ let serverDir = path.join(__dirname, 'server');
 log.debug(`The server dir is at ${serverDir}`);
 
 const hostname = 'localhost' // This will comfort >90% of our users
-const pid_path = path.join(inexor_path.pid_path, util.format('flex.%s.%s.pid', hostname, inexor_path.DEFAULT_PORT));
+const pid_path = path.join(inexor_path.pid_path, `flex.${hostname}.${inexor_path.DEFAULT_PORT}.pid`);
 log.debug(`Checking wether the flex pid exists at ${pid_path} exists`)
 
 if (!fs.existsSync(pid_path)) {

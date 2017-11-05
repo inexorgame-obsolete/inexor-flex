@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "dev": "node server/index.js --profile=devenv",
     "server": "node server/index.js --profile=server",
-    "shell": "node inexor.js shell"
+    "shell": "node inexor.js shell",
+    "nsp": "nsp check"
   },
   "bin": {
     "inexor-flex": "inexor.js"
@@ -50,7 +51,7 @@
     "@inexorgame/profiles": "^1.0.1",
     "@inexorgame/releases": "^1.0.3",
     "@inexorgame/tree": "^1.0.5",
-    "@inexorgame/treeclient": "^1.0.1",
+    "@inexorgame/treeclient": "^1.0.3",
     "@inexorgame/types": "^1.0.1  ",
     "circular-json": "^0.4.0",
     "cors": "^2.8.3",
@@ -72,6 +73,7 @@
     "chai-as-promised": "^6.0.0",
     "chai-iterator": "^1.1.4",
     "eslint": "^3.19.0",
+    "eslint-plugin-security": "^1.4.0",
     "jsdoc": "^3.4.3",
     "lerna": "^2.5.1",
     "minami": "^1.1.1",

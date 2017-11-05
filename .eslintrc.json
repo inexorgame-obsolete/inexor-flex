@@ -5,6 +5,9 @@
         "es6": true,
         "mocha": true
     },
+    "plugins": [
+      "security"
+    ],
     "extends": [
       "eslint:recommended"
     ],
