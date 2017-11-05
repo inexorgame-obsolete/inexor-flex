@@ -470,7 +470,7 @@ class ReleaseManager extends EventEmitter {
      * @param {string} name - optional name for the release.
      * @param {string} provider - the provider name, where the release is currently.
      * @param {bool} preRelease - if the release is a pre release.
-     * @param {string} createdAt - the ISO8603 date when the release was created.
+     * @param {string} createdAt - the ISO8601 date when the release was created.
      * @param {number} fileSize - the file size of the release.
      */
     addRelease(versionStr, path, isDownloaded = false, isInstalled = false, name = '', provider = 'explicit_path', preRelease = null, createdAt = null, fileSize = 0) {
@@ -482,6 +482,7 @@ class ReleaseManager extends EventEmitter {
             version = versionStr.substring(0, channelIndex);
             channel = versionStr.substring(channelIndex + 1);
         }
+        const actualFileSize = fileSize != 0 ? fileSize : this.getFileSize(path, version, channel);
 
         let channelNode = this.releaseChannelsTreeNode.getOrCreateNode(channel);
 
@@ -494,7 +495,8 @@ class ReleaseManager extends EventEmitter {
             // this release is actually 'better' than the saved one (its downloaded/installed already)
             if ((isInstalled && !old_was_installed) || (isDownloaded && !old_was_downloaded)) {
                 oldReleaseNode['path'] = path;
-                oldReleaseNode['fileSize'] = fileSize != 0 ? fileSize : this.getFileSize(path, version, channel);
+                oldReleaseNode['fileSize'] = actualFileSize;
+                oldReleaseNode['fileSizeDownloaded'] = isDownloaded ? actualFileSize : 0;
                 if (name.length(name)) {
                     oldReleaseNode['name'] = name;
                 }
@@ -514,7 +516,8 @@ class ReleaseManager extends EventEmitter {
             releaseNode.addChild('version', 'string', version);
             releaseNode.addChild('channel', 'string', channel);
             releaseNode.addChild('path', 'string', path);
-            releaseNode.addChild('fileSize', 'int64', fileSize != 0 ? fileSize : this.getFileSize(path, version, channel));
+            releaseNode.addChild('fileSize', 'int64', actualFileSize);
+            releaseNode.addChild('fileSizeDownloaded', 'int64', isDownloaded ? actualFileSize : 0);
             releaseNode.addChild('name', 'string', name);
             releaseNode.addChild('provider', 'string', provider);
             releaseNode.addChild('isDownloaded', 'bool', isDownloaded);
@@ -684,9 +687,10 @@ class ReleaseManager extends EventEmitter {
      * @param  {string} archiveURL - The URL of the archive on a remote server.
      * @param  {string} fileName - The target local file name.
      * @param  {string} destinationPath - The target folder where the file should go.
+     * @param  {Node} fileSizeDownloadedNode - The node to update for the download progress.
      * @return {Promise<boolean>}
      */
-    downloadArchive(archiveURL, fileName, destinationPath) {
+    downloadArchive(archiveURL, fileName, destinationPath, fileSizeDownloadedNode) {
         return new Promise((resolve, reject) => {
             let URL = url.parse(archiveURL);
             let filePath = path.resolve(destinationPath, fileName);
@@ -699,6 +703,10 @@ class ReleaseManager extends EventEmitter {
                 }
             }, (response) => {
                 response.pipe(file);
+                response.on('data', (chunk) => {
+                    let oldFileSize = fileSizeDownloadedNode.get();
+                    fileSizeDownloadedNode.set(oldFileSize + chunk.length);
+                });
                 response.on('end', () => {
                     file.close();
                     resolve(true);
@@ -752,9 +760,11 @@ class ReleaseManager extends EventEmitter {
             // only REST providers come here
 
             const urlNode = releaseNode.getChild('path');
+            const fileSizeDownloadedNode = releaseNode.getChild('fileSizeDownloaded');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
+            
 
-            this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder).then((success) => {
+            this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
                 this.downloading[versionStr] = false;
                 if (success) {
                     isDownloadedNode.set(true);
