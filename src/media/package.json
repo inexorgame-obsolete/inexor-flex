@@ -28,6 +28,6 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "nodegit": "^0.17.0"
+    "nodegit": "^0.20.3"
   }
 }
