@@ -4,7 +4,6 @@
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "start": "node server/index.js --profile  $npm_package_config_profile",
-    "poststart": "npm up",
     "stop": "./inexor flex shutdown",
     "restart": "./inexor flex restart",
     "test": "mocha \"src/*/test/*.js\" \"server/test/*.js\" \"server/*/*/test/*.js\" --harmony",
