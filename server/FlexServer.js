@@ -6,7 +6,6 @@ const util = require('util');
 const inexor_api = require('@inexorgame/api');
 const inexor_logger = require('@inexorgame/logger');
 
-
 class FlexServer {
 
   constructor(argv, pidManager, processManager) {
@@ -20,7 +19,6 @@ class FlexServer {
     this.apiNames = [ 'v1' ];
 
     this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, this.argv.level);
-
   }
 
   /**
@@ -102,7 +100,7 @@ class FlexServer {
     }
 
     // Creates a redirect for the default interface
-    this.app.get('/', this.redirectToDefaultUi.bind(this));
+    this.app.get('/', this.redirectToDefaultUri.bind(this));
 
     // Sets the static files
     this.app.use('/static', express.static('node_modules'));
@@ -198,7 +196,7 @@ class FlexServer {
   /**
    * Redirects the root URI to the default user interface.
    */
-  redirectToDefaultUi(req, res) {
+  redirectToDefaultUri(req, res) {
     res.redirect(this.defaultUserInterfaceUrl);
   }
 
@@ -212,7 +210,7 @@ class FlexServer {
       this.pidManager.log = logManager.getLogger('flex.server.PidManager');
       this.processManager.log = logManager.getLogger('flex.server.ProcessManager');
     } else {
-      this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, this.argv.level);
+      this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, true, this.argv.level);
       this.pidManager.log = inexor_logger('flex.server.PidManager', this.argv.console, this.argv.file, this.argv.level);
       this.processManager.log = inexor_logger('flex.server.ProcessManager', this.argv.console, this.argv.file, this.argv.level);
     }

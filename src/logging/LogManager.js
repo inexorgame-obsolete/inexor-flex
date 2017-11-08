@@ -9,6 +9,8 @@ const fs = require('fs');
 const toml = require('toml');
 const util = require('util');
 
+const LIMIT = 100;
+
 /**
  * Logging configuration.
  */
@@ -76,7 +78,11 @@ class LogManager extends EventEmitter {
    * @param {string} level - The log level.
    */
   createLogger(name, console = true, file = null, level = null) {
-    let streams = [];
+    let streams = [{
+        type: 'raw',
+        stream: new bunyan.RingBuffer({limit: LIMIT})
+    }]; // This allows us to get the log of every module
+
     if (console) {
       streams.push({
         type: 'raw',
