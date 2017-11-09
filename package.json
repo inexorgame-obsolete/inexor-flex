@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.0-preview22",
+  "version": "0.9.0-preview23",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "start": "node server/index.js --profile  $npm_package_config_profile",
@@ -64,6 +64,7 @@
     "toml": "^2.3.2",
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
+    "ws": "^3.3.1",
     "xdg-basedir": "^3.0.0",
     "yargs": "^10.0.3"
   },
