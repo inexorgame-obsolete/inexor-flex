@@ -14,7 +14,15 @@ let appName = 'inexor';
 
 let appDir = process.env.PWD;
 if (process.platform == 'win32') {
-  appDir = process.cwd()
+  appDir = process.cwd();
+}
+
+if (process.env.SNAP_USER_DATA) {
+  homeDir = process.env.SNAP_USER_DATA;
+}
+
+if (process.env.SNAP_COMMON) {
+  tmpDir = process.env.SNAP_COMMON;
 }
 
 /**
