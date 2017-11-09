@@ -56,7 +56,7 @@ class FlexRestAPI {
   }
 
   log(req, res) {
-    let name = req.params.id || 'flex.server.FlexServer'
+    let name = req.params.name || 'flex.server.FlexServer'
     let logger = this.logManager.getLogger(name);
     let loggerBuffer = logger.streams.find((item) => item.stream instanceof bunyan.RingBuffer)
 

@@ -210,7 +210,7 @@ class FlexServer {
       this.pidManager.log = logManager.getLogger('flex.server.PidManager');
       this.processManager.log = logManager.getLogger('flex.server.ProcessManager');
     } else {
-      this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, true, this.argv.level);
+      this.log = inexor_logger('flex.server.FlexServer', this.argv.console, this.argv.file, this.argv.level);
       this.pidManager.log = inexor_logger('flex.server.PidManager', this.argv.console, this.argv.file, this.argv.level);
       this.processManager.log = inexor_logger('flex.server.ProcessManager', this.argv.console, this.argv.file, this.argv.level);
     }
