@@ -93,7 +93,7 @@ module.exports = function(argv, app, websockets) {
     let repositoriesNode = mediaNode.getChild('repositories');
 
     if (!repositoriesNode.hasChild('essential')) {
-      resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('essential', this.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git'));
+      resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('essential', mediaRepositoryManager.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git'));
     } else {
       resolve(`Already satisfied essential repository`);
     }
@@ -105,7 +105,7 @@ module.exports = function(argv, app, websockets) {
       let repositoriesNode = mediaNode.getChild('repositories');
 
       if (!repositoriesNode.hasChild('additional')) {
-        resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('additional', this.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git'));
+        resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('additional', mediaRepositoryManager.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git'));
       } else {
         `Already satisfied additional repository`
       }
