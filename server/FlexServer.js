@@ -1,10 +1,14 @@
 const cors = require('cors');
 const express = require('express');
+const ipfilter = require('express-ipfilter').IpFilter;
 const helmet = require('helmet');
 const util = require('util');
 
 const inexor_api = require('@inexorgame/api');
 const inexor_logger = require('@inexorgame/logger');
+
+// NOTE: Don't disable this unless you really know what you're doing
+const LOCALHOST_ONLY = (process.env.DISABLE_LOCALHOST_ONLY === undefined)
 
 class FlexServer {
 
@@ -55,6 +59,10 @@ class FlexServer {
   createApiInstances() {
     let app = express();
     app.use(helmet());
+    if (LOCALHOST_ONLY) {
+      app.use(ipfilter(['127.0.0.1', 'localhost'], {mode: 'allow'}));
+    }
+
     this.websockets = require('express-ws')(app);
     this.app = app;
     this.apis = {};
