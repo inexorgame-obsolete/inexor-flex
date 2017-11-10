@@ -60,7 +60,9 @@ class TreeClient {
         }
       },
       shutdown: this.createEndpoint('/flex/shutdown', this.shutdownFlex.name),
-      version: this.createEndpoint('/flex/version', this.getFlexVersion.name)
+      version: this.createEndpoint('/flex/version', this.getFlexVersion.name),
+      sysinfo: this.createEndpoint('/flex/sysinfo', this.getFlexSysInfo.name),
+      log: this.createEndpoint('/flex/log/${name}', this.getFlexLog.name),
     },
     this.releases = { // Since this does not fetch flex releases
       fetch: this.createEndpoint('/releases/fetch', this.fetchReleases.name),
@@ -320,6 +322,24 @@ class TreeClient {
    */
   getFlexVersion(callback) {
     this.callEndpoint(this.getFlexVersion.name, callback);
+  }
+
+  /**
+   * Get's the flex sysinfo from the API
+   * @function
+   * @param {function} callback
+   */
+  getFlexSysInfo(callback) {
+    this.callEndpoint(this.getFlexSysInfo.name, callback);
+  }
+
+  /**
+   * Get's flex log buffer
+   * @function
+   * @param {string} name - the name of the log
+   */
+  getFlexLog(name = 'flex.server.FlexServer', callback) {
+    this.callEndpoint(this.getFlexLog.name, callback, { name: name});
   }
 
   /**
