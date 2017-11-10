@@ -180,6 +180,19 @@ class WebUserInterfaceManager extends EventEmitter {
   }
 
   /**
+   * Updates the download progress of a node
+   * @private
+   * @param {Object} stats {@link https://github.com/nodegit/nodegit/issues/1167}
+   * @param {Node} node
+   * // TODO: Write a generic function because this is used more often. Also have a look at https://github.com/inexorgame/inexor-core/issues/482
+   */
+  updateStats(stats, node) {
+    node.totalObjects.set(stats.totalObjects())
+    node.receivedObjects(stats.receivedObjects())
+    node.indexedObjects(stats.indexedObjects())
+  }
+
+  /**
    * Updates the local git repository to the latest revision of the remote
    * git repository.
    *
@@ -193,11 +206,19 @@ class WebUserInterfaceManager extends EventEmitter {
       this.log.info(`Updating interface at ${interfacePath}`);
 
       if (fs.existsSync(interfacePath)) {
+        let vm = this;
+
         NodeGit.Repository.open(interfacePath).then((repo) => {
           repo.fetchAll({
             callbacks: {
               certificateCheck: function() {
                 return 1;
+              },
+              transferProgress: {
+                throttle: 2000, // every 2 seconds is fine
+                callback: (stats) => {
+                  vm.updateStats(stats, interfaceNode)
+                }
               }
             }
           }).then(() => {
@@ -231,12 +252,19 @@ class WebUserInterfaceManager extends EventEmitter {
           reject(err);
         } else {
           this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
+          let vm = this;
 
           NodeGit.Clone(repositoryUri, interfacePath, {
             fetchOpts: {
               callbacks: {
                 certificateCheck: function() {
                   return 1;
+                },
+                transferProgress: {
+                    throttle: 2000, // every 2 seconds is fine
+                    callback: (stats) => {
+                        vm.updateStats(stats, interfaceNode)
+                    }
                 }
               }
             }

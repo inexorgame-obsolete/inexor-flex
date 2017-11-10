@@ -403,6 +403,31 @@ class GitRepositoryManager extends EventEmitter {
   }
 
   /**
+   * Updates the download progress of a node
+   * @private
+   * @param {Object} stats {@link https://github.com/nodegit/nodegit/issues/1167}
+   * @param {Node} node
+   * // TODO: Write a generic function because this is used more often. Also have a look at https://github.com/inexorgame/inexor-core/issues/482
+   */
+  updateStats(stats, node) {
+      ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
+          if (node.hasChild(String(key))) {
+              console.log(`Updating ${key}`)
+              node.getChild(key).set(stats[key]())
+          } else {
+              console.log(`Setting ${key}`)
+              node.set(key, 'int64', stats[key]())
+          }
+      })
+
+      /*if (node.hasChild('totalObjects')) {
+          node.getChild('totalObjects').set(stats.totalObjects())
+      } else {
+          node.addChild('totalObjects', 'int64', stats.totalObjects())
+      }*/
+  }
+
+  /**
    * Updates a git repository.
    * @function
    * @name GitRepositoryManager.update
@@ -425,6 +450,12 @@ class GitRepositoryManager extends EventEmitter {
                     callbacks: {
                         certificateCheck: function() {
                             return 1;
+                        },
+                        transferProgress: {
+                          throttle: 2000,
+                          callback: function(stats) {
+                              self.updateStats(stats, repositoryNode);
+                          }
                         }
                     }
                 }
@@ -452,7 +483,21 @@ class GitRepositoryManager extends EventEmitter {
                     return self.getCurrentBranch(name, repository);
                 })
                 .then(function(repository) {
-                    return self.fetchAll(name, repository);
+                    return self.fetchAll(name, repository, {
+                        fetchOpts: {
+                            callbacks: {
+                                certificateCheck: function() {
+                                    return 1;
+                                },
+                                transferProgress: {
+                                    throttle: 2000,
+                                    callback: function(stats) {
+                                        self.updateStats(stats, repositoryNode);
+                                    }
+                                }
+                            }
+                        }
+                    });
                 })
                 .then(function(repository) {
                     return self.mergeBranches(name, repository);
