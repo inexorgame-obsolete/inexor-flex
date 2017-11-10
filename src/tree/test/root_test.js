@@ -9,9 +9,9 @@ describe('Tree', function() {
       expect(n).to.be.equal(r.findNode('/test'))
     })
 
-    it.skip('should be possible to chain findNode', function() {
+    it('should be possible to chain findNode', function() {
       r.addChild('test2', 'node');
-      let n = r.findNode('test2').addChild('some', 'node');
+      let n = r.findNode('/test2').addChild('some', 'node');
       expect(n).to.be.equal(r.findNode('/test2/some'))
     })
   })

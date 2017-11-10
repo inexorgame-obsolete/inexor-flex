@@ -29,6 +29,16 @@ describe('Node', function() {
       }
       expect(getFlexChild).to.throw('Not a valid data type: flex');
     })
+
+    it('should be able to use keys passed by reference', function () {
+      let n = new Node('/', '', 'node');
+
+      ['a', 'b', 'c'].forEach((key) => {
+        n.addChild(key, 'int64', 1)
+      })
+
+      expect(n.getChildNames().length).to.equal(3);
+    })
   })
 
   describe('getChildNames', function() {
@@ -62,6 +72,16 @@ describe('Node', function() {
       let node = new Node(null, '/', 'node');
       node.addChild('a', 'node');
       expect(node.hasChildren()).to.be.true;
+    })
+
+    it('should be possible to find node with dynamic key', function() {
+      let node = new Node(null, '/', 'node');
+
+      node.addChild('a', 'int64', 1);
+      let keys = ['a']
+
+      expect(keys.every((key) => node.hasChild(key))).to.be.true;
+      expect(node.getChildNames().length).to.equal(1);
     })
   })
 
