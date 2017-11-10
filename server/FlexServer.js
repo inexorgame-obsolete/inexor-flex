@@ -60,7 +60,7 @@ class FlexServer {
     let app = express();
     app.use(helmet());
     if (LOCALHOST_ONLY) {
-      app.use(ipfilter(['127.0.0.1', 'localhost'], {mode: 'allow'}));
+      app.use(ipfilter(['127.0.0.1', 'localhost'], {mode: 'allow', logLevel: 'deny'}));
     }
 
     this.websockets = require('express-ws')(app);
