@@ -55,17 +55,23 @@ class MediaRepositoryRestAPI {
    */
   createMediaRepository(req, res) {
     if (req.body.type != null) {
-      let repository_path = path.resolve(path.join(path.join(inexor_path.standardPaths.appDataLocation, inexor_path.media_path), req.params.name));
+      let repository_path = path.join(inexor_path.media_path, req.params.name);
       switch (req.body.type) {
         case 'fs': {
-          let repository_node = this.mediaRepositoryManager.fs.createRepository(req.params.name, repository_path);
-          res.status(201).json(repository_node.get());
+          this.mediaRepositoryManager.filesystemRepositoryManager.createRepository(req.params.name, repository_path).then((repository_node) => {
+            res.status(201).json(repository_node.get());
+          }).catch((err) => {
+            res.status(400).json(err);
+          });
           break;
         }
         case 'git': {
           if (req.body.url != null) {
-            let repository_node = this.mediaRepositoryManager.git.createRepository(req.params.name, repository_path, req.body.url);
-            res.status(201).json(repository_node.get());
+            this.mediaRepositoryManager.gitRepositoryManager.createRepository(req.params.name, repository_path, req.body.url).then((repository_node) => {
+                res.status(201).json(repository_node.get());
+            }).catch((err) => {
+                res.status(400).json(err);
+            });
           } else {
             res.status(500).send(util.format('Missing parameter: url'));
           }
