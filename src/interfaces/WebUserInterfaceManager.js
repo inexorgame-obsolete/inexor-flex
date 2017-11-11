@@ -208,12 +208,15 @@ class WebUserInterfaceManager extends EventEmitter {
                     resolve(true);
                 }).catch((err) => {
                     this.log.warn(`[${name}] Failed to check out master: ${err}`);
+                    reject(err);
                 })
             }).catch((err) => {
               this.log.warn(`[${name}] Failed to merge branch master into origin/master because of ${err}`);
+              reject(err);
             });
           }).catch((err) => {
             this.log.warn(`[${name}] Failed to fetch branches because of ${err}`);
+            reject(err);
           });
         }).catch((err) => {
           this.log.warn(`[${name}] Something went wrong while opening repository at ${interfacePath}`);
@@ -224,6 +227,7 @@ class WebUserInterfaceManager extends EventEmitter {
 
         if (repositoryUri == null) {
           this.log.error(`[${name}] Trying to clone interface without repository uri`);
+          reject(err);
         } else {
           this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
 
@@ -240,7 +244,7 @@ class WebUserInterfaceManager extends EventEmitter {
             // TODO: Currently we ALWAYS use master branch
             repo.getBranch('refs/remotes/origin/master').then((ref) => {
               return repo.checkoutRef(ref);
-            })
+            });
             resolve(true);
           }).catch((err) => {
             this.log.warn(`[${name}] Failed cloning interface to ${interfacePath} because ${err}`);
@@ -297,27 +301,26 @@ class WebUserInterfaceManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       let paths = [path.join(inexor_path.flex_path, 'interfaces'), inexor_path.interfaces_path]
 
-      paths.forEach((folder) => {
+      for (let folder of paths) {
         fs.readdir(folder, (err, files) => {
           if (err) {
-            this.log.error(err)
-            reject(err)
+            this.log.error(err);
           }
-
-          files.forEach((file) => {
+          for (let file of files) {
             fs.stat(file, (err, stats) => {
               if (err) {
-                this.log.error(err)
+                this.log.error(err);
                 reject(err)
               }
 
               if (stats.isDirectory()) {
                 this.createInterface(file, 'scanned repository', file, folder, `file://${path.resolve(file)}`);
               }
-            })
-          })
-        })
-      })
+            });
+          }
+        });
+      }
+      resolve(true);
     })
   }
 
