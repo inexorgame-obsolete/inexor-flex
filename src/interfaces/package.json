@@ -19,5 +19,10 @@
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=6.9.1"
+  },
+  "dependencies": {
+    "nodegit": "^0.20.3",
+    "progress": "^2.0.0",
+    "toml": "^2.3.3"
   }
 }
