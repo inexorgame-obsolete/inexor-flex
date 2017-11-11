@@ -36,6 +36,8 @@ class ReleaseManager extends EventEmitter {
         this.downloading = [];
         this.installing = [];
         this.uninstalling = [];
+
+        this.releasesFetched = false;
     }
 
     /**
@@ -633,30 +635,33 @@ class ReleaseManager extends EventEmitter {
      * @return {Node|null} - the InexorTree node or null
      */
     getOrInstallRelease(versionRange, channelSearch = '*') {
+        const self = this;
         return new Promise((resolve, reject) => {
-            const releaseNode = this.getRelease(versionRange, channelSearch, true);
-            if (releaseNode) {
-                this.log.trace(`Found already installed release ${releaseNode.version}@${releaseNode.channel}`);
-                resolve(releaseNode);
-            } else {
-                // Currently no release is installed: Check for release available
-                this.log.trace(`Didn't find an installed release. Searching for available releases: '${versionRange}' @ ${channelSearch}`);
-                const availableReleaseNode = this.getRelease(versionRange, channelSearch, false);
-                if (availableReleaseNode) {
-                    // Release is available: Download and install release
-                    const version = availableReleaseNode.getChild('version').get();
-                    const channel = availableReleaseNode.getChild('channel').get();
-                    this.log.info(`Found a release which is available, but not yet installed: ${version}@${channel} ! Downloading and installing automatically...`);
-                    // Download and install release by exact version and exact channel
-                    this.downloadRelease(version, channel, true);
-                    this.once('onReleaseInstalled', () => {
-                        this.log.trace(`Successfully (downloaded and) installed release ${version}@${channel}`);
-                        resolve(availableReleaseNode);
-                    });
+            self.checkForNewReleases(true).then(() => {
+                const releaseNode = this.getRelease(versionRange, channelSearch, true);
+                if (releaseNode) {
+                    this.log.trace(`Found already installed release ${releaseNode.version}@${releaseNode.channel}`);
+                    resolve(releaseNode);
                 } else {
-                    reject(new Error(`No version fulfills '${versionRange}' @ ${channelSearch}`));
+                    // Currently no release is installed: Check for release available
+                    this.log.trace(`Didn't find an installed release. Searching for available releases: '${versionRange}' @ ${channelSearch}`);
+                    const availableReleaseNode = this.getRelease(versionRange, channelSearch, false);
+                    if (availableReleaseNode) {
+                        // Release is available: Download and install release
+                        const version = availableReleaseNode.getChild('version').get();
+                        const channel = availableReleaseNode.getChild('channel').get();
+                        this.log.info(`Found a release which is available, but not yet installed: ${version}@${channel} ! Downloading and installing automatically...`);
+                        // Download and install release by exact version and exact channel
+                        this.downloadRelease(version, channel, true);
+                        this.once('onReleaseInstalled', () => {
+                            this.log.trace(`Successfully (downloaded and) installed release ${version}@${channel}`);
+                            resolve(availableReleaseNode);
+                        });
+                    } else {
+                        reject(new Error(`No version fulfills '${versionRange}' @ ${channelSearch}`));
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -669,13 +674,21 @@ class ReleaseManager extends EventEmitter {
      *  - isDownloaded (bool) - whether or not the zip files are already downloaded.
      *  - isInstalled (bool) - whether or not the zip files are already unpacked.
      * @function
+     * @param {bool} skipIfAlreadyFetched - If true and the list of releases has been already fetched the list won't be fetched again.
      * @return {Promise<bool>} - have a look at {link ReleaseManager.fetchReleases}
      */
-    checkForNewReleases() {
-        const vm = this;
+    checkForNewReleases(skipIfAlreadyFetched = false) {
+        const self = this;
         return new Promise((resolve, reject) => {
-            vm.log.info('Checking for new releases');
-            resolve(vm.fetchReleases());
+            if (skipIfAlreadyFetched && self.releasesFetched) {
+                resolve(true);
+            } else {
+                self.log.info('Checking for new releases');
+                self.fetchReleases().then((success) => {
+                    self.releasesFetched = true;
+                    resolve(true);
+                });
+            }
         });
     }
 

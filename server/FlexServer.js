@@ -180,8 +180,36 @@ class FlexServer {
     } else {
       // The webserver and the service level are ready
       this.log.info(util.format('Inexor Flex is listening on http://%s:%s', this.hostname, this.port));
+
       // Finally load and start the Inexor Core instances
-      this.apis.v1.get('instanceManager').loadInstances();
+      // this.apis.v1.get('instanceManager').loadInstances();
+
+      let mediaRepositoryManager = this.apis.v1.get('mediaRepositoryManager');
+      let mediaNode = this.apis.v1.get('tree').getChild('media');
+      let repositoriesNode = mediaNode.getChild('repositories');
+
+      // Load and start the flex instances after all mandatory features have been fullfilled
+      let essentialMediaPromise = new Promise((resolve, reject) => {
+        if (!repositoriesNode.hasChild('essential')) {
+          resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('essential', mediaRepositoryManager.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git'));
+        } else {
+          resolve(`Already satisfied essential repository`);
+        }
+      });
+
+      let additionalMediaPromise = new Promise((resolve, reject) => {
+          if (!repositoriesNode.hasChild('additional')) {
+            resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('additional', mediaRepositoryManager.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git'));
+          } else {
+            resolve(`Already satisfied additional repository`);
+          }
+      });
+
+      const self = this;
+      Promise.all([ essentialMediaPromise, additionalMediaPromise ]).then((values) => {
+          self.log.info('Essential and additional ready');
+          this.apis.v1.get('instanceManager').loadInstances();
+      });
     }
   }
 
