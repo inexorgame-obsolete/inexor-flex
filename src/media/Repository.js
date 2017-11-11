@@ -386,10 +386,9 @@ class GitRepositoryManager extends EventEmitter {
                     node.addChild('branch', 'string', 'master');
                     node.addNode('branches');
                     // Initially clone the repository
-                    this.update(name, null, true);
                     this.update(name, null, true).then((branch) => {
                       resolve(node);
-                    })
+                    });
                 } else {
                     reject(new Error(`Directory already exist: ${repositoryPath}`));
                 }

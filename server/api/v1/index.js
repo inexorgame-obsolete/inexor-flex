@@ -93,11 +93,12 @@ module.exports = function(argv, app, websockets) {
     let repositoriesNode = mediaNode.getChild('repositories');
 
     if (!repositoriesNode.hasChild('essential')) {
-      resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('essential', mediaRepositoryManager.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git'));
+      mediaRepositoryManager.gitRepositoryManager.createRepository('essential', mediaRepositoryManager.getRepositoryPath('essential'), 'https://github.com/inexorgame/media-essential.git');
+      resolve();
     } else {
       resolve(`Already satisfied essential repository`);
     }
-  })
+  });
 
   let additionalMediaPromise = new Promise((resolve, reject) => {
       let mediaRepositoryManager = applicationContext.get('mediaRepositoryManager');
@@ -107,13 +108,13 @@ module.exports = function(argv, app, websockets) {
       if (!repositoriesNode.hasChild('additional')) {
         resolve(mediaRepositoryManager.gitRepositoryManager.createRepository('additional', mediaRepositoryManager.getRepositoryPath('additional'), 'https://github.com/inexorgame/media-additional.git'));
       } else {
-        `Already satisfied additional repository`
+        resolve(`Already satisfied additional repository`);
       }
-  })
+  });
 
-  Promise.all([essentialMediaPromise, additionalMediaPromise]).then((values) => {
+  Promise.all([ essentialMediaPromise, additionalMediaPromise ]).then((values) => {
     this.apis.v1.get('instanceManager').loadInstances();
-  })
+  });
 
   return applicationContext;
 }
