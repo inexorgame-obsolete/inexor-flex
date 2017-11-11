@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/media",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Manages media content for the Inexor Tree technology.",
   "main": "index.js",
   "repository": {
