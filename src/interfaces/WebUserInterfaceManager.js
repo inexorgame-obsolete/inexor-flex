@@ -187,9 +187,13 @@ class WebUserInterfaceManager extends EventEmitter {
    * // TODO: Write a generic function because this is used more often. Also have a look at https://github.com/inexorgame/inexor-core/issues/482
    */
   updateStats(stats, node) {
-    node.totalObjects.set(stats.totalObjects())
-    node.receivedObjects(stats.receivedObjects())
-    node.indexedObjects(stats.indexedObjects())
+      ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
+          if (node.hasChild(key)) {
+              node.getChild(key).set(stats[key]())
+          } else {
+              node.addChild(key, 'int64', stats[key]())
+          }
+      })
   }
 
   /**
