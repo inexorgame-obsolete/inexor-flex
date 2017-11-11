@@ -32,7 +32,8 @@
   },
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=7.6.0",
+    "npm": ">=3.0.0"
   },
   "dependencies": {
     "@inexorgame/api": "^1.0.6",
