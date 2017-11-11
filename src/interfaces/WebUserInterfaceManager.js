@@ -6,6 +6,7 @@ const path = require('path');
 const util = require('util');
 const toml = require('toml');
 const NodeGit = require('nodegit');
+const progress = require('progress');
 
 const tree = require('@inexorgame/tree');
 const inexor_path = require('@inexorgame/path');
@@ -48,6 +49,8 @@ class WebUserInterfaceManager extends EventEmitter {
     /// The class logger
     this.log = this.applicationContext.get('logManager').getLogger('flex.interfaces.WebUserInterfaceManager');
 
+    /// Internal only. Holds the instance progress bars
+    this.bars = {}
   }
 
   /**
@@ -187,6 +190,12 @@ class WebUserInterfaceManager extends EventEmitter {
    * // TODO: Write a generic function because this is used more often. Also have a look at https://github.com/inexorgame/inexor-core/issues/482
    */
   updateStats(stats, node) {
+      if (this.bars[node.getName()] === undefined) {
+          this.bars[node.getName()] = new progress(` downloading interface ${node.getName()} [:bar] :current / :total`, {total: stats.totalObjects(), stream: this.log.stream})
+      } else {
+          this.bars[node.getName()].tick((100 * (stats.receivedObjects() + stats.indexedObjects())) / (stats.totalObjects() * 2))
+      }
+
       ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
           if (node.hasChild(key)) {
               node.getChild(key).set(stats[key]())
@@ -226,7 +235,7 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then(() => {
-
+            delete(vm.bars[name]);
             repo.mergeBranches('master', 'refs/remotes/origin/master').then(() => {
               repo.checkoutBranch('master')
                 .then(() => {
@@ -273,6 +282,7 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then((repo) => {
+            delete(vm.bars[name]);
             this.log.info(`[${name}] Successfully cloned interface to ${interfacePath}`);
             // TODO: Currently we ALWAYS use master branch
             repo.getBranch('refs/remotes/origin/master').then((ref) => {

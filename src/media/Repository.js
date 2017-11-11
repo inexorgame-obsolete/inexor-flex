@@ -4,6 +4,7 @@ const path = require('path');
 const git = require('nodegit');
 const util = require('util');
 const mkdirp = require('mkdirp');
+const progress = require('progress');
 
 const inexor_path = require('@inexorgame/path');
 
@@ -228,6 +229,8 @@ class GitRepositoryManager extends EventEmitter {
     /// The class logger
     this.log = this.applicationContext.get('logManager').getLogger('flex.media.repository.GitRepositoryManager');
 
+    /// Internal only. Holds the release progress bars
+    this.bars = {}
   }
 
   /**
@@ -410,6 +413,12 @@ class GitRepositoryManager extends EventEmitter {
    * // TODO: Write a generic function because this is used more often. Also have a look at https://github.com/inexorgame/inexor-core/issues/482
    */
   updateStats(stats, node) {
+      if (this.bars[node.getName()] === undefined) {
+          this.bars[node.getName()] = new progress(` downloading repository ${node.getName()} [:bar] :current / :total`, {total: stats.totalObjects(), stream: this.log.stream})
+      } else {
+          this.bars[node.getName()].tick((100 * (stats.receivedObjects() + stats.indexedObjects())) / (stats.totalObjects() * 2))
+      }
+
       ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
           if (node.hasChild(key)) {
               node.getChild(key).set(stats[key]())
@@ -453,6 +462,7 @@ class GitRepositoryManager extends EventEmitter {
                 }
             }).then(function(repo) {
                 repository = repo;
+                delete(self.bars[name]);
                 self.log.info(util.format('Successfully cloned media repository %s', name));
                 return self.getBranches(name, repository);
             }).then(function(repository) {
@@ -492,6 +502,7 @@ class GitRepositoryManager extends EventEmitter {
                     });
                 })
                 .then(function(repository) {
+                    delete(self.bars[name]);
                     return self.mergeBranches(name, repository);
                 })
                 .then(function(repository) {

@@ -8,6 +8,7 @@ const util = require('util');
 const AdmZip = require('adm-zip');
 const https = require('follow-redirects').https;
 const semver = require('semver');
+const progress = require('progress');
 
 const debuglog = util.debuglog('releases');
 const inexor_path = require('@inexorgame/path');
@@ -776,8 +777,12 @@ class ReleaseManager extends EventEmitter {
 
             const urlNode = releaseNode.getChild('path');
             const fileSizeDownloadedNode = releaseNode.getChild('fileSizeDownloaded');
+            const fileSize = releaseNode.getChild('fileSize');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
-            
+            let  bar = new progress(`downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: fileSize.get(), stream: this.log.stream })
+            fileSizeDownloadedNode.on('postSet', (value) => {
+                bar.tick(value)
+            })
 
             this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
                 this.downloading[versionStr] = false;
