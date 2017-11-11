@@ -65,13 +65,14 @@ class TreeClient {
       log: this.createEndpoint('/flex/log/${name}', this.getFlexLog.name),
     },
     this.releases = { // Since this does not fetch flex releases
+      list: this.createEndpoint('/releases', this.listReleases.name),
       fetch: this.createEndpoint('/releases/fetch', this.fetchReleases.name),
-          list: this.createEndpoint('/releases', this.listReleases.name),
-          download: this.createEndpoint('/releases/${version}/download', this.downloadRelease.name),
-          install: this.createEndpoint('/releases/${version}/install', this.installRelease.name),
-          uninstall: this.createEndpoint('/releases/${version}/uninstall', this.uninstallRelease.name),
-          save: this.createEndpoint('/releases/save', this.saveReleases.name),
-          load: this.createEndpoint('/releases/load', this.loadReleases.name)
+      info: this.createEndpoint('/releases/info/${versionRange}/${channelSearch}', this.getReleaseInfo.name),
+      download: this.createEndpoint('/releases/download/${versionRange}/${channelSearch}', this.downloadRelease.name),
+      install: this.createEndpoint('/releases//install/${versionRange}/${channelSearch}', this.installRelease.name),
+      uninstall: this.createEndpoint('/releases/uninstall/${versionRange}/${channelSearch}', this.uninstallRelease.name),
+      save: this.createEndpoint('/releases/save', this.saveReleases.name),
+      load: this.createEndpoint('/releases/load', this.loadReleases.name)
     }
   }
 
@@ -464,73 +465,85 @@ class TreeClient {
   }
 
   /**
-   * Fetches all releases (to the callback)
-   * @function
-   * @param {function} callback
-   */
-  fetchReleases(callback) {
-      this.callEndpoint(this.fetchReleases.name, callback);
-  }
-
-  /**
    * Returns all the releases to the callback
    * @function
    * @param {function} callback
    */
   listReleases(callback) {
-      this.callEndpoint(this.listReleases.name, callback);
+    this.callEndpoint(this.listReleases.name, callback);
   }
 
-    /**
-     * Downloads the release
-     * @function
-     * @param {string} version - the release version range
-     * @param {string} channel - the release channel
-     * @param {function} callback
-     */
-    downloadRelease(version, channel, callback) {
-        this.callEndpoint(this.downloadRelease.name, callback, { version: version, channel: channel});
-    }
+  /**
+   * Fetches all releases (to the callback)
+   * @function
+   * @param {function} callback
+   */
+  fetchReleases(callback) {
+    this.callEndpoint(this.fetchReleases.name, callback);
+  }
 
-    /**
-     * Installs the release
-     * @function
-     * @param {string} version - the release version range
-     * @param {string} channel - the release channel
-     * @param {function} callback
-     */
-    installRelease(version, channel, callback) {
-        this.callEndpoint(this.installRelease.name, callback, { version: version, channel: channel});
-    }
+  /**
+   * Get's a release info by semantic version range and release channel
+   * @function
+   * @param {string} versionRange - the release version range
+   * @param {string} channel - the release channel
+   * @param {function} callback
+   */
+  getReleaseInfo(versionRange, channelSearch, callback) {
+    this.callEndpoint(this.getReleaseInfo.name, callback, { versionRange: versionRange, channelSearch: channelSearch });
+  }
 
-    /**
-     * Uninstalls the release
-     * @function
-     * @param {string} version - the release version range
-     * @param {string} channel - the release channel
-     * @param {function} callback
-     */
-    uninstallRelease(version, channel, callback) {
-        this.callEndpoint(this.uninstallRelease.name, callback, { version: version, channel: channel});
-    }
+  /**
+   * Downloads the release
+   * @function
+   * @param {string} versionRange - the release version range
+   * @param {string} channel - the release channel
+   * @param {function} callback
+   */
+  downloadRelease(versionRange, channelSearch, callback) {
+    this.callEndpoint(this.downloadRelease.name, callback, { versionRange: versionRange, channelSearch: channelSearch });
+  }
 
-    /**
-     * Saves the release config
-     * @function
-     * @param {function} callback
-     */
-    saveReleases(callback) {
-        this.callEndpoint(this.saveReleases.name, callback);
-    }
+  /**
+   * Installs the release
+   * @function
+   * @param {string} versionRange - the release version range
+   * @param {string} channelSearch - the release channel
+   * @param {function} callback
+   */
+  installRelease(versionRange, channelSearch, callback) {
+    this.callEndpoint(this.installRelease.name, callback, { versionRange: versionRange, channelSearch: channelSearch });
+  }
 
-    /**
-     * Load the release config
-     * @function
-     * @param {function} callback
-     */
-    loadReleases(callback) {
-        this.callEndpoint(this.loadReleases.name, callback);
-    }
+  /**
+   * Uninstalls the release
+   * @function
+   * @param {string} versionRange - the release version range
+   * @param {string} channelSearch - the release channel
+   * @param {function} callback
+   */
+  uninstallRelease(versionRange, channelSearch, callback) {
+    this.callEndpoint(this.uninstallRelease.name, callback, { versionRange: versionRange, channelSearch: channelSearch });
+  }
+
+  /**
+   * Saves the release config
+   * @function
+   * @param {function} callback
+   */
+  saveReleases(callback) {
+    this.callEndpoint(this.saveReleases.name, callback);
+  }
+
+  /**
+   * Load the release config
+   * @function
+   * @param {function} callback
+   */
+  loadReleases(callback) {
+    this.callEndpoint(this.loadReleases.name, callback);
+  }
+
 }
 
 module.exports = TreeClient;

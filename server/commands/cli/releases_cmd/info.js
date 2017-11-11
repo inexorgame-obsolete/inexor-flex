@@ -1,8 +1,8 @@
 const TreeClient = require('@inexorgame/treeclient').TreeClient;
 const log = require('@inexorgame/logger')();
 
-exports.command = 'download [versionRange] [channelSearch]';
-exports.describe = 'Download a release.';
+exports.command = 'info [versionRange] [channelSearch]';
+exports.describe = 'Gets a release info by semantic version range and release channel';
 
 exports.builder = {
   versionRange: {
@@ -18,9 +18,11 @@ exports.builder = {
 };
 
 exports.handler = function(argv) {
-  log.info(`Downloading release with version range ${argv.versionRange} @ ${argv.channelSearch} via the command-line`);
+  log.info('Listing releases via the command-line')
   let client = new TreeClient(argv.profileHostname, argv.profilePort);
-  client.releases.download(argv.versionRange, argv.channelSearch, (data, response) => {
-    // The log is already handled elsewhere
+  client.releases.info(argv.versionRange, argv.channelSearch, (data, response) => {
+    if (response.statusCode == 200) {
+      log.info(JSON.stringify(data));
+    }
   });
-};
+}

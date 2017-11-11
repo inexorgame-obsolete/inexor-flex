@@ -36,16 +36,16 @@ class ReleasesRestAPI extends EventEmitter {
         this.router.get('/releases/load', this.loadReleases.bind(this));
 
         // Get infos about a release
-        this.router.get('/releases/info/:version/:channel', this.getRelease.bind(this));
+        this.router.get('/releases/info/:versionRange/:channelSearch', this.getReleaseInfo.bind(this));
 
         // Download release via semver
-        this.router.get('/releases/download/:version/:channel', this.downloadRelease.bind(this));
+        this.router.get('/releases/download/:versionRange/:channelSearch', this.downloadRelease.bind(this));
 
         // Install release via semver
-        this.router.get('/releases/install/:version/:channel', this.installRelease.bind(this));
+        this.router.get('/releases/install/:versionRange/:channelSearch', this.installRelease.bind(this));
 
         // Uninstall release via semver
-        this.router.get('/releases/uninstall/:version/:channel', this.uninstallRelease.bind(this));
+        this.router.get('/releases/uninstall/:versionRange/:channelSearch', this.uninstallRelease.bind(this));
     }
 
     /**
@@ -92,13 +92,13 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     /**
-     * Get's a release by semantic version range and release channel
+     * Get's a release info by semantic version range and release channel
      * supply the :semver as an argument
      */
-    getRelease(req, res) {
-        let releaseNode = this.releaseManager.getRelease(req.params.version, req.params.channel);
+    getReleaseInfo(req, res) {
+        let releaseNode = this.releaseManager.getRelease(req.params.versionRange, req.params.channelSearch);
         if (!releaseNode) {
-            let errmsg = `Release of version range ${req.params.version} in channel ${req.params.channel} does not exist`;
+            let errmsg = `Release of version range ${req.params.versionRange} in channel ${req.params.channelSearch} does not exist`;
             this.log.warn(errmsg);
             res.status(404).send(errmsg);
             return
@@ -109,15 +109,15 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     downloadRelease(req, res) {
-        let releaseNode = this.releaseManager.getRelease(req.params.version, req.params.channel);
+        let releaseNode = this.releaseManager.getRelease(req.params.versionRange, req.params.channelSearch);
         if (!releaseNode) {
-            let errmsg = `Release with version ${req.params.version}@${req.params.channel} does not exist`;
+            let errmsg = `Release with version ${req.params.versionRange}@${req.params.channelSearch} does not exist`;
             this.log.warn(errmsg);
             res.status(404).send(errmsg);
             return
         }
         const version_str = `${releaseNode.version}@${releaseNode.channel}`;
-        let downloadedNode = releaseNode.getChild('isdownloaded');
+        let downloadedNode = releaseNode.getChild('isDownloaded');
 
         if (downloadedNode.get() || this.releaseManager.downloading[version_str]) {
             res.status(400).send(`Release with version ${version_str} has already been downloaded`);
@@ -129,17 +129,17 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     installRelease(req, res) {
-        let releaseNode = this.releaseManager.getRelease(req.params.version, req.params.channel);
+        let releaseNode = this.releaseManager.getRelease(req.params.versionRange, req.params.channelSearch);
         if (!releaseNode) {
-            let errmsg = `Release with version ${req.params.version}@${req.params.channel} does not exist`;
+            let errmsg = `Release with version ${req.params.versionRange}@${req.params.channelSearch} does not exist`;
             this.log.warn(errmsg);
             res.status(404).send(errmsg);
             return
         }
         const version_str = `${releaseNode.version}@${releaseNode.channel}`;
 
-        let downloadedNode = releaseNode.getChild('isdownloaded');
-        let installedNode = releaseNode.getChild('isinstalled');
+        let downloadedNode = releaseNode.getChild('isDownloaded');
+        let installedNode = releaseNode.getChild('isInstalled');
 
         if (!downloadedNode.get()) {
             res.status(400).send(`Release with version ${version_str} is not downloaded. Download it first!`);
@@ -155,15 +155,15 @@ class ReleasesRestAPI extends EventEmitter {
     }
 
     uninstallRelease(req, res) {
-        let releaseNode = this.releaseManager.getRelease(req.params.version, req.params.channel);
+        let releaseNode = this.releaseManager.getRelease(req.params.versionRange, req.params.channelSearch);
         if (!releaseNode) {
-            let errmsg = `Release with version ${req.params.version}@${req.params.channel} does not exist`;
+            let errmsg = `Release with version ${req.params.versionRange}@${req.params.channelSearch} does not exist`;
             this.log.warn(errmsg);
             res.status(404).send(errmsg);
             return
         }
         const version_str = `${releaseNode.version}@${releaseNode.channel}`;
-        let installedNode = this.releaseNode.getChild('installed');
+        let installedNode = this.releaseNode.getChild('isInstalled');
 
         if (installedNode.get() && !this.releaseManager.uninstalling[version_str]) {
             this.log.info(`Uninstalling release ${version_str}`);
