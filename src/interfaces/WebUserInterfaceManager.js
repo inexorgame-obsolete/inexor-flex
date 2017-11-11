@@ -200,9 +200,15 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then(() => {
-            repo.mergeBranches('master', 'origin/master').then(() => {
-              this.log.info(`[${name}] Checked out latest master`);
-              resolve(true);
+
+            repo.mergeBranches('master', 'refs/remotes/origin/master').then(() => {
+              repo.checkoutBranch('master')
+                .then(() => {
+                    this.log.info(`[${name}] Checked out latest master`);
+                    resolve(true);
+                }).catch((err) => {
+                    this.log.warn(`[${name}] Failed to check out master: ${err}`);
+                })
             }).catch((err) => {
               this.log.warn(`[${name}] Failed to merge branch master into origin/master because of ${err}`);
             });
