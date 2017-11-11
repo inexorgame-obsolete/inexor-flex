@@ -411,20 +411,12 @@ class GitRepositoryManager extends EventEmitter {
    */
   updateStats(stats, node) {
       ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
-          if (node.hasChild(String(key))) {
-              console.log(`Updating ${key}`)
+          if (node.hasChild(key)) {
               node.getChild(key).set(stats[key]())
           } else {
-              console.log(`Setting ${key}`)
-              node.set(key, 'int64', stats[key]())
+              node.addChild(key, 'int64', stats[key]())
           }
       })
-
-      /*if (node.hasChild('totalObjects')) {
-          node.getChild('totalObjects').set(stats.totalObjects())
-      } else {
-          node.addChild('totalObjects', 'int64', stats.totalObjects())
-      }*/
   }
 
   /**
