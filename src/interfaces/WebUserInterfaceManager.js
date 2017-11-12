@@ -191,9 +191,10 @@ class WebUserInterfaceManager extends EventEmitter {
    */
   updateStats(stats, node) {
       if (this.bars[node.getName()] === undefined) {
-          this.bars[node.getName()] = new progress(` downloading interface ${node.getName()} [:bar] :current / :total`, {total: stats.totalObjects(), stream: this.log.stream})
+          this.bars[node.getName()] = new progress(` downloading interface ${node.getName()} [:bar] :current%`, {total: 100, stream: this.log.stream})
       } else {
-          this.bars[node.getName()].tick((100 * (stats.receivedObjects() + stats.indexedObjects())) / (stats.totalObjects() * 2))
+          let increasePercent = Math.round(((100 * (stats.receivedObjects() + stats.indexedObjects()))) / (stats.totalObjects() * 2)) - this.bars[node.getName()].curr
+          this.bars[node.getName()].tick(increasePercent)
       }
 
       ['indexedObjects', 'totalObjects', 'receivedObjects'].forEach((key) => {
@@ -235,6 +236,7 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then(() => {
+            self.bars[name].tick(self.bars[name].total - self.bars[name].curr) // Complete
             delete(vm.bars[name]);
             repo.mergeBranches('master', 'refs/remotes/origin/master').then(() => {
               repo.checkoutBranch('master')
@@ -282,7 +284,10 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then((repo) => {
-            delete(vm.bars[name]);
+            if (self.bars[name]) {
+                self.bars[name].tick(self.bars[name].total - self.bars[name].curr)
+                delete(self.bars[name]);
+            }
             this.log.info(`[${name}] Successfully cloned interface to ${interfacePath}`);
             // TODO: Currently we ALWAYS use master branch
             repo.getBranch('refs/remotes/origin/master').then((ref) => {
