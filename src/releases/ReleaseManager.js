@@ -139,7 +139,7 @@ class ReleaseManager extends EventEmitter {
         } else if (os.platform() == 'linux') {
             platform += 'Linux';
         } else if (os.platform() == 'darwin') {
-            platform += 'Darwin';
+            platform += 'Windows';
         }
 
         if (['arm64', 'x64'].includes(os.arch())) {
@@ -780,8 +780,8 @@ class ReleaseManager extends EventEmitter {
             const fileSize = releaseNode.getChild('fileSize');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
             let  bar = new progress(`downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: fileSize.get(), stream: this.log.stream })
-            fileSizeDownloadedNode.on('postSet', (value) => {
-                bar.tick(value)
+            fileSizeDownloadedNode.on('preSet', (value) => {
+                bar.tick((value.oldValue - value.newValue));
             })
 
             this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
