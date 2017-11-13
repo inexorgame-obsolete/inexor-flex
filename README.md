@@ -164,9 +164,14 @@ We use [lerna](https://lernajs.io/) for publishing. The lerna workflow is as fol
 
 *NOTE:* This will require you to have `npm` installed, be logged in, and have appropriate permissions for the `@inexorgame` orga.
 
-```
-npm install -g lerna
+The release flow is as follows:
+
+```bash
 lerna publish --skip-git
+# increase the version number of inexor-flex
+npm update # <- will update the published packages
+nsp check # <- check if we don't introduce any vulnerabilities
+npm publish --access public
 ```
 
 ### Future features

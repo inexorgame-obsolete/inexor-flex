@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/releases",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A release downloader for inexor-core",
   "main": "index.js",
   "repository": {

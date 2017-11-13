@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/treeclient",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "The tree client allows access to a local or remote Inexor Tree.",
   "main": "index.js",
   "repository": {

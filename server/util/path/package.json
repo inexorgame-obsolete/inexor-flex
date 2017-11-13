@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/path",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Common Inexor Paths",
   "main": "index.js",
   "repository": {
