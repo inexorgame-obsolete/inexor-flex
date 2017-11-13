@@ -3,7 +3,7 @@
         "destination": "./out/",
         "encoding": "utf8",
         "recurse": true,
-        "template": "node_modules/minami",
+        "template": "node_modules/tui-jsdoc-template",
         "readme": "README.md"
     },
     "tags": {
@@ -11,11 +11,17 @@
         "dictionaries": ["jsdoc","closure"]
     },
     "source": {
-        "include": ["server/", "src", "node_modules/@inexorgame/tree"],
+        "include": ["server/", "src"],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "node_modules"
     },
     "templates": {
+        "name": "Inexor Flex",
+        "logo": {
+            "url": "https://raw.githubusercontent.com/inexorgame/artwork/master/logo/logo_rendered.png",
+            "width": "120   px",
+            "height": "80px"
+        },
         "cleverLinks": false,
         "monospaceLinks": false
     }
