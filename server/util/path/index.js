@@ -1,6 +1,5 @@
 /**
  * @module path
- * // TODO: Might be better called inexorgame/defaults
  */
 
 const process = require('process');
