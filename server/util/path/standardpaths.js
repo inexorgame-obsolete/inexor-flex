@@ -21,8 +21,8 @@ if (process.env.SNAP_USER_DATA) {
   homeDir = process.env.SNAP_USER_DATA;
 }
 
-if (process.env.SNAP_COMMON) {
-  tmpDir = process.env.SNAP_COMMON;
+if (process.env.SNAP_USER_COMMON) {
+  tmpDir = process.env.SNAP_USER_COMMON;
 }
 
 /**
