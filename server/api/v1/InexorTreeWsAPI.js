@@ -10,6 +10,7 @@ const syncStates = {
 
 /**
  * Websockets API for managing tree nodes of the Inexor Tree.
+ * @module api
  */
 class InexorTreeWsAPI {
 

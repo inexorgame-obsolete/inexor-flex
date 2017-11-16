@@ -8,6 +8,7 @@ const bunyan = require('bunyan'); // Since FlexServer sits on top of @inexorgame
 
 /**
  * REST API for managing Inexor Flex itself.
+ * @module api
  */
 class FlexRestAPI {
 

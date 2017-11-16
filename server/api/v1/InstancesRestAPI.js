@@ -3,6 +3,7 @@ const util = require('util');
 
 /**
  * REST API for managing instances of Inexor Core.
+ * @module api
  */
 class InstancesRestAPI extends EventEmitter {
 

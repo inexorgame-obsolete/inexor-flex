@@ -1,6 +1,6 @@
 /**
  * This module provides a connector to Inexor Core instances.
- * @module connector
+ * @module instances
  * @see grpc
  */
 

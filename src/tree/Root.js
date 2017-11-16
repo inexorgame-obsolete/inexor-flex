@@ -3,6 +3,7 @@ const util = require('./util')
 
 /**
  * Represents the inexor root tree
+ * @module tree
  */
 class Root extends Node {
     /**

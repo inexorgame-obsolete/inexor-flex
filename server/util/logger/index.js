@@ -1,3 +1,6 @@
+/**
+ * @module logger
+ */
 const bunyan = require('bunyan');
 const bunyanDebugStream = require('bunyan-debug-stream');
 

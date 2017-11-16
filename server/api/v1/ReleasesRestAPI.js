@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 
 /**
  * REST API for managing releases of Inexor Core.
+ * @module api
  */
 class ReleasesRestAPI extends EventEmitter {
 

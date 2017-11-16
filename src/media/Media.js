@@ -3,6 +3,7 @@ const EventEmitter = require('events');
 
 /**
  * The media types.
+ * @module media
  */
 const media_types = [
   'map',
