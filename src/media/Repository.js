@@ -10,6 +10,7 @@ const inexor_path = require('@inexorgame/path');
 /**
  * The media repository types.
  * Future types may be 'http+rest', 'mongo'
+ * @module media
  */
 const repository_types = [
   'fs',

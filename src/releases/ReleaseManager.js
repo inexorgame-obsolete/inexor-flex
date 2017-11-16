@@ -15,6 +15,9 @@ const inexor_path = require('@inexorgame/path');
 // It won't let us use a custom API agent, take IE5 than
 const userAgent = 'Mozilla/4.0 (compatible; MSIE 5.0b1; Mac_PowerPC)';
 
+/**
+ * @module releases
+ */
 
 class ReleaseManager extends EventEmitter {
 

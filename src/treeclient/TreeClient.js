@@ -3,6 +3,7 @@ const log = require('@inexorgame/logger')();
 
 /**
  * The client for the local or remote Inexor Tree instances via a REST API.
+ * @module treeclient
  * @see {@link https://www.npmjs.com/package/node-rest-client}
  */
 class TreeClient {

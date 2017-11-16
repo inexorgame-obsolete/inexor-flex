@@ -15,6 +15,7 @@ const log = require('@inexorgame/logger')();
 
 /**
  * Management service for web user interfaces.
+ * @module interfaces
  */
 class WebUserInterfaceManager extends EventEmitter {
 

@@ -11,6 +11,7 @@ const levelNames = {
 
 /**
  * Websockets API for the Inexor Console.
+ * @module api
  */
 class ConsoleWsAPI {
 

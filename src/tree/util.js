@@ -1,4 +1,8 @@
 /**
+ * @module tree
+ */
+
+/**
  * @property {string} separator - the tree seperator, usually "/"
  */
 const separator = '/';

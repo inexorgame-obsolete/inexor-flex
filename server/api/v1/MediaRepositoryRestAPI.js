@@ -4,6 +4,7 @@ const inexor_path = require('@inexorgame/path');
 
 /**
  * REST API for media repositories.
+ * @module api
  */
 class MediaRepositoryRestAPI {
 

@@ -4,6 +4,7 @@ const util = require('./util')
 
 /**
  * Represents a tree Node
+ * @module tree
  * @todo Add a verbose logging system (shouldn't be difficult though)
  */
 class Node extends EventEmitter {

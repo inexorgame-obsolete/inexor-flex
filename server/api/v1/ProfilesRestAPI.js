@@ -5,6 +5,7 @@ const log = inexor_log('@inexorgame/flex/api/v1/profiles');
 
 /**
  * REST API for managing profiles.
+ * @module api
  */
 class ProfilesRestAPI {
 
