@@ -56,6 +56,12 @@ const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : 
 const interfaces_path = (process.env.INTERFACES_PATH) ? process.env.INTERFACES_PATH : path.join(standardPaths.appDataLocation[0], 'interfaces');
 
 /**
+ * The plugins path of Inexor
+ * By default the app data location + 'plugins' is used
+ */
+const plugins_path = (process.en.PLUGINS_PATH) ? process.env.PLUGINS_PATH : path.join(standardPaths.appDataLocation[0], 'plugins');
+
+/**
  * Returns a preference-ordered array of base directories to search for media
  * files in addition to the default media path.
  * @return {string}
@@ -91,6 +97,7 @@ module.exports = {
   media_path: media_path,
   releases_path: releases_path,
   interfaces_path: interfaces_path,
+  plugins_path: plugins_path,
   getMediaPaths: getMediaPaths,
   getConfigPaths: getConfigPaths,
   DEFAULT_PORT: DEFAULT_PORT

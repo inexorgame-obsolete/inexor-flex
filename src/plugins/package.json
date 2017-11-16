@@ -1,0 +1,20 @@
+{
+  "name": "@inexorgame/plugins",
+  "version": "0.0.1",
+  "description": "A plugin framework based on Node.vm for inexor-flex",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inexorgame/inexor-flex.git"
+  },
+  "keywords": [
+    "sandbox",
+    "plugins"
+  ],
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "bugs": {
+    "url": "https://github.com/inexorgame/inexor-flex/issues"
+  },
+  "homepage": "https://github.com/inexorgame/inexor-flex#readme"
+}
