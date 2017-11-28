@@ -20,7 +20,7 @@ if (process.platform == 'win32') {
  * The pid file that Inexor Flex uses
  * NOTE: Might be prefixed with /inexor in the future
  */
-const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : path.resolve(standardPaths.tempLocation);
+const pid_path =  (process.env.INEXOR_PID_PATH) ? path.resolve(process.env.INEXOR_PID_PATH) : path.resolve(standardPaths.tempLocation);
 
 /**
  * The config folder of flex
@@ -29,7 +29,7 @@ const pid_path =  (process.env.PID_PATH) ? path.resolve(process.env.PID_PATH) : 
  * the fallback is a relative path to the flex directory.
  * @property {string} config_path
  */
-const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : standardPaths.appConfigLocation[0];
+const config_path = (process.env.INEXOR_CONFIG_PATH) ? process.env.INEXOR_CONFIG_PATH : standardPaths.appConfigLocation[0];
 
 /**
  * The media directory of inexor
@@ -38,21 +38,21 @@ const config_path = (process.env.CONFIG_PATH) ? process.env.CONFIG_PATH : standa
  * the fallback is a relative path to the flex directory.
  * @property {string} media_path
  */
-const media_path = (process.env.MEDIA_PATH) ? process.env.MEDIA_PATH : path.join(standardPaths.appDataLocation[0], 'media');
+const media_path = (process.env.INEXOR_MEDIA_PATH) ? process.env.INEXOR_MEDIA_PATH : path.join(standardPaths.appDataLocation[0], 'media');
 
 /**
  * The releases path of inexor
  * By default the app data location is used
  * @property {string} releases_path
  */
-const releases_path = (process.env.RELEASES_PATH) ? process.env.RELEASES_PATH : standardPaths.appDataLocation[0];
+const releases_path = (process.env.INEXOR_RELEASES_PATH) ? process.env.INEXOR_RELEASES_PATH : standardPaths.appDataLocation[0];
 
 /**
  * The interfaces path of Inexor
  * By default the app data location + 'interfaces' is used
  * @property {string} interfaces_path
  */
-const interfaces_path = (process.env.INTERFACES_PATH) ? process.env.INTERFACES_PATH : path.join(standardPaths.appDataLocation[0], 'interfaces');
+const interfaces_path = (process.env.INEXOR_INTERFACES_PATH) ? process.env.INEXOR_INTERFACES_PATH : path.join(standardPaths.appDataLocation[0], 'interfaces');
 
 /**
  * Returns a preference-ordered array of base directories to search for media
@@ -60,6 +60,9 @@ const interfaces_path = (process.env.INTERFACES_PATH) ? process.env.INTERFACES_P
  * @return {string}
  */
 function getMediaPaths() {
+  if (process.env.INEXOR_MEDIA_PATH) {
+    return [process.env.INEXOR_MEDIA_PATH];
+  }
   var media_paths = [];
   for (var i = 0; i < standardPaths.appDataLocation.length; i++) {
     media_paths.push(path.join(standardPaths.appDataLocation[i], 'media'));
@@ -73,6 +76,9 @@ function getMediaPaths() {
  * @return {string}
  */
 function getConfigPaths() {
+  if (process.env.INEXOR_CONFIG_PATH) {
+    return [process.env.INEXOR_CONFIG_PATH];
+  }
   return standardPaths.appConfigLocation;
 }
 
