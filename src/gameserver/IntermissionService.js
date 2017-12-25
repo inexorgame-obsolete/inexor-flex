@@ -61,7 +61,7 @@ class IntermissionService extends EventEmitter {
         }
       });
     } catch (err) {
-      this.log.error(err);
+     // this.log.error(err);
     }
   }
 
