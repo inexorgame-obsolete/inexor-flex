@@ -19,6 +19,10 @@ const spawn = require('child_process').spawn;
 const toml = require('toml');
 const tomlify = require('tomlify');
 const util = require('util');
+const waitUntil = require('wait-until');
+const portscanner = require('portscanner');
+
+
 
 const Connector = require('./Connector');
 
@@ -251,9 +255,10 @@ class InstanceManager extends EventEmitter {
      * Starts an instance.
      * @function
      * @param {tree.Node} [instanceNode] - The instance to start.
+     * @param {bool} [dummyStart] - Do not start the binary, but only set the state to started.
      * @return {Promise<instance>}
      */
-    start(instanceNode) {
+    start(instanceNode, dummyStart = false) {
         let instanceId = instanceNode.getName();
         let instance_port = instanceNode.port;
         let instance_type = instanceNode.type;
@@ -263,11 +268,16 @@ class InstanceManager extends EventEmitter {
 
             // Resolve executable
             try {
+                if (dummyStart) {
+                    this.transist(instanceNode, 'stopped', 'started');
+                    resolve(instanceNode);
+                    return;
+                }
                 this.releaseManager.getOrInstallRelease(instanceNode.versionRange, instanceNode.channelSearch).then((releaseNode) => {
                     this.log.debug(`Starting instance using release ${releaseNode.version} @ ${releaseNode.channel}`);
                     const executable_folder = this.releaseManager.getBinaryPath(releaseNode.version, releaseNode.channel);
                     const executable_path = path.join(executable_folder, this.releaseManager.getExecutableName(instance_type));
-                    
+
                     if (instanceNode.hasChild('version')) {
                         instanceNode.getChild('version').set(releaseNode.version);
                     } else {
@@ -285,7 +295,7 @@ class InstanceManager extends EventEmitter {
                         reject(new Error(`Executable does not exist: ${executable_path}`));
                     }
                     fs.chmodSync(executable_path, 0o755);
-    
+
                     // Starting a new process with the instance id as only argument
                     let args = [instanceId];
                     let options = {
@@ -293,22 +303,22 @@ class InstanceManager extends EventEmitter {
                         env: process.env
                     };
                     this.log.info(`Starting ${executable_path} ${args.join(' ')}`);
-    
+
                     // Spawn process
                     const instanceProcess = spawn(executable_path, args, options);
                     this.instances[instanceId] = instanceProcess;
                     this.log.info(util.format('%s process started with PID %d', this.getInstanceName(instanceNode), instanceProcess.pid));
-    
+
                     instanceProcess.on('error', (err) => {
                         this.onProcessError(instanceNode, err);
                         //  delete this.instances[instanceId];
                     });
-    
+
                     instanceProcess.on('exit', (code, signal) => {
                         this.onProcessExited(instanceNode, code, signal);
                         //delete this.instances[instanceId];
                     });
-    
+
                     // Create a logger for the instance
                     this.consoleManager.createConsole(instanceNode, instanceProcess).then((consoleNode) => {
                         this.transist(instanceNode, 'stopped', 'started');
@@ -316,14 +326,12 @@ class InstanceManager extends EventEmitter {
                     }).catch((err) => {
                         reject(new Error('Failed to create instance console'));
                     });
-    
-    
+
                     // Store the instance PID
                     instanceNode.addChild('pid', 'int64', instanceProcess.pid);
-    
+
                     // Store the process handle of the instance
                     instanceNode.addChild('process', 'object', instanceProcess);
-                      
                 })
                 .catch((err) => {
                     reject(new Error(`No version fulfills ${instanceNode.versionRange} @ ${instanceNode.channelSearch}.`));
@@ -536,6 +544,64 @@ class InstanceManager extends EventEmitter {
     }
 
     /**
+     * The promise resolves as soon as the port of the instance is available.
+     * @function
+     * @param {tree.Node} instanceNode - The instance to wait for.
+     * @param {int} timeout - The maximum time in milliseconds it waits until rejecting the promise.
+     *                        If timeout = -1, it waits infidelity
+     * @param {int} interval - The time it waits between the checks in milliseconds.
+     * @return {Promise<InstanceNode>}
+     */
+    waitForInstanceToAppear(instanceNode, timeout = 10000, interval = 500) {
+        return new Promise((resolve, reject) => {
+
+            let retries = Math.max(1, timeout/interval);
+            if (timeout == -1) {
+                // if the waiting is meant to be forever: every 5 minutes we want a message.
+                retries = Math.floor(1000/interval * 300);
+            }
+            this.log.info(`Waiting for instance ${instanceNode.port}. retries: ${retries}, timeout: ${timeout}`);
+
+            let is_open = false;
+            waitUntil()
+                .interval(interval) // every xy ms we do the check
+                .times(retries)
+                .condition(() => {
+                    // Checks the status of a single port
+                    portscanner.checkPortStatus(instanceNode.port, instanceNode.hostname,
+                        (error, status) => {
+                        // Status is 'open' if currently in use or 'closed' if available
+                        if (error) {
+                            this.log.error(error);
+                        }
+                        if (status == "open") {
+                            is_open = true
+                        }
+                        this.log.info(`status ${is_open}`);
+                    });
+                    return is_open;
+                })
+                .done((portIsOpen) => {
+                        this.log.error(`WE CAME HERE ${portIsOpen}`);
+                    if (!portIsOpen) {
+                        if (timeout != -1) {
+                            this.log.error(`Instance ${instanceNode.port} did not appear. Waited ${timeout/1000} seconds.`);
+                            reject(`Instance ${instanceNode.port} did not appear. Waited ${timeout/1000} seconds.`);
+                            return;
+                        }
+                        this.log.warn(`Instance ${instanceNode.port} did not yet appear. Waited 5 minutes. Keep on waiting..`);
+                        // if the instance should be looked out for forever, recursively call this function.
+                        this.waitForInstanceToAppear(instanceNode, timeout, interval).then((instanceNode) => {
+                                resolve(instanceNode);
+                            }
+                        );
+                    } else {
+                        resolve(instanceNode);
+                    }
+                });
+        });
+    }
+    /**
      * Loading instances from a TOML file.
      * @function
      * @param {string} [filename] - The filename.
@@ -564,20 +630,33 @@ class InstanceManager extends EventEmitter {
                             config.instances[instanceId].autoconnect,
                             config.instances[instanceId].autorestart
                         ).then((instanceNode) => {
-                            if (instanceNode.autostart) {
-                                this.start(instanceNode).then((instanceNode) => {
-                                    if (instanceNode.autoconnect) {
-                                        this.connect(instanceNode).then((instanceNode) => {
-                                            this.log.info(util.format('Instance %s is up and running', instanceNode.getName()));
+                            // automatically start instances
+                            // or start the lookup cycle if autostart is false, but autoconnect is true.
+                            this.start(instanceNode, !instanceNode.autostart).then((instanceNode) => {
+                                if (!instanceNode.autoconnect) {
+                                    return;
+                                }
+                                if (instanceNode.autostart) {
+                                    this.connect(instanceNode).then((instanceNode) => {
+                                            this.log.info(`Instance ${instanceNode.port} is up and running`);
                                         }).catch((err) => {
-                                            this.log.error(util.format('Failed to connect to instance %s automatically', instanceNode.getName()));
+                                            this.log.error(`Failed to connect to instance ${instanceNode.port} automatically`);
                                         });
-                                    }
-                                }).catch((err) => {
-                                    this.log.error(`Failed to start to instance ${instanceNode.getName()} automatically: ${err}`);
-                                });
-                            }
+                                } else {
+                                    this.waitForInstanceToAppear(instanceNode).then((instanceNode) => {
+                                        this.log.error(`YES WE DO COME EVEN HERE! ${instanceNode}`);
+                                        this.connect(instanceNode).then((instanceNode) => {
+                                            this.log.info(`Instance ${instanceNode.port} appeared and we connected.`);
+                                        }).catch((err) => {
+                                            this.log.error(`Instance ${instanceNode.port} did not appear..`);
+                                        });
+                                    });
+                                }
+                            }).catch((err) => {
+                                this.log.error(`Failed to start to instance ${instanceNode.port} automatically: ${err}`);
+                            });
                         }).catch((err) => {
+                            this.log.error(err);
                         });
                     }
                     resolve(true);

@@ -10,7 +10,6 @@ const grpc = require('grpc');
 const path = require('path');
 const toml = require('toml');
 const util = require('util');
-
 const inexor_path = require('@inexorgame/path');
 
 /**
@@ -210,104 +209,101 @@ class Connector extends EventEmitter {
   connect() {
     var self = this;
     return new Promise((resolve, reject) => {
-      this.log.debug(util.format('Connecting to the gRPC server on %s:%d', this.hostname, this.port));
+      self.log.debug(`Connecting to the gRPC server on ${self.hostname}:${self.port}`);
 
       // Create a GRPC client
-      this._client = new this.protoDescriptor.inexor.tree.TreeService(
-        util.format('%s:%d', this.hostname, this.port),
-        grpc.credentials.createInsecure()
+      self._client = new self.protoDescriptor.inexor.tree.TreeService(
+          util.format('%s:%d', self.hostname, self.port),
+          grpc.credentials.createInsecure()
       );
-      this.log.debug('Created a new GRPC client');
+      self.log.info('Created a new GRPC client');
 
       // Get the ClientWritableStream
       // @see http://www.grpc.io/grpc/node/module-src_client-ClientWritableStream.html
-      this._synchronize = this._client.synchronize();
+      self._synchronize = self._client.synchronize();
 
       // Fetching stream data
-      this.addSynchronizeListener('data', this.onSynchronizeData.bind(this));
+      self.addSynchronizeListener('data', self.onSynchronizeData.bind(self));
 
       // The server has finished sending
-      this.addSynchronizeListener('end', this.onSynchronizeEnd.bind(this));
+      self.addSynchronizeListener('end', self.onSynchronizeEnd.bind(self));
 
       // We get a status message if the gRPC server disconnects
-      this.addSynchronizeListener('status', this.onSynchronizeStatus.bind(this));
+      self.addSynchronizeListener('status', self.onSynchronizeStatus.bind(self));
 
       // Handle synchronization errors
-      this.addSynchronizeListener('error', this.onSynchronizeError.bind(this));
+      self.addSynchronizeListener('error', self.onSynchronizeError.bind(self));
 
       // We listen on the ADD event of the root tree node ...
-      this.instanceNode.getRoot().on('add', this.onNewTreeNode.bind(this));
-      
-      // TODO: on('connected')
-      // see: https://github.com/grpc/grpc/issues/8117
-      grpc.waitForClientReady(this._client, Infinity, (err) => {
-        if (err != null) {
+      self.instanceNode.getRoot().on('add', self.onNewTreeNode.bind(self));
+
+      grpc.waitForClientReady(self._client, Infinity, (err) => {
+          if (err != null) {
           self.log.error(err);
           reject('GRPC connection failed');
-        } else {
+          } else {
           try {
-            if (!self.instanceNode.initialized) {
-              self.log.info('Initialize a new instance tree');
+              if (!self.instanceNode.initialized) {
+                  self.log.info('Initialize a new instance tree');
 
-              // Populate instance tree from defaults
-              self.populateInstanceTreeFromDefaults();
+                  // Populate instance tree from defaults
+                  self.populateInstanceTreeFromDefaults();
 
-              // Overwrite instance tree with instance configuration
-              self.loadInstanceConfiguration();
+                  // Overwrite instance tree with instance configuration
+                  self.loadInstanceConfiguration();
 
-              // Link tree mounts (like textures)
-              self.linkTreeMounts();
+                  // Link tree mounts (like textures)
+                  self.linkTreeMounts();
 
-              // Set package dir
-              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
-              // temporary workaround
-              self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
+                  // Set package dir
+                  self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
+                  // temporary workaround
+                  self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
 
-              // Send signal that the tree initialization has been finished
-              self.sendFinishedTreeIntro();
+                  // Send signal that the tree initialization has been finished
+                  self.sendFinishedTreeIntro();
 
-              // Remember that the node has been initialized
-              self.instanceNode.initialized = true;
+                  // Remember that the node has been initialized
+                  self.instanceNode.initialized = true;
 
-            } else {
-              self.log.info('Using already initialized tree');
-              
-              // Add synchronization listeners for each tree node from defaults
-              self.addTreeNodeSyncListenersFromDefaults();
+              } else {
+                  self.log.info('Using already initialized tree');
 
-              // Overwrite instance tree with instance configuration
-              self.loadInstanceConfiguration();
+                  // Add synchronization listeners for each tree node from defaults
+                  self.addTreeNodeSyncListenersFromDefaults();
 
-              // Set package dir
-              self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
-              // temporary workaround
-              self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
+                  // Overwrite instance tree with instance configuration
+                  self.loadInstanceConfiguration();
 
-              // Send signal that the tree initialization has been finished
-              self.sendFinishedTreeIntro();
+                  // Set package dir
+                  self.instanceNode.package_dir = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'essential'));
+                  // temporary workaround
+                  self.instanceNode.package_dir2 = path.resolve(path.join(inexor_path.getMediaPaths()[0], 'additional'));
 
-              // Remember that the node has been initialized
-              self.instanceNode.initialized = true;
+                  // Send signal that the tree initialization has been finished
+                  self.sendFinishedTreeIntro();
 
-            }
-            self.log.info('Tree for instance successfully initialized');
+                  // Remember that the node has been initialized
+                  self.instanceNode.initialized = true;
 
-            // self._synchronize.end();
+              }
+              self.log.info('Tree for instance successfully initialized');
 
-            // Finally send an event, that the connection has been established
-            // successfully.
-            self.emit('connected', {
-              'instanceNode': self.instanceNode
-            });
+              // self._synchronize.end();
 
-            resolve(self.instanceNode);
+              // Finally send an event, that the connection has been established
+              // successfully.
+              self.emit('connected', {
+                  'instanceNode': self.instanceNode
+              });
+
+              resolve(self.instanceNode);
           } catch (err) {
-            self.log.error(err);
-            reject(err);
+              self.log.error(err);
+              reject(err);
           }
         }
       });
-
     });
   }
 
