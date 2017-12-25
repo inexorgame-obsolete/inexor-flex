@@ -6,18 +6,18 @@
 type = "server"
 name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
-versionRange = "0.x"
+versionRange = "test"
 channelSearch = "*"
 autostart = false
-autoconnect = false
+autoconnect = true
 autorestart = false
 
 [instances.31417]
 type = "client"
 name = "Default production client"
 description = "Badly Configurated Clients Inc. proudly presents your first Inexor Client"
-versionRange = "0.x"
+versionRange = "test"
 channelSearch = "*"
-autostart = true
+autostart = false
 autoconnect = true
 autorestart = false
