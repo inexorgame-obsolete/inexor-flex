@@ -61,7 +61,7 @@ class Connector extends EventEmitter {
 
     /** @private */
     // Use the concrete version and channel instead of versionRange and channelSearch
-    this._protoPath = this.getProtoPath(instanceNode.version, instanceNode.channel, instanceNode.type);
+    this._protoPath = this.getProtoPath(instanceNode.versionRange, instanceNode.channelSearch, instanceNode.type);
     this.log.info('Path to the .proto file: %s', this._protoPath);
 
     if (!fs.existsSync(this._protoPath)) {
