@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/interfaces",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Provides user interfaces",
   "main": "index.js",
   "repository": {
