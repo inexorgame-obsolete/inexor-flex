@@ -203,7 +203,7 @@ class WebUserInterfaceManager extends EventEmitter {
           } else {
               node.addChild(key, 'int64', stats[key]())
           }
-      })
+      });
   }
 
   /**
@@ -219,10 +219,10 @@ class WebUserInterfaceManager extends EventEmitter {
       let interfacePath = interfaceNode.absoluteFsPath;
       this.log.info(`Updating interface at ${interfacePath}`);
 
+      let vm = this;
       if (fs.existsSync(interfacePath)) {
-        let vm = this;
-
         NodeGit.Repository.open(interfacePath).then((repo) => {
+          vm.bars[name] = new progress(`Downloading user interface ${name} [:bar] :current / :total`, { total: 100, stream: this.log.stream });
           repo.fetchAll({
             callbacks: {
               certificateCheck: function() {
@@ -236,7 +236,7 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then(() => {
-            self.bars[name].tick(self.bars[name].total - self.bars[name].curr) // Complete
+            vm.bars[name].tick(vm.bars[name].total - vm.bars[name].curr) // Complete
             delete(vm.bars[name]);
             repo.mergeBranches('master', 'refs/remotes/origin/master').then(() => {
               repo.checkoutBranch('master')
@@ -267,8 +267,6 @@ class WebUserInterfaceManager extends EventEmitter {
           reject(err);
         } else {
           this.log.info(`Cloning interface ${name} from ${repositoryUri}`);
-          let vm = this;
-
           NodeGit.Clone(repositoryUri, interfacePath, {
             fetchOpts: {
               callbacks: {
@@ -284,9 +282,9 @@ class WebUserInterfaceManager extends EventEmitter {
               }
             }
           }).then((repo) => {
-            if (self.bars[name]) {
-                self.bars[name].tick(self.bars[name].total - self.bars[name].curr)
-                delete(self.bars[name]);
+            if (vm.bars[name]) {
+              vm.bars[name].tick(vm.bars[name].total - vm.bars[name].curr)
+              delete(vm.bars[name]);
             }
             this.log.info(`[${name}] Successfully cloned interface to ${interfacePath}`);
             // TODO: Currently we ALWAYS use master branch

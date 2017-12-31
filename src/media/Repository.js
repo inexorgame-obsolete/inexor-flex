@@ -414,7 +414,7 @@ class GitRepositoryManager extends EventEmitter {
    */
   updateStats(stats, node) {
       if (this.bars[node.getName()] === undefined) {
-          this.bars[node.getName()] = new progress(` downloading repository ${node.getName()} [:bar] :current / :total`, {total: stats.totalObjects(), stream: this.log.stream})
+          this.bars[node.getName()] = new progress(`Downloading repository ${node.getName()} [:bar] :current / :total`, {total: stats.totalObjects(), stream: this.log.stream});
       } else {
           this.bars[node.getName()].tick((100 * (stats.receivedObjects() + stats.indexedObjects())) / (stats.totalObjects() * 2))
       }
