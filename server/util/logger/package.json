@@ -21,7 +21,7 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "bunyan": "^1.8.5",
-    "bunyan-debug-stream": "^1.0.7"
+    "bunyan": "^1.8.12",
+    "bunyan-debug-stream": "^1.0.8"
   }
 }
