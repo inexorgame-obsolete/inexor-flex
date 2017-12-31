@@ -779,9 +779,11 @@ class ReleaseManager extends EventEmitter {
             const fileSizeDownloadedNode = releaseNode.getChild('fileSizeDownloaded');
             const fileSize = releaseNode.getChild('fileSize');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
-            let  bar = new progress(`downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: fileSize.get(), stream: this.log.stream })
+            
+            let bar = new progress(`Downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: 100, stream: this.log.stream });
             fileSizeDownloadedNode.on('preSet', (value) => {
-                bar.tick((value.oldValue - value.newValue));
+                const percent = Math.floor(100 * (value.newValue / fileSize.get()));
+                bar.update(percent);
             })
 
             this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
