@@ -8,6 +8,9 @@ os:
   - linux
   - osx
 
+before_install:
+  - npm install nsp -g
+
 script:
   - npm test
   - npm run lint
