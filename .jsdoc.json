@@ -19,7 +19,7 @@
         "name": "Inexor Flex",
         "logo": {
             "url": "https://raw.githubusercontent.com/inexorgame/artwork/master/logo/logo_rendered.png",
-            "width": "120   px",
+            "width": "120px",
             "height": "80px"
         },
         "cleverLinks": false,
