@@ -139,7 +139,7 @@ class ReleaseManager extends EventEmitter {
         } else if (os.platform() == 'linux') {
             platform += 'Linux';
         } else if (os.platform() == 'darwin') {
-            platform += 'Windows';
+            platform += 'Darwin';
         }
 
         if (['arm64', 'x64'].includes(os.arch())) {
