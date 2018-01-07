@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/treeclient",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "The tree client allows access to a local or remote Inexor Tree.",
   "main": "index.js",
   "repository": {
@@ -21,6 +21,6 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "node-rest-client": "^3.1.0"
+    "node-rest-client-patched": "^3.1.1"
   }
 }
