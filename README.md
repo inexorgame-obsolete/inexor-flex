@@ -1,6 +1,6 @@
 # Inexor Flex
 
-[![npm version](https://badge.fury.io/js/%40inexorgame%2Finexor-flex.svg)](https://badge.fury.io/js/%40inexorgame%2Finexor-flex) [![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexor-game/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex) [![NSP Status](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303/badge)](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303)
+[![npm version](https://badge.fury.io/js/%40inexorgame%2Finexor-flex.svg)](https://badge.fury.io/js/%40inexorgame%2Finexor-flex) [![Build Status](https://travis-ci.org/inexorgame/inexor-flex.svg?branch=master)](https://travis-ci.org/inexorgame/inexor-flex) [![Build status](https://ci.appveyor.com/api/projects/status/55kpm71yyetbcpag?svg=true)](https://ci.appveyor.com/project/inexorgame/inexor-flex) [![Dependency Status](https://dependencyci.com/github/inexorgame/inexor-flex/badge)](https://dependencyci.com/github/inexorgame/inexor-flex) [![NSP Status](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303/badge)](https://nodesecurity.io/orgs/inexorgame/projects/c53b7d61-a945-44a0-9678-2e555f0c4303)
 
 Inexor Flex is platform for managing [Inexor Core](https://github.com/inexorgame/inexor-core) instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
@@ -23,7 +23,7 @@ Below is a brief explanation about `inexor-flex`:
   - only your imagination is the limit (...)
 
 ## How to set up inexor-flex
-You can choose from one of our graphical installers [at our website](http://inexor.org/download).
+You can choose from one of our graphical installers [at our website](https://inexor.org/download).
 
 If you're a little bit more of a techy, here are the command line instructions to install flex
 
@@ -52,7 +52,7 @@ To set up `inexor-flex` follow the below instructions.
 Given that you have cloned `inexor-flex` and are in the `inexor-flex` directory:
 ```
 npm install
-npm start # start flex 
+npm start # start flex
 ```
 
 ### The command line
@@ -72,7 +72,7 @@ After _the "wire"_ individual components, such as the package manager are starte
 
 The API is exposed as a [RESTfull API](https://en.wikipedia.org/wiki/Representational_state_transfer).
 
-### Architectual 
+### Architectual
 `inexor-flex` was initially born to serve the tree of `inexor-core` and this is how it works nowadays.
 
 - we create a _mother inexor_ root node using the `@inexorgame/tree` module
