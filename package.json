@@ -47,7 +47,7 @@
     "@inexorgame/logger": "^1.0.8",
     "@inexorgame/logging": "^1.0.7",
     "@inexorgame/media": "^1.0.9",
-    "@inexorgame/path": "^1.0.8",
+    "@inexorgame/path": "^1.0.10",
     "@inexorgame/profiles": "^1.0.1",
     "@inexorgame/releases": "^1.0.5",
     "@inexorgame/tree": "^1.0.9",
@@ -57,7 +57,7 @@
     "cors": "^2.8.3",
     "express": "^4.15.2",
     "express-ipfilter": "^0.3.1",
-    "express-ws": "^3.0.0",
+    "express-uws": "^3.0.0",
     "figlet": "^1.2.0",
     "helmet": "^3.9.0",
     "npid": "^0.4.0",
@@ -66,9 +66,8 @@
     "toml": "^2.3.2",
     "tomlify": "^0.2.0",
     "wait-on": "^2.0.2",
-    "ws": "^3.3.3",
     "xdg-basedir": "^3.0.0",
-    "yargs": "^10.0.3"
+    "yargs": "^10.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",

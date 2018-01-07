@@ -63,7 +63,7 @@ class FlexServer {
       app.use(ipfilter(['127.0.0.1', 'localhost'], {mode: 'allow', logLevel: 'deny'}));
     }
 
-    this.websockets = require('express-ws')(app);
+    this.websockets = require('express-uws')(app);
     this.app = app;
     this.apis = {};
     for (let i = 0; i < this.apiNames.length; i += 1) {
