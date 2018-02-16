@@ -4,7 +4,8 @@
 
 Inexor Flex is platform for managing [Inexor Core](https://github.com/inexorgame/inexor-core) instances and the Inexor Tree API and provides a scripting environment for servers and clients. Inexor Flex also makes multiple user interfaces using web technologies available.
 
-The reference documentation can be found at [GitHub pages](https://inexorgame.github.io/inexor-flex/docs)
+The reference documentation can be found at [GitHub pages](https://inexorgame.github.io/inexor-flex)
+Further introduction and overview: https://github.com/inexorgame/inexor-core/wiki/Inexor-Flex
 
 ## Introduction
 Hello there and welcome to the `inexor-flex` documentation!
