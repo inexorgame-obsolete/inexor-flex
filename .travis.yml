@@ -12,12 +12,11 @@ os:
 script:
   - npm test
   - npm run lint
-  - npm run nsp
 
 jobs:
   include:
     - stage: docs
-      node_js: "6"
+      node_js: "8"
       script: ./deploy_documentation.sh
       skip_cleanup: true
       GITHUB_TOKEN: ${GITHUB_TOKEN}
