@@ -26,7 +26,7 @@ jobs:
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       on:
         branch: master
-    - stage: "Create GitHub Tag or Publish to npm"
+    - stage: "Create GitHub Tag and Publish to npm"
       if: branch = master AND tag is blank AND fork is false AND repo = head_repo AND type != pull_request
       node_js: "8"
       os: linux
