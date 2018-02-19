@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/instances",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A module that allows for process managing, starting, stoping, of Inexor Core.",
   "main": "index.js",
   "author": "The Inexor Team",
@@ -13,6 +13,6 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "grpc": "^1.8.0"
+    "grpc": "^1.9.1"
   }
 }
