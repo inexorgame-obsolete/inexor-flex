@@ -11,16 +11,21 @@ need_new_tag() {
   fi
 }
 
+get_versions()
+{
+    export major_version=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
+    export minor_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
+    export INEXOR_PATCH_VERSION=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.[0-9]\+\.\(.[0-9]*\).*$/\1/"`
+}
+
 ## increment the version number based on the last tag.
 incremented_version()
 {
-  local channel_tag=${0}
-  local major_version=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
-  local minor_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
-  local patch_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.[0-9]\+\.\(.[0-9]*\).*$/\1/"`
+  local channel_tag=${1}
+  get_versions
 
-  local new_patch_version=$((patch_version+1))
-  local new_version="$major_version.$minor_version.$new_patch_version${channel_tag}"
+  export INEXOR_PATCH_VERSION=$((INEXOR_PATCH_VERSION+1))
+  local new_version="$major_version.$minor_version.$INEXOR_PATCH_VERSION${channel_tag}"
   echo $new_version
 }
 
@@ -46,14 +51,16 @@ create_tag() {
     git config --global user.name "InexorBot"
 
     git tag -a -m "Rolling release: automatic tag creation on push to master branch" "${new_version}"
-    git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex --tags
+    git push -q https://$GITHUB_TOKEN@github.com/${main_repo} --tags
 
   else
     echo >&2 -e "\n===============\n" \
     "Skipping tag creation, because this is \n" \
     "not a direct commit to master.\n" \
+    "===============\n" \
+    "Current version is: ${last_tag} \n" \
+    "Next version would have been: $(incremented_version) \n" \
     "===============\n"
-    export new_version=$(incremented_version)
   fi
 }
 
@@ -69,8 +76,6 @@ export commit_date=`git show -s --format=%cd --date=format:%Y-%m-%d-%H-%m-%S`
 
 # Name of this build
 export build="$(echo "${branch}-${commit_date}" | sed 's#/#-#g')-${TARGET}"
-export main_repo="inexorgame/inexor-flex"
-
 
 
 # Tags do not get fetched from travis usually.
@@ -82,10 +87,14 @@ export last_tag=`git describe --tags $(git rev-list --tags --max-count=1)`
 # tag to github and that push triggers travis again (which uploads the release packages)
 
 # We use the last tag as version for the package creation
+export PUBLISH_NEW_MINOR="false"
 export INEXOR_VERSION=${last_tag}
+get_versions # to export INEXOR_PATCH_VERSION !
+
 need_new_tag && {
   # If we want a new tag
   # We use the last tag of the master branch + 1.
+  export PUBLISH_NEW_MINOR="true"
   export INEXOR_VERSION=$(incremented_version)
 }
 
