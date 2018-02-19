@@ -5,6 +5,7 @@ set -e
 
 if [ "$branch" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
     # direct push to master
+    echo "This is a direct push to master. \n\n"
 else
     echo >&2 -e "\n===============\n" \
     "Skipping publishing, because this is \n" \
