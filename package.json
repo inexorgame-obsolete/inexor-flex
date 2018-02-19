@@ -66,7 +66,7 @@
     "prettyjson": "^1.2.1",
     "toml": "^2.3.2",
     "tomlify": "^0.2.0",
-    "wait-on": "^2.0.2",
+    "wait-on": "^2.1.0",
     "xdg-basedir": "^3.0.0",
     "yargs": "^10.1.0"
   },
