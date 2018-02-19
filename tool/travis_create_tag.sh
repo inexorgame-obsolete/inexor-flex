@@ -13,8 +13,8 @@ need_new_tag() {
 
 get_versions()
 {
-    export major_version=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
-    export minor_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
+    export INEXOR_MAJOR_VERSION=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
+    export INEXOR_MINOR_VERSION=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
     export INEXOR_PATCH_VERSION=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.[0-9]\+\.\(.[0-9]*\).*$/\1/"`
 }
 
@@ -25,7 +25,7 @@ incremented_version()
   get_versions
 
   export INEXOR_PATCH_VERSION=$((INEXOR_PATCH_VERSION+1))
-  local new_version="$major_version.$minor_version.$INEXOR_PATCH_VERSION${channel_tag}"
+  local new_version="$INEXOR_MAJOR_VERSION.$INEXOR_MINOR_VERSION.$INEXOR_PATCH_VERSION${channel_tag}"
   echo $new_version
 }
 
