@@ -6,7 +6,7 @@ node_js:
 
 os:
   - linux
-  - osx
+  # - osx
 
 script:
   - npm test
@@ -16,7 +16,7 @@ jobs:
   include:
     - stage: docs
       node_js: "8"
-      script: ./tool/deploy_documentation.sh
+      script: chmod +x ./tool/deploy_documentation.sh && ./tool/deploy_documentation.sh
       skip_cleanup: true
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       on:
@@ -27,7 +27,7 @@ jobs:
       os: linux
       sudo: false
       dist: trusty
-      script: ./tool/travis_create_tag.sh
+      script: chmod +x ./tool/travis_create_tag.sh && ./tool/travis_create_tag.sh
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       branches:
         only:
