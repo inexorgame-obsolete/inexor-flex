@@ -17,8 +17,19 @@ jobs:
   include:
     - stage: docs
       node_js: "8"
-      script: ./deploy_documentation.sh
+      script: ./tool/deploy_documentation.sh
       skip_cleanup: true
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       on:
         branch: master
+    - stage: "Create GitHub Tag or Publish to npm"
+      if: branch = master AND tag is blank AND fork is false AND repo = head_repo AND type != pull_request
+      node_js: "8"
+      os: linux
+      sudo: false
+      dist: trusty
+      script: ./tool/travis_create_tag.sh
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      branches:                                         
+        only:
+          - master
