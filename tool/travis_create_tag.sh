@@ -14,7 +14,7 @@ need_new_tag() {
 ## increment the version number based on the last tag.
 incremented_version()
 {
-  channel_tag = $0
+  channel_tag = ${0}
   local major_version=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
   local minor_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
   local patch_version=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.[0-9]\+\.\(.[0-9]*\).*$/\1/"`
