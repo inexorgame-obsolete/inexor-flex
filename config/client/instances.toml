@@ -8,7 +8,7 @@ name = "Default production server"
 description = "Badly Configurated Servers Inc. proudly presents your first Inexor Server"
 versionRange = "0.x"
 channelSearch = "*"
-autostart = false
+autostart = true
 autoconnect = false
 autorestart = false
 
