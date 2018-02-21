@@ -9,7 +9,7 @@ description = "Badly Configurated Servers Inc. proudly presents your first Inexo
 versionRange = "0.x"
 channelSearch = "*"
 autostart = true
-autoconnect = false
+autoconnect = true
 autorestart = false
 
 [instances.31417]
