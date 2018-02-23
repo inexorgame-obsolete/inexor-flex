@@ -1,0 +1,9 @@
+{
+  "name": "@inexorgame/plugins",
+  "version": "0.0.1",
+  "description": "A plugin system for Inexor Flex",
+  "main": "index.js",
+  "author": "The Inexor Team",
+  "license": "Zlib",
+  "private": true
+}

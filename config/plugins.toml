@@ -1,0 +1,5 @@
+# please configure plugins here
+
+[plugins]
+
+exclude = [ "darth-vader" ] # we don't appreciate death star plugins
