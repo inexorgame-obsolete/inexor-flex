@@ -30,7 +30,8 @@ If you're a little bit more of a techy, here are the command line instructions t
 
 - you need to have `Node.js` installed from [nodejs.org](nodejs.org). The latest stable release is recommended.
 - open a terminal/shell
-- install flex via `npm i -g @inexorgame/inexor-flex`
+- install the `yarn` package manager via `npm i -g yarn`
+- install flex via `yarn i -g @inexorgame/inexor-flex`
 - you can start flex via `inexor-flex` directly at your fingertips
 
 _NOTE:_ If you're curious what the graphical installer does. No suprise. Exactly the same.
@@ -52,8 +53,8 @@ To set up `inexor-flex` follow the below instructions.
 
 Given that you have cloned `inexor-flex` and are in the `inexor-flex` directory:
 ```
-npm install
-npm start # start flex
+yarn install
+yarn start # start flex
 ```
 
 ### The command line
@@ -92,7 +93,7 @@ Below is a list of the default interfaces shipped with `inexor-flex`:
 - [ui-client-hud](https://github.com/inexorgame/ui-client-hud) is a HUD system for the game
 - [ui-client-interface](https://github.com/inexorgame/ui-client-interface) are the menu(s) for the game
 
-*NOTE:* For the `ui` modules we currently use [`yarn`](https://yarnpkg.com). You need to execute `yarn` instead of `npm install` to get those running.
+*NOTE:* For the `ui` modules also uses `yarn`
 
 #### Adding an own interface
 An interface should follow the below directory structure:
@@ -155,25 +156,6 @@ Try the following:
 `rm -rf node_modules`
 And then install again.
 
-### Publishing
-We use [lerna](https://lernajs.io/) for publishing. The lerna workflow is as following
-
-- install lerna via `npm i -g lerna`
-- start publishing via `lerna publish --skip-git`
-- this will ask you which semver tag you want to add
-- after this it will start publishing the inidividual modules on `npm`
-
-*NOTE:* This will require you to have `npm` installed, be logged in, and have appropriate permissions for the `@inexorgame` orga.
-
-The release flow is as follows:
-
-```bash
-lerna publish --skip-git
-# increase the version number of inexor-flex
-npm update # <- will update the published packages
-nsp check # <- check if we don't introduce any vulnerabilities
-npm publish --access public
-```
 
 ### Future features
 This is either to-do or nice to have

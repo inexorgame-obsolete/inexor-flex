@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "node-rest-client-patched": "^3.1.1"
-  }
+  },
+  "private": "true"
 }

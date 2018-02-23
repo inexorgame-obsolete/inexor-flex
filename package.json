@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "start": "node server/index.js --profile  $npm_package_config_profile",
@@ -17,10 +17,7 @@
   "bin": {
     "inexor-flex": "inexor.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/inexorgame/inexor-flex.git"
-  },
+  "repository": "git+https://github.com/inexorgame/inexor-flex.git",
   "keywords": [
     "inexor",
     "gaming"
@@ -33,26 +30,26 @@
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "engines": {
     "node": ">=7.6.0",
-    "npm": ">=3.0.0"
+    "yarn": ">=1.3.2"
   },
   "dependencies": {
-    "@inexorgame/api": "^1.0.9",
-    "@inexorgame/console": "^1.0.1",
-    "@inexorgame/context": "^1.0.3",
-    "@inexorgame/entities": "^1.0.1",
-    "@inexorgame/gameclient": "^1.0.1",
-    "@inexorgame/gameserver": "^1.0.1",
-    "@inexorgame/instances": "^1.0.6",
-    "@inexorgame/interfaces": "^1.0.6",
-    "@inexorgame/logger": "^1.0.8",
-    "@inexorgame/logging": "^1.0.7",
-    "@inexorgame/media": "^1.0.9",
-    "@inexorgame/path": "^1.0.13",
-    "@inexorgame/profiles": "^1.0.1",
-    "@inexorgame/releases": "^1.0.5",
-    "@inexorgame/tree": "^1.0.9",
-    "@inexorgame/treeclient": "^1.0.13",
-    "@inexorgame/types": "^1.0.1  ",
+    "@inexorgame/api": "file:./server/api/",
+    "@inexorgame/console": "file:./src/console/",
+    "@inexorgame/context": "file:./src/context/",
+    "@inexorgame/entities": "file:./src/entities/",
+    "@inexorgame/gameclient": "file:./src/gameclient/",
+    "@inexorgame/gameserver": "file:./src/gameserver/",
+    "@inexorgame/instances": "file:./src/instances/",
+    "@inexorgame/interfaces": "file:./src/interfaces/",
+    "@inexorgame/logger": "file:./server/util/logger/",
+    "@inexorgame/logging": "file:./src/logging/",
+    "@inexorgame/media": "file:./src/media/",
+    "@inexorgame/path": "file:./server/util/path/",
+    "@inexorgame/profiles": "file:./src/profiles/",
+    "@inexorgame/releases": "file:./src/releases/",
+    "@inexorgame/tree": "file:./src/tree/",
+    "@inexorgame/treeclient": "file:./src/treeclient",
+    "@inexorgame/types": "file:./src/types/",
     "circular-json": "^0.4.0",
     "cors": "^2.8.3",
     "express": "^4.15.2",
@@ -78,7 +75,6 @@
     "eslint": "^4.18.0",
     "eslint-plugin-security": "^1.4.0",
     "jsdoc": "^3.5.5",
-    "lerna": "^2.5.1",
     "mocha": "^3.2.0",
     "mocha-junit-reporter": "^1.13.0",
     "nsp": "^3.2.1",
@@ -86,5 +82,9 @@
   },
   "config": {
     "profile": "client"
+  },
+  "private": false,
+  "resolutions": {
+    "hoek": ">=5.0.3"
   }
 }

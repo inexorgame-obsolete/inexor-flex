@@ -30,5 +30,6 @@
   "dependencies": {
     "nodegit": "^0.20.3",
     "progress": "^2.0.0"
-  }
+  },
+  "private": "true"
 }
