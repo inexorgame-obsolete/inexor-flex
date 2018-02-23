@@ -14,5 +14,6 @@
   },
   "dependencies": {
     "grpc": "^1.9.1"
-  }
+  },
+  "private": "true"
 }

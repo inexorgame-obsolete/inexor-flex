@@ -23,5 +23,6 @@
   "homepage": "https://github.com/inexorgame/inexor-flex/src/tree#readme",
   "engines": {
     "node": ">=6.9.1"
-  }
+  },
+  "private": "true"
 }

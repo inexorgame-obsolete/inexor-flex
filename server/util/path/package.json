@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "xdg-basedir": "^2.0.0"
-  }
+  },
+  "private": "true"
 }

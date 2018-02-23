@@ -23,5 +23,6 @@
     "fs-extra": "^5.0.0",
     "progress": "^2.0.0",
     "semver": "^5.4.1"
-  }
+  },
+  "private": "true"
 }
