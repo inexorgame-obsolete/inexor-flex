@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "start": "node server/index.js --profile  $npm_package_config_profile",
