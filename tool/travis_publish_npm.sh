@@ -51,9 +51,12 @@ echo -e "${NPM_USER}\n${NPM_PASSWORD}\n${NPM_EMAIL}" | npm login
 npm whoami
 
 echo "Using version: ${INEXOR_VERSION}"
+# DO NOT CHANGE npm version TO yarn version
+# OR WE HAVING A HARD TIME DETECTING THIS AUTO-GENERATED COMMIT IN THE NEXT AUTO-TRAVIS-RUN
 npm version ${INEXOR_VERSION}
-npm test
-npm publish
+
+yarn test
+yarn publish
 
 git commit -am "Rolling release: Increase version to ${new_version}"
 git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex
