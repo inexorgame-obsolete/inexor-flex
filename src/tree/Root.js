@@ -1,5 +1,5 @@
-const Node = require('./Node')
-const util = require('./util')
+const Node = require('./Node');
+const util = require('./util');
 
 /**
  * Represents the inexor root tree
