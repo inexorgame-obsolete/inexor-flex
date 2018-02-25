@@ -1,4 +1,4 @@
-const Client = require('node-rest-client').Client;
+const Client = require('node-rest-client-patched').Client;
 const log = require('@inexorgame/logger')();
 
 /**
