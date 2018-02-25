@@ -56,7 +56,7 @@ echo "Using version: ${INEXOR_VERSION}"
 npm version ${INEXOR_VERSION}
 
 yarn test
-yarn publish
+yarn publish --new-version ${INEXOR_VERSION}
 
 git commit -am "Rolling release: Increase version to ${new_version}"
 git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex
