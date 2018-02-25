@@ -20,5 +20,9 @@
   "engines": {
     "node": ">=6.9.1"
   },
+  "dependencies": {
+    "bunyan": "^1.8.12",
+    "bunyan-debug-stream": "^1.0.8"
+  },
   "private": "true"
 }

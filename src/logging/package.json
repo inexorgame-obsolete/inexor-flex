@@ -20,5 +20,10 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "private": "true"
+  "private": "true",
+  "dependencies": {
+    "toml": "^2.3.3",
+    "bunyan": "^1.8.12",
+    "bunyan-debug-stream": "^1.0.8"
+  }
 }

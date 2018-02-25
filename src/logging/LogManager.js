@@ -2,12 +2,14 @@
  * @module logging
  */
 
+
+const fs = require('fs');
 const EventEmitter = require('events');
+const util = require('util');
+
 const bunyan = require('bunyan');
 const bunyanDebugStream = require('bunyan-debug-stream');
-const fs = require('fs');
 const toml = require('toml');
-const util = require('util');
 
 const LIMIT = 100;
 
@@ -46,7 +48,7 @@ class LogManager extends EventEmitter {
 
     // The class logger
     this.log = this.createLogger('flex.logging.LogManager');
-    
+
   }
 
   /**
@@ -144,7 +146,7 @@ class LogManager extends EventEmitter {
       for (let i = 0; i < parts.length; i++) {
         treeNode = treeNode.getOrCreateNode(parts[i]);
       }
-      
+
       // Update the log level (tree node event)
       treeNode.level = level;
       treeNode.console = console;
@@ -207,7 +209,7 @@ class LogManager extends EventEmitter {
       }
     }
   }
-  
+
   createLoggerRecursively(name, config, parent) {
     let lname = (parent == null) ? name : util.format('%s.%s', parent.name, name);
 
@@ -247,8 +249,8 @@ class LogManager extends EventEmitter {
     this.createSubLoggersRecursively(config, log);
 
   }
-  
-  
+
+
 }
 
 module.exports = LogManager;
