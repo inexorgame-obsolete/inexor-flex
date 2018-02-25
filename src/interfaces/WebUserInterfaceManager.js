@@ -1,9 +1,11 @@
-const bunyan = require('bunyan');
+
 const EventEmitter = require('events');
-const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+
+const express = require('express');
+const bunyan = require('bunyan');
 const toml = require('toml');
 const NodeGit = require('nodegit');
 const progress = require('progress');
