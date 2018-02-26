@@ -10,7 +10,7 @@ Object.entries(pjson.fileDependencies).forEach(([key, value]) => {
     ignoreModules += `${key} `;
 });
 
-ignoreModules += "shelljs "
+ignoreModules += "shelljs jsdoc mocha chai chai-iterator "
 
 shell.echo(`./package.json:`);
 shell.exec(`dependency-check ./package.json"`);

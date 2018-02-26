@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.16",
+  "version": "0.9.18",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "postinstall": "node postinstall.js",
@@ -58,6 +58,7 @@
   "fileDependencies": {
     "@inexorgame/api": "./server/api/",
     "@inexorgame/server": "./server/",
+    "@inexorgame/servercmd": "./server/commands/",
     "@inexorgame/console": "./src/console/",
     "@inexorgame/context": "./src/context/",
     "@inexorgame/entities": "./src/entities/",

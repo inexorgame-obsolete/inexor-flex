@@ -1,10 +1,11 @@
-const figlet = require('figlet');
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
 const readline = require('readline');
-const toml = require('toml');
 const util = require('util');
+
+const figlet = require('figlet');
+const toml = require('toml');
 const yargs = require('yargs');
 
 const inexor_path = require('@inexorgame/path');
@@ -28,7 +29,7 @@ exports.handler = function(argv) {
     horizontalLayout: 'default',
     verticalLayout: 'default'
   }));
-  
+
   const parser = yargs
     .reset()
     .commandDir('cli')
@@ -91,10 +92,10 @@ exports.handler = function(argv) {
     let currentProfile = getCurrentProfile();
     return util.format('%s@%s:%d > ', currentProfile, profiles.profiles[currentProfile].hostname, profiles.profiles[currentProfile].port);
   };
-  
+
   readline_handler.setPrompt(getPrompt());
   readline_handler.prompt();
-  
+
   readline_handler.on('line', function(line) {
     switch (line) {
       case 'exit':
