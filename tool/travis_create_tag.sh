@@ -57,6 +57,7 @@ create_tag() {
     echo >&2 -e "\n===============\n" \
     "Skipping tag creation, because this is \n" \
     "not a direct commit to master.\n" \
+    "Branch: ${branch} - TRAVIS_PULL_REQUEST: ${TRAVIS_PULL_REQUEST}\n" \
     "===============\n" \
     "Current version is: ${last_tag} \n" \
     "Next version would have been: $(incremented_version) \n" \

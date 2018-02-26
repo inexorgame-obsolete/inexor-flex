@@ -10,6 +10,7 @@ else
     echo >&2 -e "\n===============\n" \
     "Skipping publishing, because this is \n" \
     "not a direct commit to master.\n" \
+    "Branch: ${branch} - TRAVIS_PULL_REQUEST: ${TRAVIS_PULL_REQUEST}\n" \
     "===============\n"
     exit 0
 fi
