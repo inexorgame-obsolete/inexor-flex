@@ -4,10 +4,10 @@ const EventEmitter = require('events');
  * @module entities
  */
 
-const EntityManager = require('../domain/EntityManager');
-const EntityTypeManager = require('../domain/EntityTypeManager');
-const RelationshipManager = require('../domain/RelationshipManager');
-const RelationshipTypeManager = require('../domain/RelationshipTypeManager');
+const EntityManager = require('./EntityManager');
+const EntityTypeManager = require('./EntityTypeManager');
+const RelationshipManager = require('./RelationshipManager');
+const RelationshipTypeManager = require('./RelationshipTypeManager');
 
 /**
  * The main API for the entity system.

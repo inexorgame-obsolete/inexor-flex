@@ -20,10 +20,8 @@
   "homepage": "https://github.com/inexorgame/inexor-flex#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "express": "^4.14.0"
-  },
-  "private": "true",
-  "dependencies": {
+    "express": "^4.14.0",
     "bunyan": "^1.8.12"
-  }
+  },
+  "private": "true"
 }

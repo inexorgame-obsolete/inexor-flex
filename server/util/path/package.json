@@ -20,8 +20,5 @@
   "engines": {
     "node": ">=6.9.1"
   },
-  "dependencies": {
-    "xdg-basedir": "^2.0.0"
-  },
   "private": "true"
 }

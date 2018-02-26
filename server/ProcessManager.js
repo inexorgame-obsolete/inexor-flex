@@ -1,9 +1,9 @@
 const EventEmitter = require('events');
 const os = require('os');
 const process = require('process');
-//const segfaultHandler = require('@inexorgame/segfault-handler');
 const util = require('util');
 
+//const segfaultHandler = require('@inexorgame/segfault-handler');
 const inexor_logger = require('@inexorgame/logger');
 
 /**

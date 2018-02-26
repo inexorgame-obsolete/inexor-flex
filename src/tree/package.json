@@ -27,5 +27,5 @@
   "dependencies": {
     "circular-json": "~0.5.1"
   },
-  "private": "true",
+  "private": "true"
 }
