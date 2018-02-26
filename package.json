@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.14",
+  "version": "0.9.16",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "postinstall": "node postinstall.js",

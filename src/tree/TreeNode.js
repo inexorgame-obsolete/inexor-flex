@@ -13,7 +13,7 @@ class TreeNode extends EventEmitter {
 
     /**
      * @constructor
-     * @param {(Node|null)} - the parent node
+     * @param {(TreeNode|null)} - the parent TreeNode
      * @param {string} name - Must not contain whitespace or dots
      * @param {datatype} type - the data type to be used
      * @param {mixed} initValue
@@ -26,7 +26,7 @@ class TreeNode extends EventEmitter {
 
         /**
          * @private
-         * @property {Node} parent
+         * @property {TreeNode} parent
          */
         this._parent = parent;
 
@@ -63,7 +63,7 @@ class TreeNode extends EventEmitter {
          * @property {datatype} _datatype
          */
 
-        // The data type of the Node
+        // The data type of the TreeNode
         if (util.isValidDataType(datatype)) {
             switch (datatype) {
                 case 'int32':
@@ -185,7 +185,7 @@ class TreeNode extends EventEmitter {
             // Set the timestamp when the value was last changed
             this._timestamp = Date.now();
             this.emit('postSet', {oldValue: oldValue, newValue: value});
-            this.getRoot().emit('postSet', {node: this, oldValue: oldValue, newValue: value});
+            this.getRoot().emit('postSet', {TreeNode: this, oldValue: oldValue, newValue: value});
         }
     }
 
@@ -221,7 +221,7 @@ class TreeNode extends EventEmitter {
     }
 
     /**
-     * Returns true, if the node is a child node (recursive) of other_TreeNode.
+     * Returns true, if the node is a child node (recursive) of other_node.
      * @function
      * @name TreeNode.isChildOf
      * @return {boolean}
@@ -230,7 +230,7 @@ class TreeNode extends EventEmitter {
         if (other_node) {
             let parent = this._parent;
             while (parent._path != util.separator) {
-                if (parent._path == other_TreeNode._path) {
+                if (parent._path == other_node._path) {
                     return true;
                 }
                 parent = parent._parent;
@@ -262,7 +262,7 @@ class TreeNode extends EventEmitter {
      * @function
      * @name TreeNode.getChild
      * @param {string} name
-     * @return {Node|null}
+     * @return {TreeNode|null}
      */
     getChild(name) {
         if (this.hasChild(name)) {
@@ -276,7 +276,7 @@ class TreeNode extends EventEmitter {
      * Returns the first child of the Node
      * @function
      * @name TreeNode.firstChild
-     * @return {Node|null}
+     * @return {TreeNode|null}
      */
     firstChild() {
         return (this.hasChildren()) ? this.getChild(this.getChildNames()[0]) : [];
@@ -287,7 +287,7 @@ class TreeNode extends EventEmitter {
      * @function
      * @name TreeNode.getOrCreateNode
      * @param {string} name
-     * @return {Node}
+     * @return {TreeNode}
      */
     getOrCreateNode(name) {
         if (this.hasChild(name)) {
@@ -328,7 +328,7 @@ class TreeNode extends EventEmitter {
      * @param {boolean} sync - If true, the node shall be synchronized automatically. If false, the child node exists locally only.
      * @param {boolean} readOnly - If true, the node cannot be modified.
      * @param {string} protoKey - The key in the .proto file.
-     * @return {Node}
+     * @return {TreeNode}
      * @see TreeNode.constructor
      * @fires TreeNode.add
      */
@@ -343,7 +343,7 @@ class TreeNode extends EventEmitter {
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
 
             // Create the child tree node
-            let childNode = new Node(this, name, datatype, initialValue, sync, readOnly, protoKey);
+            let childNode = new TreeNode(this, name, datatype, initialValue, sync, readOnly, protoKey);
 
             // Add the child tree node to the children map
             this._value.set(name, childNode);
@@ -352,10 +352,10 @@ class TreeNode extends EventEmitter {
             let self = this;
             Object.defineProperty(self, name, {
                 get() {
-                    return (childTreeNode.isContainer) ? childNode : childTreeNode.get();
+                    return (childNode.isContainer) ? childNode : childNode.get();
                 },
                 set(value) {
-                    childTreeNode.set(value);
+                    childNode.set(value);
                 },
                 configurable: true,
                 writeable: !readOnly
@@ -366,7 +366,7 @@ class TreeNode extends EventEmitter {
                 this.getRoot().emit('add', childNode);
 
                 // First sync of the newly created child node
-                childTreeNode.emit('sync', {oldValue: null, newValue: initialValue});
+                childNode.emit('sync', {oldValue: null, newValue: initialValue});
             }
 
             return childNode;
@@ -401,7 +401,7 @@ class TreeNode extends EventEmitter {
      * @function
      * @name TreeNode.addLink
      * @property {string} name - The name of the child TreeNode.
-     * @property {Node} targetNode - The target node in the tree.
+     * @property {TreeNode} targetNode - The target node in the tree.
      * @alias TreeNode.addLink
      */
     addLink(name, targetNode) {
@@ -442,7 +442,7 @@ class TreeNode extends EventEmitter {
      * Returns the parent node or null if the tree node is the root TreeNode.
      * @function
      * @name TreeNode.getParent
-     * @return {Node|null}
+     * @return {TreeNode|null}
      */
     getParent() {
         return (this._path != util.separator) ? this._parent : null;
@@ -458,7 +458,7 @@ class TreeNode extends EventEmitter {
         if (this.isContainer) {
             let entries = {};
             for (var [name, childNode] of this._value.entries()) {
-                entries[name] = childTreeNode.toString();
+                entries[name] = childNode.toString();
             }
             return JSON.stringify(entries, null, 2);
         } else if (this._datatype != 'object') {
@@ -482,9 +482,9 @@ class TreeNode extends EventEmitter {
             let entries = {};
             for (var [name, childNode] of this._value.entries()) {
                 if (recursion_limit < 0) {
-                    entries[name] = childTreeNode.toObject(recursion_limit);
+                    entries[name] = childNode.toObject(recursion_limit);
                 } else if (recursion_limit > 0) {
-                    entries[name] = childTreeNode.toObject(recursion_limit - 1);
+                    entries[name] = childNode.toObject(recursion_limit - 1);
                 }
             }
             return entries;
@@ -517,23 +517,23 @@ class TreeNode extends EventEmitter {
         let childNames = this.getChildNames();
         for (let i = 0; i < childNames.length; i++) {
             let childNode = this.getChild(childNames[i]);
-            if (childTreeNode.isContainer) {
-                entries[childTreeNode._path] = {
-                    dataType: childTreeNode._datatype,
+            if (childNode.isContainer) {
+                entries[childNode._path] = {
+                    dataType: childNode._datatype,
                     value: null
                 };
             } else {
-                entries[childTreeNode._path] = {
-                    dataType: childTreeNode._datatype,
-                    value: childTreeNode._value
+                entries[childNode._path] = {
+                    dataType: childNode._datatype,
+                    value: childNode._value
                 };
             }
         }
         if (depth > 0) {
             for (let i = 0; i < childNames.length; i++) {
                 let childNode = this.getChild(childNames[i]);
-                if (childTreeNode.isContainer) {
-                    entries = Object.assign(entries, childTreeNode.getFlatRepresentationOfNode(depth - 1));
+                if (childNode.isContainer) {
+                    entries = Object.assign(entries, childNode.getFlatRepresentationOfNode(depth - 1));
                 }
             }
         }
@@ -543,7 +543,7 @@ class TreeNode extends EventEmitter {
     /**
      * Iterates over the node and child nodes
      * @function
-     * @return {Node}
+     * @return {TreeNode}
      */
     [Symbol.iterator]() {
         // Hacky slashy
@@ -581,4 +581,4 @@ class TreeNode extends EventEmitter {
 
 }
 
-module.exports = Node;
+module.exports = TreeNode;
