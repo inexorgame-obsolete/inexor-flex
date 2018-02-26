@@ -1,8 +1,9 @@
+const util = require('util');
+
 const cors = require('cors');
 const express = require('express');
 const ipfilter = require('express-ipfilter').IpFilter;
 const helmet = require('helmet');
-const util = require('util');
 
 const inexor_api = require('@inexorgame/api');
 const inexor_logger = require('@inexorgame/logger');

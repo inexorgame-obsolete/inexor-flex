@@ -1,8 +1,10 @@
 const fs = require("fs");
 const path = require('path');
-const portscanner = require('portscanner');
+
 const process = require('process');
 const util = require('util');
+
+const portscanner = require('portscanner');
 
 const inexor_path = require('@inexorgame/path');
 const inexor_logger = require('@inexorgame/logger');
@@ -25,7 +27,7 @@ class PidManager {
    */
   createPid(hostname, port) {
     return new Promise((resolve, reject) => {
-      
+
       // First set the PID file path
       this.pid = path.join(inexor_path.pid_path, util.format('flex.%s.%s.pid', hostname, port));
 
@@ -59,7 +61,7 @@ class PidManager {
             // PID file exists, port not in use
             if (processId == process.id) {
               // Same process
-              // No need to remove PID file, content would be the same 
+              // No need to remove PID file, content would be the same
               resolve({ hostname: hostname, port: port, pid: processId });
             } else {
               // Another process
@@ -125,7 +127,7 @@ class PidManager {
       return false;
     }
   }
-  
+
 }
 
 module.exports = PidManager;
