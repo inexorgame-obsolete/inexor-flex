@@ -1,4 +1,4 @@
-const Node = require('./TreeNode');
+const TreeNode = require('./TreeNode');
 const util = require('./util');
 
 /**
