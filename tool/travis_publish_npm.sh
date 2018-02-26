@@ -59,20 +59,24 @@ npm install -g npm-cli-login
 npm-cli-login -u ${NPM_USER} -p ${NPM_PASSWORD} -e ${NPM_EMAIL}
 npm whoami
 
-echo "Using version: ${INEXOR_VERSION}"
+echo -e "Using version: ${INEXOR_VERSION} \n"
 # DO NOT CHANGE npm version TO yarn version
 # OR WE HAVING A HARD TIME DETECTING THIS AUTO-GENERATED COMMIT IN THE NEXT AUTO-TRAVIS-RUN
-npm version ${INEXOR_VERSION}
+npm version ${INEXOR_VERSION} --force
 
+# echo -e "\n Run tests \n"
 # yarn test
+
+echo -e "\n Publish package to registry \n"
 yarn publish --new-version ${INEXOR_VERSION}
 
+echo -e "\n Commit version change to GitHub \n"
 git commit -am "Rolling release: Increase version to ${INEXOR_VERSION}"
 git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex
 
 
 
-# create package for upload to GitHub
+echo -e "\n Create Yarn package for upload to GitHub \n"
 yarn pack --filename "inexor-flex-${INEXOR_VERSION}.tgz"
 
 export DEPLOY_TO_GITHUB=true
