@@ -31,7 +31,7 @@ jobs:
       os: linux
       sudo: false
       dist: trusty
-      script: export main_repo="inexorgame/inexor-flex" && chmod +x ./tool/travis_create_tag.sh && ./tool/travis_create_tag.sh && chmod +x ./tool/travis_publish_npm.sh && ./tool/travis_publish_npm.sh
+      script: export main_repo="inexorgame/inexor-flex" && chmod +x ./tool/travis_create_tag.sh && source ./tool/travis_create_tag.sh && chmod +x ./tool/travis_publish_npm.sh && source ./tool/travis_publish_npm.sh
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       branches:
         only:
