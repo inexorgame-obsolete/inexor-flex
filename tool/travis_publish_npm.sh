@@ -56,7 +56,8 @@ fi
 git config --global user.email "ci@inexor.org"
 git config --global user.name "InexorBot"
 
-echo -e "${NPM_USER}\n${NPM_PASSWORD}\n${NPM_EMAIL}" | npm login
+npm install -g npm-cli-login
+npm-cli-login -u ${NPM_USER} -p ${NPM_PASSWORD} -e ${NPM_EMAIL}
 npm whoami
 
 echo "Using version: ${INEXOR_VERSION}"
@@ -67,5 +68,12 @@ npm version ${INEXOR_VERSION}
 # yarn test
 yarn publish --new-version ${INEXOR_VERSION}
 
-git commit -am "Rolling release: Increase version to ${new_version}"
+git commit -am "Rolling release: Increase version to ${INEXOR_VERSION}"
 git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex
+
+
+
+# create package for upload to GitHub
+yarn pack --filename "inexor-flex-${INEXOR_VERSION}.tgz"
+
+export DEPLOY_TO_GITHUB=true

@@ -25,7 +25,7 @@ jobs:
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       on:
         branch: master
-    - stage: "Create GitHub Tag and Publish to npm"
+    - stage: "Create GitHub Tag and Publish Package"
       if: branch = master AND tag is blank AND fork is false AND repo = head_repo AND type != pull_request
       node_js: "8"
       os: linux
@@ -36,3 +36,15 @@ jobs:
       branches:
         only:
           - master
+
+
+deploy:
+  skip_cleanup: true
+  provider: releases
+  api_key: ${GITHUB_TOKEN}
+  file_glob: true
+  file: inexor-flex-*.tgz
+  overwrite: true
+  on:
+    condition: "$DEPLOY_TO_GITHUB = true"
+    repo: inexorgame/inexor-flex
