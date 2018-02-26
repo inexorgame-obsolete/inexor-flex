@@ -52,7 +52,6 @@ if [[ "`git log -1 --pretty=%B`" == *"Rolling release: Increase version to"* ]];
 fi
 
 
-
 git config --global user.email "ci@inexor.org"
 git config --global user.name "InexorBot"
 
