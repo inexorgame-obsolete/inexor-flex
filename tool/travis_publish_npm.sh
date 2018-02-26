@@ -3,6 +3,9 @@
 # this makes the entire script fail if one commands fail
 set -e
 
+# export branch=`git rev-parse --abbrev-ref HEAD` # The branch we're on
+export branch=${TRAVIS_BRANCH}
+
 if [ "$branch" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
     # direct push to master
     echo "This is a direct push to master. \n\n"

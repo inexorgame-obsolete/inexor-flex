@@ -72,7 +72,8 @@ create_tag() {
 set -e
 
 
-export branch=`git rev-parse --abbrev-ref HEAD` # The branch we're on
+# export branch=`git rev-parse --abbrev-ref HEAD` # The branch we're on
+export branch=${TRAVIS_BRANCH}
 export commit_date=`git show -s --format=%cd --date=format:%Y-%m-%d-%H-%m-%S`
 
 # Name of this build
