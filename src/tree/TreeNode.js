@@ -9,7 +9,7 @@ const util = require('./util');
  * @module tree
  * @todo Add a verbose logging system (shouldn't be difficult though)
  */
-class Node extends EventEmitter {
+class TreeNode extends EventEmitter {
 
     /**
      * @constructor
@@ -140,9 +140,9 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns the path of the tree node.
+     * Returns the path of the tree TreeNode.
      * @function
-     * @name Node.getPath
+     * @name TreeNode.getPath
      * @return {string}
      */
     getPath() {
@@ -152,7 +152,7 @@ class Node extends EventEmitter {
     /**
      * Returns either the value or child nodes of the current node
      * @function
-     * @name Node.get
+     * @name TreeNode.get
      * @return {mixed|Node[]}
      */
     get() {
@@ -162,12 +162,12 @@ class Node extends EventEmitter {
     /**
      * Set the value of the tree node
      * @function
-     * @name Node.set
+     * @name TreeNode.set
      * @param {mixed} value
      * @param {boolean} preventSync - whether the value should be synchronized or not
-     * @fires Node.preSet
-     * @fires Node.postSet
-     * @fires Node.sync
+     * @fires TreeNode.preSet
+     * @fires TreeNode.postSet
+     * @fires TreeNode.sync
      */
     set(value, preventSync = false) {
         if (this.isLeaf && !this._readOnly) {
@@ -192,7 +192,7 @@ class Node extends EventEmitter {
     /**
      * Checks whether the node has specified child or not
      * @function
-     * @name Node.hasChild
+     * @name TreeNode.hasChild
      * @param {string} name The name of the child
      * @return {boolean} True, if there is a child with the given name.
      */
@@ -203,7 +203,7 @@ class Node extends EventEmitter {
     /**
      * Checks whether the node has children
      * @function
-     * @name Node.hasChildren
+     * @name TreeNode.hasChildren
      * @return {boolean} True, if the node is a container which has child nodes.
      */
     hasChildren() {
@@ -213,7 +213,7 @@ class Node extends EventEmitter {
     /**
      * Returns the number of children.
      * @function
-     * @name Node.size
+     * @name TreeNode.size
      * @return {number} The number of children.
      */
     size() {
@@ -221,16 +221,16 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns true, if the node is a child node (recursive) of other_node.
+     * Returns true, if the node is a child node (recursive) of other_TreeNode.
      * @function
-     * @name Node.isChildOf
+     * @name TreeNode.isChildOf
      * @return {boolean}
      */
     isChildOf(other_node) {
         if (other_node) {
             let parent = this._parent;
             while (parent._path != util.separator) {
-                if (parent._path == other_node._path) {
+                if (parent._path == other_TreeNode._path) {
                     return true;
                 }
                 parent = parent._parent;
@@ -242,7 +242,7 @@ class Node extends EventEmitter {
     /**
      * Returns the root node (from parent)
      * @function
-     * @name Node.getRoot
+     * @name TreeNode.getRoot
      * @return {Root}
      */
     getRoot() {
@@ -260,7 +260,7 @@ class Node extends EventEmitter {
     /**
      * Returns the child with the given name.
      * @function
-     * @name Node.getChild
+     * @name TreeNode.getChild
      * @param {string} name
      * @return {Node|null}
      */
@@ -275,7 +275,7 @@ class Node extends EventEmitter {
     /**
      * Returns the first child of the Node
      * @function
-     * @name Node.firstChild
+     * @name TreeNode.firstChild
      * @return {Node|null}
      */
     firstChild() {
@@ -285,7 +285,7 @@ class Node extends EventEmitter {
     /**
      * Returns the child with the given name. If non-existent a node will be created.
      * @function
-     * @name Node.getOrCreateNode
+     * @name TreeNode.getOrCreateNode
      * @param {string} name
      * @return {Node}
      */
@@ -300,8 +300,8 @@ class Node extends EventEmitter {
     /**
      * Returns the name of the node itself.
      * @function
-     * @name Node.getName
-     * @return {string} name the name of the node.
+     * @name TreeNode.getName
+     * @return {string} name the name of the TreeNode.
      */
     getName() {
         return this._name;
@@ -310,7 +310,7 @@ class Node extends EventEmitter {
     /**
      * Returns the child names
      * @function
-     * @name Node.getChildNames
+     * @name TreeNode.getChildNames
      * @return {Array<string>}
      */
     getChildNames() {
@@ -321,16 +321,16 @@ class Node extends EventEmitter {
     /**
      * Adds a child to the node
      * @function
-     * @name Node.addChild
-     * @param {string} name - The name of the child node.
-     * @param {tree.datatype} datatype - The datatype of the child node.
-     * @param {mixed} initialValue - The initial value of the child node. The type of the initial value must be the given datatype.
+     * @name TreeNode.addChild
+     * @param {string} name - The name of the child TreeNode.
+     * @param {tree.datatype} datatype - The datatype of the child TreeNode.
+     * @param {mixed} initialValue - The initial value of the child TreeNode. The type of the initial value must be the given datatype.
      * @param {boolean} sync - If true, the node shall be synchronized automatically. If false, the child node exists locally only.
      * @param {boolean} readOnly - If true, the node cannot be modified.
      * @param {string} protoKey - The key in the .proto file.
      * @return {Node}
-     * @see Node.constructor
-     * @fires Node.add
+     * @see TreeNode.constructor
+     * @fires TreeNode.add
      */
     addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         if (this.hasChild(name)) {
@@ -352,10 +352,10 @@ class Node extends EventEmitter {
             let self = this;
             Object.defineProperty(self, name, {
                 get() {
-                    return (childNode.isContainer) ? childNode : childNode.get();
+                    return (childTreeNode.isContainer) ? childNode : childTreeNode.get();
                 },
                 set(value) {
-                    childNode.set(value);
+                    childTreeNode.set(value);
                 },
                 configurable: true,
                 writeable: !readOnly
@@ -366,7 +366,7 @@ class Node extends EventEmitter {
                 this.getRoot().emit('add', childNode);
 
                 // First sync of the newly created child node
-                childNode.emit('sync', {oldValue: null, newValue: initialValue});
+                childTreeNode.emit('sync', {oldValue: null, newValue: initialValue});
             }
 
             return childNode;
@@ -386,11 +386,11 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Adds a child node of type 'node' which is basically a container node.
+     * Adds a child node of type 'node' which is basically a container TreeNode.
      * @function
-     * @name Node.addNode
-     * @property {string} name - The name of the child node.
-     * @alias Node.addChild
+     * @name TreeNode.addNode
+     * @property {string} name - The name of the child TreeNode.
+     * @alias TreeNode.addChild
      */
     addNode(name) {
         return this.addChild(name, 'node');
@@ -399,10 +399,10 @@ class Node extends EventEmitter {
     /**
      * Adds a child node which is a link to another node in the tree.
      * @function
-     * @name Node.addLink
-     * @property {string} name - The name of the child node.
+     * @name TreeNode.addLink
+     * @property {string} name - The name of the child TreeNode.
      * @property {Node} targetNode - The target node in the tree.
-     * @alias Node.addLink
+     * @alias TreeNode.addLink
      */
     addLink(name, targetNode) {
         return this.addChild(name, 'link', targetNode);
@@ -411,8 +411,8 @@ class Node extends EventEmitter {
     /**
      * Removes a child by name.
      * @function
-     * @name Node.removeChild
-     * @param {string} name - The name of the child node.
+     * @name TreeNode.removeChild
+     * @param {string} name - The name of the child TreeNode.
      * @param {boolean} force - Forces the removal even if the child node is readOnly.
      * @return {boolean} True if the child node has been deleted. False if there wasn't a child node with the given name or the child node was read only.
      */
@@ -430,7 +430,7 @@ class Node extends EventEmitter {
     /**
      * Removes all children.
      * @function
-     * @name Node.removeAllChildren
+     * @name TreeNode.removeAllChildren
      */
     removeAllChildren() {
         if (this.isContainer) {
@@ -439,9 +439,9 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns the parent node or null if the tree node is the root node.
+     * Returns the parent node or null if the tree node is the root TreeNode.
      * @function
-     * @name Node.getParent
+     * @name TreeNode.getParent
      * @return {Node|null}
      */
     getParent() {
@@ -449,16 +449,16 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns a JSON string representation of the node.
+     * Returns a JSON string representation of the TreeNode.
      * @function
-     * @name Node.toString
+     * @name TreeNode.toString
      * @return {string}
      */
     toString() {
         if (this.isContainer) {
             let entries = {};
             for (var [name, childNode] of this._value.entries()) {
-                entries[name] = childNode.toString();
+                entries[name] = childTreeNode.toString();
             }
             return JSON.stringify(entries, null, 2);
         } else if (this._datatype != 'object') {
@@ -471,9 +471,9 @@ class Node extends EventEmitter {
     }
 
     /**
-     * Returns a pure object representation of the node.
+     * Returns a pure object representation of the TreeNode.
      * @function
-     * @name Node.toObject
+     * @name TreeNode.toObject
      * @param {number} recursion_limit - The recursion limit. If negative there is no recursion limit.
      * @return {object}
      */
@@ -482,9 +482,9 @@ class Node extends EventEmitter {
             let entries = {};
             for (var [name, childNode] of this._value.entries()) {
                 if (recursion_limit < 0) {
-                    entries[name] = childNode.toObject(recursion_limit);
+                    entries[name] = childTreeNode.toObject(recursion_limit);
                 } else if (recursion_limit > 0) {
-                    entries[name] = childNode.toObject(recursion_limit - 1);
+                    entries[name] = childTreeNode.toObject(recursion_limit - 1);
                 }
             }
             return entries;
@@ -499,7 +499,7 @@ class Node extends EventEmitter {
     /**
      * Returns a JSON representation.
      * @function
-     * @name Node.toJson
+     * @name TreeNode.toJson
      * @param {number} recursion_limit - The recursion limit. If negative there is no recursion limit.
      * @return {string}
      */
@@ -517,23 +517,23 @@ class Node extends EventEmitter {
         let childNames = this.getChildNames();
         for (let i = 0; i < childNames.length; i++) {
             let childNode = this.getChild(childNames[i]);
-            if (childNode.isContainer) {
-                entries[childNode._path] = {
-                    dataType: childNode._datatype,
+            if (childTreeNode.isContainer) {
+                entries[childTreeNode._path] = {
+                    dataType: childTreeNode._datatype,
                     value: null
                 };
             } else {
-                entries[childNode._path] = {
-                    dataType: childNode._datatype,
-                    value: childNode._value
+                entries[childTreeNode._path] = {
+                    dataType: childTreeNode._datatype,
+                    value: childTreeNode._value
                 };
             }
         }
         if (depth > 0) {
             for (let i = 0; i < childNames.length; i++) {
                 let childNode = this.getChild(childNames[i]);
-                if (childNode.isContainer) {
-                    entries = Object.assign(entries, childNode.getFlatRepresentationOfNode(depth - 1));
+                if (childTreeNode.isContainer) {
+                    entries = Object.assign(entries, childTreeNode.getFlatRepresentationOfNode(depth - 1));
                 }
             }
         }

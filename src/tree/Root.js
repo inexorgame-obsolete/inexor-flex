@@ -1,15 +1,15 @@
-const Node = require('./Node');
+const Node = require('./TreeNode');
 const util = require('./util');
 
 /**
  * Represents the inexor root tree
  * @module tree
  */
-class Root extends Node {
+class Root extends TreeNode {
     /**
      * @constructor
      * @param {ApplicationContext} application_context - The application context.
-     * @see Node.constructor
+     * @see TreeNode.constructor
      */
     constructor(application_context) {
         // Initialise this as the root node
