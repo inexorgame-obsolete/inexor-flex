@@ -64,7 +64,7 @@ echo "Using version: ${INEXOR_VERSION}"
 # OR WE HAVING A HARD TIME DETECTING THIS AUTO-GENERATED COMMIT IN THE NEXT AUTO-TRAVIS-RUN
 npm version ${INEXOR_VERSION}
 
-yarn test
+# yarn test
 yarn publish --new-version ${INEXOR_VERSION}
 
 git commit -am "Rolling release: Increase version to ${new_version}"
