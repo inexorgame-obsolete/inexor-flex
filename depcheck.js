@@ -4,10 +4,6 @@ var shell = require('shelljs');
 
 const pjson = require('./package.json');
 
-const log = require('@inexorgame/logger')();
-
-const rootDir = __dirname;
-
 /* TODO: Ignore all fileDep modules, then enable in CI */
 let ignoreModules = "";
 Object.entries(pjson.fileDependencies).forEach(([key, value]) => {

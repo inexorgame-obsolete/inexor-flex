@@ -1,6 +1,6 @@
 {
   "name": "@inexorgame/inexor-flex",
-  "version": "0.9.13",
+  "version": "0.9.14",
   "description": "Scripting environment for Inexor.",
   "scripts": {
     "postinstall": "node postinstall.js",
@@ -50,6 +50,7 @@
     "jsdoc": "^3.5.5",
     "mocha": "^3.2.0",
     "mocha-junit-reporter": "^1.13.0",
+    "tape": "4.9.0",
     "nsp": "^3.2.1",
     "tui-jsdoc-template": "^1.2.2",
     "dependency-check": "3.0.0"

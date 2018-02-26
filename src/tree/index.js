@@ -3,12 +3,12 @@
  * @module tree
  */
 
-const Node = require('./Node');
+const TreeNode = require('./TreeNode');
 const Root = require('./Root');
 const util = require('./util');
 
 module.exports = {
-  Node: Node,
+  TreeNode: TreeNode,
   Root: Root,
   util: util
 }
