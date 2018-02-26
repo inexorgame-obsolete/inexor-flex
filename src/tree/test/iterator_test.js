@@ -3,7 +3,7 @@ const chaiIterator = require('chai-iterator');
 chai.use(chaiIterator);
 const expect = chai.expect;
 
-const Node = require('../TreeNode');
+const TreeNode = require('../TreeNode');
 
 describe('Iterator', function() {
   describe('Node', function() {

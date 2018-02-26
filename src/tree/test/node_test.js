@@ -1,7 +1,7 @@
 const expect = require('chai').expect
-const Node = require('../TreeNode');
+const TreeNode = require('../TreeNode');
 
-describe('Node', function() {
+describe('TreeNode', function() {
   describe('constructor', function() {
     it('should not initialize with missing parameters', function() {
       function createNode() {
