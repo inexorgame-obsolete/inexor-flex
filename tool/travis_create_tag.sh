@@ -102,5 +102,3 @@ need_new_tag && {
 
 
 create_tag
-
-exit 0

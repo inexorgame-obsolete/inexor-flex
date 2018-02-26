@@ -155,9 +155,9 @@ class ReleaseManager extends EventEmitter {
      * Get version string from the Zip file name uploaded by Travis/Appveyor currently.
      * Returns 0.8.10@stable from inexor-core-0.8.10@stable-Linux.zip
      * valid input is everything fulfilling the pattern inexor-core-<characters>-<this.platform><characters> (so also non-zips)
-     * 
+     *
      * TODO: remove magic numbers!
-     * 
+     *
      * @function
      * @param {string} name - the input string.
      * @return {string|null} - the version or '' if pattern isn't matched
@@ -177,13 +177,13 @@ class ReleaseManager extends EventEmitter {
      * Returns the ZIP file name. This file name scheme for ZIP files is mandatory. The
      * releases provided by the Inexor Team are created by Travis and Appveyor and
      * uploaded to GitHub.
-     * 
+     *
      * Returns inexor-core-0.8.10@alpha-Linux32.zip if you give it the version 0.8.10 and the channel @alpha.
-     * 
+     *
      * TODO: can we split the release distribution ZIP files into multiple files?
      * - inexor-core-server-${version}@${channel}-${this.platform}.zip
      * - inexor-core-client-${version}@${channel}-${this.platform}.zip
-     * 
+     *
      * @function
      * @param {string} version - the exact version string.
      * @param {string} channel - the exact release channel.
@@ -779,7 +779,7 @@ class ReleaseManager extends EventEmitter {
             const fileSizeDownloadedNode = releaseNode.getChild('fileSizeDownloaded');
             const fileSize = releaseNode.getChild('fileSize');
             const zipFilename = this.makeZipNameFromVersion(version, channel);
-            
+
             let bar = new progress(`Downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: 100, stream: this.log.stream });
             fileSizeDownloadedNode.on('preSet', (value) => {
                 const percent = Math.floor(100 * (value.newValue / fileSize.get()));
