@@ -3,27 +3,27 @@ const chaiIterator = require('chai-iterator');
 chai.use(chaiIterator);
 const expect = chai.expect;
 
-const Node = require('../Node');
+const Node = require('../TreeNode');
 
 describe('Iterator', function() {
   describe('Node', function() {
     it('should contain a valid iterator', function() {
-      let node = new Node(null, '/', 'node');
+      let node = new TreeNode(null, '/', 'node');
       expect(node).to.be.iterable;
     })
     it('should return zero elements for a fresh node', function() {
-      let node = new Node(null, '/', 'node');
+      let node = new TreeNode(null, '/', 'node');
       expect(node).to.iterate.for.lengthOf(0);
     })
     it('should return 2 for a node with 2 elements', function() {
-      let node = new Node(null, '/', 'node');
+      let node = new TreeNode(null, '/', 'node');
       node.addChild('a', 'node');
       node.addChild('b', 'node');
       expect(node).to.iterate.for.lengthOf(2);
     })
     // This seems to be broken, please have a look at https://github.com/chaijs/chai/issues/908
     it('should iterate over child elements', function() {
-      let node = new Node(null, '/', 'node');
+      let node = new TreeNode(null, '/', 'node');
       node.addChild('a', 'node');
       let node_a = node.getChild('a');
       node.addChild('b', 'node');
