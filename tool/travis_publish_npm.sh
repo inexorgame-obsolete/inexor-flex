@@ -72,7 +72,7 @@ npm install -g npm-cli-login
 npm-cli-login -u ${NPM_USER} -p ${NPM_PASSWORD} -e ${NPM_EMAIL}
 npm whoami
 
-echo -e "Using version: ${INEXOR_VERSION} \n"
+echo -e "\n Using version: ${INEXOR_VERSION} \n"
 # DO NOT CHANGE npm version TO yarn version
 # OR WE HAVING A HARD TIME DETECTING THIS AUTO-GENERATED COMMIT IN THE NEXT AUTO-TRAVIS-RUN
 npm version ${INEXOR_VERSION} --force --no-git-tag-version --message "Rolling release: Increase version to ${INEXOR_VERSION}"
@@ -87,9 +87,11 @@ echo -e "\n Commit version change to GitHub \n"
 git commit -am "Rolling release: Increase version to ${INEXOR_VERSION}"
 git push -q https://$GITHUB_TOKEN@github.com/inexorgame/inexor-flex
 
+# Call function from travis_create_tag.sh
+echo -e "\n Create git tag \n"
+create_tag_when_needed
 
-
-echo -e "\n Create Yarn package for upload to GitHub \n"
+echo -e "\n Create Yarn package for upload to GitHub releases \n"
 yarn pack --filename "inexor-flex-${INEXOR_VERSION}.tgz"
 
 export DEPLOY_TO_GITHUB=true

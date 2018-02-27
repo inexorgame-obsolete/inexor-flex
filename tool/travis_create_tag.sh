@@ -5,8 +5,10 @@
 need_new_tag() {
   export current_tag=`git tag --contains`
   if test -n "$current_tag"; then
+    export NEED_NEW_TAG=false
     false
   else
+    export NEED_NEW_TAG=true
     true
   fi
 }
@@ -31,15 +33,15 @@ incremented_version()
 
 # increment version and create a tag on GitHub
 # each time we push to master, check are in travis.yml
-create_tag() {
-  need_new_tag || {
+create_tag_when_needed() {
+  if ! [ "$NEED_NEW_TAG" = "true" ]; then
     echo >&2 -e "===============\n" \
       "Skipping tag creation, because this build\n" \
       "got triggered by a tag\n" \
       "or because there is already a tag.\n" \
       "===============\n"
     exit 0
-  }
+  fi
 
   if [ "$branch" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
     # direct push to master
@@ -90,6 +92,7 @@ export last_tag=`git describe --tags $(git rev-list --tags --max-count=1)`
 
 # We use the last tag as version for the package creation
 export PUBLISH_NEW_MINOR="false"
+export INEXOR_LAST_VERSION=${last_tag}
 export INEXOR_VERSION=${last_tag}
 get_versions # to export INEXOR_PATCH_VERSION !
 
@@ -99,6 +102,3 @@ need_new_tag && {
   export PUBLISH_NEW_MINOR="true"
   export INEXOR_VERSION=$(incremented_version)
 }
-
-
-create_tag
