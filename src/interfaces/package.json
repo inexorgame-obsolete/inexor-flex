@@ -22,7 +22,7 @@
   },
   "private": "true",
   "dependencies": {
-    "nodegit": "^0.20.3",
+    "nodegit": "^0.21.0",
     "progress": "^2.0.0",
     "toml": "^2.3.3",
     "bunyan": "^1.8.12",

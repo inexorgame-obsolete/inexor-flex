@@ -75,7 +75,7 @@ npm whoami
 echo -e "Using version: ${INEXOR_VERSION} \n"
 # DO NOT CHANGE npm version TO yarn version
 # OR WE HAVING A HARD TIME DETECTING THIS AUTO-GENERATED COMMIT IN THE NEXT AUTO-TRAVIS-RUN
-npm version ${INEXOR_VERSION} --force
+npm version ${INEXOR_VERSION} --force --no-git-tag-version --message "Rolling release: Increase version to ${INEXOR_VERSION}"
 
 # echo -e "\n Run tests \n"
 # yarn test
