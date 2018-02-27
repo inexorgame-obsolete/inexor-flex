@@ -49,8 +49,8 @@ create_tag_when_needed() {
     export new_version=$(incremented_version)
     echo >&2 -e $new_version
 
-    git config --global user.email "ci@inexor.org"
-    git config --global user.name "InexorBot"
+    git config --global user.email ${GITHUB_BOT_EMAIL}
+    git config --global user.name ${GITHUB_BOT_NAME}
 
     git tag -a -m "Rolling release: automatic tag creation on push to master branch" "${new_version}"
     git push -q https://$GITHUB_TOKEN@github.com/${main_repo} --tags

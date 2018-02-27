@@ -65,8 +65,8 @@ fi
 
 git checkout master
 
-git config --global user.email "ci@inexor.org"
-git config --global user.name "InexorBot"
+git config --global user.email ${GITHUB_BOT_EMAIL}
+git config --global user.name ${GITHUB_BOT_NAME}
 
 npm install -g npm-cli-login
 npm-cli-login -u ${NPM_USER} -p ${NPM_PASSWORD} -e ${NPM_EMAIL}

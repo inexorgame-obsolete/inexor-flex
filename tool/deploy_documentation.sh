@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e # Exit with nonzero exit code if anything fails
 
-GITHUB_USER="InexorBot"
-GITHUB_EMAIL="info@inexor.org"
 SOURCE_BRANCH="master"
 TARGET_BRANCH="gh-pages"
 
@@ -19,7 +17,7 @@ fi
 
 # Save some useful information
 REPO=`git config remote.origin.url`
-TOKEN_REPO=${REPO/github.com/$GITHUB_USER:$GITHUB_TOKEN@github.com}
+TOKEN_REPO=${REPO/github.com/$GITHUB_BOT_NAME:$GITHUB_TOKEN@github.com}
 SHA=`git rev-parse --verify HEAD`
 
 # Clone the existing gh-pages for this repo into out/
@@ -37,8 +35,8 @@ doCompile
 
 # Now let's go have some fun with the cloned repo
 cd out
-git config user.name ${GITHUB_USER}
-git config user.email ${GITHUB_EMAIL}
+git config user.name ${GITHUB_BOT_NAME}
+git config user.email ${GITHUB_BOT_EMAIL}
 
 # Use a shadow commit to add differences in previously uncommited files
 git add -A --intent-to-add .
