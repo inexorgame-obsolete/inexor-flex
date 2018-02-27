@@ -51,6 +51,19 @@ if [[ "`git log -1 --pretty=%B`" == *"Rolling release: Increase version to"* ]];
     exit 0
 fi
 
+CURRENT_MASTER_COMMIT=`git ls-remote git://github.com/inexorgame/inexor-flex.git | \
+grep refs/heads/master | cut -f 1`
+CURRENT_CHECKOUT_COMMIT=`git rev-parse HEAD`
+
+if ! [ "${CURRENT_MASTER_COMMIT}" = "${CURRENT_CHECKOUT_COMMIT}" ]; then
+    echo >&2 -e "\n===============\n" \
+    "This is not the latest commit in the master branch. \n" \
+    "Skip publishing of the Yarn package. \n" \
+    "===============\n"
+    exit 0
+fi
+
+git checkout master
 
 git config --global user.email "ci@inexor.org"
 git config --global user.name "InexorBot"
