@@ -4,7 +4,6 @@ const tree = require('@inexorgame/tree');
 
 /**
  * Converts Core types to JavaScript
- * NOTE: Requires --harmony flag on Node < 7.2.1
  * @module types
  */
 
@@ -81,7 +80,7 @@ function objectToTree(obj, node=null) {
       }
     })
   } else {
-    let root = new tree.Node(null, '/', 'node');
+    let root = new tree.TreeNode(null, '/', 'node');
     debuglog('Added a new root node');
 
     Object.entries(obj).forEach(([key, value]) => {
