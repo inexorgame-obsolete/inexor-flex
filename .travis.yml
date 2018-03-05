@@ -13,7 +13,7 @@ os:
   - osx
 
 script:
-  - # yarn test
+  - yarn test
   - yarn run lint
 
 jobs:
