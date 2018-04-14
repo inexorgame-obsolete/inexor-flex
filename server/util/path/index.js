@@ -34,7 +34,7 @@ const config_path = (process.env.INEXOR_CONFIG_PATH) ? process.env.INEXOR_CONFIG
 /**
  * The media directory of inexor
  * By default the XDG data path is used. This can be overwritten by the
- * environment variable MEDIA_PATH (absolute path). If both are not set
+ * environment variable INEXOR_MEDIA_PATH (absolute path). If both are not set
  * the fallback is a relative path to the flex directory.
  * @property {string} media_path
  */
