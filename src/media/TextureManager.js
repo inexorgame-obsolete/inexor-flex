@@ -150,7 +150,7 @@ class TextureManager extends EventEmitter {
           } else {
             textureFileNode = versionNode.addChild(textureType, 'string', textureFilePath);
           }
-          this.log.debug(util.format('%s = %s', textureFileNode.getPath(), textureFileNode.get()));
+          this.log.debug(util.format('%s = %s', textureFileNode.getPath(), textureFileNode._get()));
           break;
         }
       }

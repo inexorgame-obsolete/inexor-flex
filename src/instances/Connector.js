@@ -122,14 +122,25 @@ class Connector extends EventEmitter {
           // Set value, but prevent sync
           node.set(value, true);
           break;
-        case 'TYPE_FUNCTION_EVENT':
-          this.log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-          break;
-        case 'TYPE_FUNCTION_PARAM':
-          this.log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-          break;
         case 'TYPE_LIST_EVENT_ADDED':
           this.log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
+          this.log.info('Path: ' + path);
+          let node = this.instanceNode.getRoot().findNode(path);
+          var dataTypeList = this.getDataType(protoKey);
+          this.log.info('DataTypeList: ' + dataTypeList);
+          // node.appendListItem();
+          // 509 => dataTypeList = list_inexor_ui_TreeNode_added
+          // node.appendListItem(datatype, initialValue, sync = false, readOnly = false, protoKey = null)
+          //   name des appendeten list items ergibt sich durch den neighbour mit der höchsten nummer
+          //   wenn dataTypeList einfach => datatype = string, int32 oder bool
+          //     wert = value
+          //   wenn dataTypeList komplex => datatype = node
+          //     zusätzlich noch die verpackte message auswerten
+          // 
+          //   datatype ergibt sich as der
+          //   ini
+          // node.appendListItem(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null)
+          // node.addChild(value, true);
           break;
         case 'TYPE_LIST_EVENT_MODIFIED':
           this.log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
@@ -167,7 +178,7 @@ class Connector extends EventEmitter {
    */
   getMessage(node) {
     let message = {};
-    message[node._protoKey] = node.get();
+    message[node._protoKey] = node._get();
     return message;
   }
 

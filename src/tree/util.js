@@ -38,7 +38,8 @@ function isValidDataType(datatype) {
     || datatype == 'bool'
     || datatype == 'timestamp'
     || datatype == 'object'
-    || datatype == 'link';
+    || datatype == 'link'
+    || datatype == 'list';
 }
 
 module.exports = {

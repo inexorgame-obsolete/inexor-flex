@@ -56,7 +56,7 @@ class ProfileManager extends EventEmitter {
 
     /// The class logger
     this.log = this.logManager.getLogger('flex.profiles.ProfileManager');
-
+    
     /// Load profiles.toml at startup
     this.loadProfiles();
 

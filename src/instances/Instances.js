@@ -431,7 +431,7 @@ class InstanceManager extends EventEmitter {
      */
     killProcess(instanceNode) {
         // SIGTERM
-        instanceNode.getChild('process').get().kill();
+        instanceNode.getChild('process')._get().kill();
         this.log.info(util.format('Killed process for instance %s', instanceNode.getName()));
     }
 

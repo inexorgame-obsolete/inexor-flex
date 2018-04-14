@@ -25,7 +25,7 @@ describe('TreeNode', function() {
         let n = new TreeNode('/', '', 'node');
         let obj = { x: 1 };
         let child = n.addChild('test', 'flex', obj)
-        child.get()
+        child._get()
       }
       expect(getFlexChild).to.throw('Not a valid data type: flex');
     })

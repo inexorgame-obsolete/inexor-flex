@@ -20,7 +20,7 @@ class TreeNode extends EventEmitter {
      * @param {boolean} sync
      * @param {boolean} readOnly
      */
-    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
+    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null, listDataType = null) {
         // parent constructor
         super();
 
@@ -123,6 +123,12 @@ class TreeNode extends EventEmitter {
             this.isContainer = initialValue.isContainer;
             this.isLeaf = initialValue.isLeaf;
             this._value = initialValue._value;
+        } else if (datatype == 'list') {
+            this.isContainer = true;
+            this.isLeaf = false;
+            // Initializes the list
+            this._lastIndex = 0;
+            this._listDataType = listDataType;
         } else {
             this.isContainer = false;
             this.isLeaf = true;
@@ -156,6 +162,9 @@ class TreeNode extends EventEmitter {
      * @return {mixed|Node[]}
      */
     get() {
+        return this._get();
+    }
+    _get() {
         return this._value;
     }
 
@@ -328,14 +337,17 @@ class TreeNode extends EventEmitter {
      * @param {boolean} sync - If true, the node shall be synchronized automatically. If false, the child node exists locally only.
      * @param {boolean} readOnly - If true, the node cannot be modified.
      * @param {string} protoKey - The key in the .proto file.
+     * @param {string} listDataType - The datatype of the list items.
      * @return {TreeNode}
      * @see TreeNode.constructor
      * @fires TreeNode.add
      */
-    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
+    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null, listDataType = null) {
         if (this.hasChild(name)) {
             // TODO: we could update the value here, instead of silently returning the node with the previous value
             return this.getChild(name);
+//        } else if (this._datatype == 'list') {
+//            throw new Error('Not allowed to create a child node on a list');
         } else if (name.indexOf('/') == 0) {
             // TODO: the name shouldn't contain a slash at all (name.indexOf('/') >= 0)
             // This is NOT the root leave, don't insert it like this
@@ -343,7 +355,7 @@ class TreeNode extends EventEmitter {
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
 
             // Create the child tree node
-            let childNode = new TreeNode(this, name, datatype, initialValue, sync, readOnly, protoKey);
+            let childNode = new TreeNode(this, name, datatype, initialValue, sync, readOnly, protoKey, listDataType);
 
             // Add the child tree node to the children map
             this._value.set(name, childNode);
@@ -352,7 +364,7 @@ class TreeNode extends EventEmitter {
             let self = this;
             Object.defineProperty(self, name, {
                 get() {
-                    return (childNode.isContainer) ? childNode : childNode.get();
+                    return (childNode.isContainer) ? childNode : childNode._get();
                 },
                 set(value) {
                     childNode.set(value);
@@ -406,6 +418,65 @@ class TreeNode extends EventEmitter {
      */
     addLink(name, targetNode) {
         return this.addChild(name, 'link', targetNode);
+    }
+
+    /**
+     * Adds a child node which is a link to another node in the tree.
+     * @function
+     * @name TreeNode.addLink
+     * @property {string} name - The name of the child TreeNode.
+     * @property {TreeNode} targetNode - The target node in the tree.
+     * @alias TreeNode.addLink
+     */
+    addList(name, sync, readOnly, protoKey, listDataType) {
+        return this.addChild(name, 'list', null, sync, readOnly, protoKey, listDataType);
+    }
+
+    /**
+     * Returns the
+     */
+    get(index) {
+        return this.getChild(index);
+    }
+
+    /**
+     * Appends a list item.
+     */
+    append(initialValue) {
+        if (this._datatype == 'list') {
+            var index = this._lastIndex;
+            this.addChild(index, this._listDataType, initialValue, this._sync, this._readOnly, this._protoKey);
+            this._lastIndex++;
+        } else {
+            throw new Error('Not allowed on list');
+        }
+    }
+
+    /**
+     * Insert a new item at the given index. Previous items will be moved.
+     * TODO: implement!
+     */
+    insert(index, initialValue) {
+        if (this._datatype == 'list') {
+            // TODO rename following items
+            // TODO insert item
+        } else {
+            throw new Error('Not allowed on list');
+        }
+    }
+
+    /**
+     * Removes the list item at the given index.
+     * TODO: implement!
+     */
+    remove(index) {
+        if (this._datatype == 'list') {
+            ;
+            // TODO remove item at index
+            // TODO rename following items
+        } else {
+            throw new Error('Not allowed on list');
+        }
     }
 
     /**

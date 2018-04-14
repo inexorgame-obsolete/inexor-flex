@@ -585,30 +585,30 @@ class GitRepositoryManager extends EventEmitter {
       let branchesNode = this.repositoriesNode.getChild(name).branches;
       // The name of the current branch
       let branchNode = this.repositoriesNode.getChild(name).getChild('branch');
-      self.log.trace(util.format('[%s] Branch Node: %s', name, branchNode.get()));
+      self.log.trace(util.format('[%s] Branch Node: %s', name, branchNode._get()));
       // The node of the current branch
-      let currentBranchNode = branchesNode.getChild(branchNode.get());
+      let currentBranchNode = branchesNode.getChild(branchNode._get());
       // Get or create the remote reference node
       let remoteReferenceNode;
       if (!currentBranchNode.hasChild('remote')) {
-        remoteReferenceNode = currentBranchNode.addChild('remote', 'string', util.format('refs/remotes/origin/%s', branchNode.get()));
+        remoteReferenceNode = currentBranchNode.addChild('remote', 'string', util.format('refs/remotes/origin/%s', branchNode._get()));
       } else {
         remoteReferenceNode = currentBranchNode.getChild('remote');
       }
-      self.log.trace(util.format('[%s] Remote reference: %s', name, remoteReferenceNode.get()));
-      let remoteBranchShorthand = remoteReferenceNode.get().substr(13);
+      self.log.trace(util.format('[%s] Remote reference: %s', name, remoteReferenceNode._get()));
+      let remoteBranchShorthand = remoteReferenceNode._get().substr(13);
       // Get or create the local reference node
       let localReferenceNode;
       let localReferenceExists;
       if (!currentBranchNode.hasChild('local')) {
-        localReferenceNode = currentBranchNode.addChild('local', 'string', util.format('refs/heads/%s', branchNode.get()));
+        localReferenceNode = currentBranchNode.addChild('local', 'string', util.format('refs/heads/%s', branchNode._get()));
         localReferenceExists = false;
       } else {
         localReferenceNode = currentBranchNode.getChild('local');
         localReferenceExists = true;
       }
-      self.log.trace(util.format('[%s] Local reference: %s', name, localReferenceNode.get()));
-      let localBranchShorthand = localReferenceNode.get().substr(11);
+      self.log.trace(util.format('[%s] Local reference: %s', name, localReferenceNode._get()));
+      let localBranchShorthand = localReferenceNode._get().substr(11);
       if (localReferenceExists) {
         self.log.debug(util.format('[%s] Merging new data from remote branch %s into local branch %s', name, remoteBranchShorthand, localBranchShorthand));
         return repository
