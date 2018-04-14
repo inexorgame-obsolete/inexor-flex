@@ -11,7 +11,7 @@ sensitivity = 3
 fov = 110
 
 # Make player models a bit easier to see
-fullbrightmodels = 60 
+# fullbrightmodels = 60 
 
 # console is 5 lines
 consize = 5
@@ -37,14 +37,14 @@ hudgun = 1
 [sound]
 
 # Music volume (0..255)
-musicvol = 60       
+# musicvol = 60
 
 # Sound effects volume (0..255)
 # Sounds average volume is actually set per sound, average 100
-soundvol = 255      
+# soundvol = 255
 
 # Enable Mumble
-mumble = 0
+# mumble = 0
 
 
 [rendering.screen]
