@@ -385,36 +385,40 @@ class ReleaseManager extends EventEmitter {
                     response.on('data', (d) => body += d);
 
                     response.on('end', () => {
-                        let parsed = JSON.parse(body);
-                        debuglog(parsed);
-                        isFetchingNode = false;
-
-                        for (let release of parsed) {
-                            debuglog(release);
-                            // this.log.info(release);
-
-                            // find asset path for our platform from json
-                            let asset = release.assets.filter((a) => {
-                                // TODO: why is the content_type of windows releases 'application/octet-stream' instead of 'application/zip' ?
-                                // see: https://api.github.com/repos/inexorgame/inexor-core/releases/8371800/assets
-                                if (a.content_type != 'application/zip' && a.content_type != 'application/octet-stream') {
-                                    return false;
+                        try {
+                            let parsed = JSON.parse(body);
+                            debuglog(parsed);
+                            isFetchingNode = false;
+    
+                            for (let release of parsed) {
+                                debuglog(release);
+                                // this.log.info(release);
+    
+                                // find asset path for our platform from json
+                                let asset = release.assets.filter((a) => {
+                                    // TODO: why is the content_type of windows releases 'application/octet-stream' instead of 'application/zip' ?
+                                    // see: https://api.github.com/repos/inexorgame/inexor-core/releases/8371800/assets
+                                    if (a.content_type != 'application/zip' && a.content_type != 'application/octet-stream') {
+                                        return false;
+                                    }
+                                    return a.name.includes(this.platform);
+                                });
+                                if (asset[0] != null) {
+                                    this.addRelease(
+                                        release.tag_name,
+                                        asset[0].browser_download_url,
+                                        false,
+                                        false,
+                                        release.name,
+                                        provider['name'],
+                                        release.prerelease,
+                                        release.created_at,
+                                        asset[0].size
+                                    );
                                 }
-                                return a.name.includes(this.platform);
-                            });
-                            if (asset[0] != null) {
-                                this.addRelease(
-                                    release.tag_name,
-                                    asset[0].browser_download_url,
-                                    false,
-                                    false,
-                                    release.name,
-                                    provider['name'],
-                                    release.prerelease,
-                                    release.created_at,
-                                    asset[0].size
-                                );
                             }
+                        } catch (err) {
+                            this.log.error('Failed to fetch latest releases', err);
                         }
 
                         resolve(true);
