@@ -20,7 +20,7 @@ class TreeNode extends EventEmitter {
      * @param {boolean} sync
      * @param {boolean} readOnly
      */
-    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null, listDataType = null) {
+    constructor(parent, name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         // parent constructor
         super();
 
@@ -113,22 +113,18 @@ class TreeNode extends EventEmitter {
          */
 
         // Check the node type (either node, link or a data item)
-        if (datatype == 'node') {
+        if (datatype == 'node' || datatype == 'list') {
             this.isContainer = true;
             this.isLeaf = false;
             // Initializes the map of child nodes.
-
             this._value = new Map();
+            if (datatype == 'list') {
+              this.initList();
+            }
         } else if (datatype == 'link') {
             this.isContainer = initialValue.isContainer;
             this.isLeaf = initialValue.isLeaf;
             this._value = initialValue._value;
-        } else if (datatype == 'list') {
-            this.isContainer = true;
-            this.isLeaf = false;
-            // Initializes the list
-            this._lastIndex = 0;
-            this._listDataType = listDataType;
         } else {
             this.isContainer = false;
             this.isLeaf = true;
@@ -162,9 +158,6 @@ class TreeNode extends EventEmitter {
      * @return {mixed|Node[]}
      */
     get() {
-        return this._get();
-    }
-    _get() {
         return this._value;
     }
 
@@ -337,12 +330,11 @@ class TreeNode extends EventEmitter {
      * @param {boolean} sync - If true, the node shall be synchronized automatically. If false, the child node exists locally only.
      * @param {boolean} readOnly - If true, the node cannot be modified.
      * @param {string} protoKey - The key in the .proto file.
-     * @param {string} listDataType - The datatype of the list items.
      * @return {TreeNode}
      * @see TreeNode.constructor
      * @fires TreeNode.add
      */
-    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null, listDataType = null) {
+    addChild(name, datatype, initialValue = null, sync = false, readOnly = false, protoKey = null) {
         if (this.hasChild(name)) {
             // TODO: we could update the value here, instead of silently returning the node with the previous value
             return this.getChild(name);
@@ -355,7 +347,7 @@ class TreeNode extends EventEmitter {
         } else if (this.isContainer && util.validName.test.bind(name) && util.isValidDataType(datatype)) {
 
             // Create the child tree node
-            let childNode = new TreeNode(this, name, datatype, initialValue, sync, readOnly, protoKey, listDataType);
+            let childNode = new TreeNode(this, name, datatype, initialValue, sync, readOnly, protoKey);
 
             // Add the child tree node to the children map
             this._value.set(name, childNode);
@@ -364,7 +356,7 @@ class TreeNode extends EventEmitter {
             let self = this;
             Object.defineProperty(self, name, {
                 get() {
-                    return (childNode.isContainer) ? childNode : childNode._get();
+                    return (childNode.isContainer) ? childNode : childNode.get();
                 },
                 set(value) {
                     childNode.set(value);
@@ -421,21 +413,31 @@ class TreeNode extends EventEmitter {
     }
 
     /**
-     * Adds a child node which is a link to another node in the tree.
+     * Adds a child node which is a list of items.
      * @function
-     * @name TreeNode.addLink
+     * @name TreeNode.addList
      * @property {string} name - The name of the child TreeNode.
      * @property {TreeNode} targetNode - The target node in the tree.
-     * @alias TreeNode.addLink
+     * @alias TreeNode.addList
      */
-    addList(name, sync, readOnly, protoKey, listDataType) {
-        return this.addChild(name, 'list', null, sync, readOnly, protoKey, listDataType);
+    initList() {
+        if (!this.hasChild('size')) {
+            this.addChild('size', 'int32', 0, false, true);
+        }
+        if (!this.hasChild('messageTypes')) {
+            this.addNode('messageTypes');
+        }
+    }
+
+    setMessageType(messageType, messageTypeValue) {
+      let messageTypes = this.getChild('messageTypes');
+      messageTypes.addChild(messageType, 'string', messageTypeValue);
     }
 
     /**
-     * Returns the
+     * If this node is a list node, at(index) returns the list element at position index.
      */
-    get(index) {
+    at(index) {
         return this.getChild(index);
     }
 
@@ -445,7 +447,8 @@ class TreeNode extends EventEmitter {
     append(initialValue) {
         if (this._datatype == 'list') {
             var index = this._lastIndex;
-            this.addChild(index, this._listDataType, initialValue, this._sync, this._readOnly, this._protoKey);
+            // TODO: neu machen 
+            // this.addChild(index.toString(), this._listDataType, initialValue, this._sync, this._readOnly, this._protoKey);
             this._lastIndex++;
         } else {
             throw new Error('Not allowed on list');

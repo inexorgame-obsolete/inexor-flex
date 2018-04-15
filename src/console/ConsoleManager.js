@@ -93,7 +93,7 @@ class ConsoleManager extends EventEmitter {
    * Returns the logger for the given instance.
    */
   getInstanceLogger(instanceId) {
-    return this.instancesNode.getChild(instanceId).console.logger._get();
+    return this.instancesNode.getChild(instanceId).console.logger.get();
   }
 
   /**
@@ -171,7 +171,7 @@ class ConsoleManager extends EventEmitter {
       message: message,
       level: level
     });
-    let logger = instanceNode.console.logger._get();
+    let logger = instanceNode.console.logger.get();
     logger[this.mapLogLevel(level)](message);
   }
 

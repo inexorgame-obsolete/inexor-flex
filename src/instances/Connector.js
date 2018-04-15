@@ -96,6 +96,9 @@ class Connector extends EventEmitter {
       this.log.error('Endpoint read failed');
       this.log.error(status);
       this.disconnect();
+    } else if (status.code == 13) {
+      this.log.error(status);
+      // this.disconnect();
     } else {
       this.log.info('Synchronize STATUS\n' + JSON.stringify(status));
     }
@@ -115,19 +118,34 @@ class Connector extends EventEmitter {
       let eventType = this.getEventType(protoKey);
       var dataType = this.getDataType(protoKey);
       var id = this.getId(protoKey);
+      let node;
+      let messageType;
       switch (eventType) {
         case 'TYPE_GLOBAL_VAR_MODIFIED': // eslint-disable-line
           this.log.trace(util.format('[%s] id: %d protoKey: %s path: %s dataType: %s', eventType, id, protoKey, path, dataType));
-          let node = this.instanceNode.getRoot().findNode(path);
+          node = this.instanceNode.getRoot().findNode(path);
           // Set value, but prevent sync
           node.set(value, true);
           break;
         case 'TYPE_LIST_EVENT_ADDED':
           this.log.warn(util.format('EventType %s currently not implemented (protoKey %s)', eventType, protoKey));
-          this.log.info('Path: ' + path);
-          let node = this.instanceNode.getRoot().findNode(path);
-          var dataTypeList = this.getDataType(protoKey);
-          this.log.info('DataTypeList: ' + dataTypeList);
+          this.log.warn(value);
+          messageType = this.getMessageType(protoKey);
+          node = this.instanceNode.getRoot().findNode(path);
+          this.addListItem(node, messageType, value);
+//          this.log.info('protoKey: ' + protoKey);
+//          this.log.info('eventType: ' + eventType);
+//          this.log.info('Path: ' + path);
+//          this.log.info('dataType: ' + dataType);
+//          this.log.info('id: ' + id);
+//          this.log.info('Value:');
+//          this.log.info(value);
+          // this.log.info(messageType);
+
+          // this.log.info(node.toString());
+          // var dataTypeList = this.getDataType(protoKey);
+          // this.log.info('Message:');
+          // this.log.info(message);
           // node.appendListItem();
           // 509 => dataTypeList = list_inexor_ui_TreeNode_added
           // node.appendListItem(datatype, initialValue, sync = false, readOnly = false, protoKey = null)
@@ -178,7 +196,7 @@ class Connector extends EventEmitter {
    */
   getMessage(node) {
     let message = {};
-    message[node._protoKey] = node._get();
+    message[node._protoKey] = node.get();
     return message;
   }
 
@@ -401,14 +419,31 @@ class Connector extends EventEmitter {
         var defaultValue = this.getDefaultValue(protoKey, dataType);
         var id = this.getId(protoKey);
         var eventType = this.getEventType(protoKey);
+        let node;
+        let messageType;
         if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
           // synchronize = true
           // readOnly = false
           // TODO: Add option "read_only" in proto file!
-          this.instanceNode.getRoot().createRecursive(path, dataType, defaultValue, true, false, protoKey);
+          node = this.instanceNode.getRoot().createRecursive(path, dataType, defaultValue, true, false, protoKey);
           this.log.trace('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+        } else if (eventType == 'TYPE_LIST_EVENT_ADDED') {
+          messageType = this.getMessageType(protoKey);
+          node = this.instanceNode.getRoot().createRecursive(path, 'list', null, true, false, protoKey);
+          node.setMessageType('added', messageType);
+          this.log.info('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' id: ' + id + ' eventType: ' + eventType + ' messageType: ' + messageType);
+        } else if (eventType == 'TYPE_LIST_EVENT_MODIFIED') {
+          messageType = this.getMessageType(protoKey);
+          node = this.instanceNode.getRoot().createRecursive(path, 'list', null, true, false, protoKey);
+          node.setMessageType('modified', messageType);
+          this.log.info('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' id: ' + id + ' eventType: ' + eventType + ' messageType: ' + messageType);
+        } else if (eventType == 'TYPE_LIST_EVENT_REMOVED') {
+          messageType = this.getMessageType(protoKey);
+          node = this.instanceNode.getRoot().createRecursive(path, 'list', null, true, false, protoKey);
+          node.setMessageType('removed', messageType);
+          this.log.info('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' id: ' + id + ' eventType: ' + eventType + ' messageType: ' + messageType);
         } else {
-          this.log.trace('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+          this.log.warn('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
         }
       } catch (err) {
         this.log.error(err, util.format('[ERROR] Failed to populate tree node (protoKey: %s)', protoKey));
@@ -430,19 +465,46 @@ class Connector extends EventEmitter {
         var defaultValue = this.getDefaultValue(protoKey, dataType);
         var id = this.getId(protoKey);
         var eventType = this.getEventType(protoKey);
+        let node;
+        let messageType;
         if (eventType == 'TYPE_GLOBAL_VAR_MODIFIED') {
-          let node = this.instanceNode.getRoot().findNode(path);
+          node = this.instanceNode.getRoot().findNode(path);
           this.addTreeNodeSyncListener(node);
           this.onTreeNodeSync(node);
           this.log.trace('[SUCCESS] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+        // } else if (eventType == 'TYPE_LIST_EVENT_ADDED') {
+        //  messageType = this.getMessageType(protoKey);
         } else {
-          this.log.trace('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
+          this.log.warning('[SKIPPED] protoKey: ' + protoKey + ' path: ' + path + ' dataType: ' + dataType + ' defaultValue: ' + defaultValue + ' id: ' + id + ' eventType: ' + eventType);
         }
       } catch (err) {
         this.log.error(err, util.format('[ERROR] Failed add tree node listener (protoKey: %s)', protoKey));
       }
     }
     this.log.debug('Tree node listeners has been added');
+  }
+
+  /**
+   * Adds an item to the list given list node.
+   */
+  addListItem(node, messageType, values) {
+    this.log.info('Populating list ' + node.getPath() + ' of type ' + messageType);
+    let index = node.size;
+    node.size = node.size + 1;
+    let itemNode = node.addNode(index.toString());
+    this.log.info('Created list item node ' + itemNode.getPath());
+    for (let protoKey in this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName) {
+      this.log.info(messageType + ':' + protoKey);
+      var name = this.getPath(protoKey, messageType, '');
+      var path = this.getPath(protoKey, messageType, node.getPath() + '/');
+      var dataType = this.getDataType(protoKey, messageType);
+      var defaultValue = this.getDefaultValue(protoKey, dataType, messageType);
+      var id = this.getId(protoKey, messageType);
+      var eventType = this.getEventType(protoKey, messageType);
+      var value = values[protoKey];
+      let sharedClassMemberNode = itemNode.addChild(name, dataType, value, false, false);
+      this.log.info('Created shared class member node ' + sharedClassMemberNode.getPath());
+    }
   }
 
   /**
@@ -579,13 +641,32 @@ class Connector extends EventEmitter {
    * @param {string} protoKey The proto key.
    * @return {string} The path to the node.
    */
-  getPath(protoKey) {
-    var subPath = this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(path)'];
-    if (typeof subPath != 'undefined') {
-      // Prefix with the path of the instance node
-      return this.instanceNode.getPath() + subPath;
+  getPath(protoKey, messageType = 'TreeEvent', parentPath = null) {
+    var subPath = this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].options['(path)'];
+    if (messageType == 'TreeEvent') {
+      if (typeof subPath != 'undefined') {
+        if (parentPath != null) {
+          // Prefix with the given parent path
+          return parentPath + subPath;
+        } else {
+          // Prefix with the path of the instance node
+          return this.instanceNode.getPath() + subPath;
+        }
+      } else {
+        return '';
+      }
     } else {
-      return '';
+      if (typeof subPath != 'undefined') {
+        if (parentPath != null) {
+          // Prefix with the given parent path
+          return parentPath + subPath;
+        } else {
+          // Prefix with the path of the instance node
+          return this.instanceNode.getPath() + subPath;
+        }
+      } else {
+        return '';
+      }
     }
   }
 
@@ -597,8 +678,19 @@ class Connector extends EventEmitter {
    *          protoKey
    * @return {datatype}
    */
-  getDataType(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].type.name;
+  getDataType(protoKey, messageType = 'TreeEvent') {
+    return this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].type.name;
+  }
+
+  /**
+   * Returns the message type of the field by proto key.
+   *
+   * @function
+   * @param {string} protoKey The proto key.
+   * @return {string} The message type.
+   */
+  getMessageType(protoKey, messageType = 'TreeEvent') {
+    return this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].options['(message_type)'];
   }
 
   /**
@@ -608,12 +700,12 @@ class Connector extends EventEmitter {
    * @param {string} protoKey The proto key.
    * @return {string}
    */
-  getDefaultValue(protoKey, dataType = null) {
+  getDefaultValue(protoKey, dataType = null, messageType = 'TreeEvent') {
     if (typeof dataType != 'undefined') {
       if (dataType == null) {
         dataType = this.getDataType(protoKey);
       }
-      var defaultValueAsString = this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(default_value)'];
+      var defaultValueAsString = this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].options['(default_value)'];
       switch (dataType) {
         case 'int32':
         case 'int64':
@@ -638,8 +730,8 @@ class Connector extends EventEmitter {
    * @param {string} protoKey The proto key.
    * @return {number}
    */
-  getId(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].id;
+  getId(protoKey, messageType = 'TreeEvent') {
+    return this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].id;
   }
 
   /**
@@ -649,8 +741,8 @@ class Connector extends EventEmitter {
    * @param {string} protoKey The proto key.
    * @return {string}
    */
-  getEventType(protoKey) {
-    return this.protoDescriptor.inexor.tree.TreeEvent.$type._fieldsByName[protoKey].options['(event_type)'];
+  getEventType(protoKey, messageType = 'TreeEvent') {
+    return this.protoDescriptor.inexor.tree[messageType].$type._fieldsByName[protoKey].options['(event_type)'];
   }
 
   /**

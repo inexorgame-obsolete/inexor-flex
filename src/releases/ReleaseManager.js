@@ -498,8 +498,8 @@ class ReleaseManager extends EventEmitter {
         if (channelNode.hasChild(version)) {
             // handle that the release is already provided by another provider
             let oldReleaseNode = channelNode[version];
-            let old_was_downloaded = oldReleaseNode.getChild('isDownloaded')._get();
-            let old_was_installed = oldReleaseNode.getChild('isInstalled')._get();
+            let old_was_downloaded = oldReleaseNode.getChild('isDownloaded').get();
+            let old_was_installed = oldReleaseNode.getChild('isInstalled').get();
 
             // this release is actually 'better' than the saved one (its downloaded/installed already)
             if ((isInstalled && !old_was_installed) || (isDownloaded && !old_was_downloaded)) {
@@ -600,7 +600,7 @@ class ReleaseManager extends EventEmitter {
             for (let versionName of releaseChannelNode.getChildNames()) {
                 const releaseNode = releaseChannelNode[versionName];
 
-                if (onlyInstalled && !releaseNode.getChild('isInstalled')._get()) {
+                if (onlyInstalled && !releaseNode.getChild('isInstalled').get()) {
                     // skip not installed ones if 'only_installed' parameter is true.
                     continue;
                 }
@@ -656,8 +656,8 @@ class ReleaseManager extends EventEmitter {
                     const availableReleaseNode = this.getRelease(versionRange, channelSearch, false);
                     if (availableReleaseNode) {
                         // Release is available: Download and install release
-                        const version = availableReleaseNode.getChild('version')._get();
-                        const channel = availableReleaseNode.getChild('channel')._get();
+                        const version = availableReleaseNode.getChild('version').get();
+                        const channel = availableReleaseNode.getChild('channel').get();
                         this.log.info(`Found a release which is available, but not yet installed: ${version}@${channel} ! Downloading and installing automatically...`);
                         // Download and install release by exact version and exact channel
                         this.downloadRelease(version, channel, true);
@@ -724,7 +724,7 @@ class ReleaseManager extends EventEmitter {
             }, (response) => {
                 response.pipe(file);
                 response.on('data', (chunk) => {
-                    let oldFileSize = fileSizeDownloadedNode._get();
+                    let oldFileSize = fileSizeDownloadedNode.get();
                     fileSizeDownloadedNode.set(oldFileSize + chunk.length);
                 });
                 response.on('end', () => {
@@ -767,10 +767,10 @@ class ReleaseManager extends EventEmitter {
         this.downloading[versionStr] = true;
 
         let isDownloadedNode = releaseNode.getChild('isDownloaded'); // The TreeNode on a bool
-        const isInstalled = releaseNode.getChild('isInstalled')._get(); // a bool
+        const isInstalled = releaseNode.getChild('isInstalled').get(); // a bool
 
         try {
-            if (isDownloadedNode._get() && !isInstalled && doInstall) {
+            if (isDownloadedNode.get() && !isInstalled && doInstall) {
                 // The release is already downloaded but not yet installed
                 this.log.trace(`The release ${versionStr} is already downloaded but not yet installed`);
                 this.installRelease(version, channel);
@@ -786,11 +786,11 @@ class ReleaseManager extends EventEmitter {
 
             let bar = new progress(`Downloading release ${releaseNode.getName()} [:bar] :current / :total`, { total: 100, stream: this.log.stream });
             fileSizeDownloadedNode.on('preSet', (value) => {
-                const percent = Math.floor(100 * (value.newValue / fileSize._get()));
+                const percent = Math.floor(100 * (value.newValue / fileSize.get()));
                 bar.update(percent);
             })
 
-            this.downloadArchive(urlNode._get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
+            this.downloadArchive(urlNode.get(), zipFilename, this.cacheFolder, fileSizeDownloadedNode).then((success) => {
                 this.downloading[versionStr] = false;
                 if (success) {
                     isDownloadedNode.set(true);
@@ -888,7 +888,7 @@ class ReleaseManager extends EventEmitter {
 
         let installedNode = releaseNode.getChild('isInstalled');
 
-        if (installedNode._get()) {
+        if (installedNode.get()) {
             this.log.info(`Release ${versionStr} is already installed`);
             return;
         }
