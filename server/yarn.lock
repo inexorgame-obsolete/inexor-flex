@@ -173,11 +173,11 @@ express-ipfilter@^0.3.1:
     lodash "~3.10.1"
     range_check "^1.2.0"
 
-express-uws@^3.0.0:
+express-ws@^3.0.0:
   version "3.0.0"
-  resolved "https://registry.yarnpkg.com/express-uws/-/express-uws-3.0.0.tgz#a2986206583151dd1717cfebf6c037ee4bb59c23"
+  resolved "https://registry.yarnpkg.com/express-ws/-/express-ws-3.0.0.tgz#7ddaaf3b7c758865c099905989911b6234477dbd"
   dependencies:
-    uws "^8.14.1"
+    ws "^2.0.0"
 
 express@^4.15.2:
   version "4.16.2"
@@ -562,6 +562,10 @@ safe-buffer@5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.1.tgz#893312af69b2123def71f57889001671eeb2c853"
 
+safe-buffer@~5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
+
 send@0.16.1:
   version "0.16.1"
   resolved "https://registry.yarnpkg.com/send/-/send-0.16.1.tgz#a70e1ca21d1382c11d0d9f6231deb281080d7ab3"
@@ -661,6 +665,10 @@ type-is@~1.6.15:
     media-typer "0.3.0"
     mime-types "~2.1.18"
 
+ultron@~1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.1.tgz#9fe1536a10a664a65266a1e3ccf85fd36302bc9c"
+
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
@@ -668,10 +676,6 @@ unpipe@1.0.0, unpipe@~1.0.0:
 utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
-
-uws@^8.14.1:
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/uws/-/uws-8.14.1.tgz#de09619f305f6174d5516a9c6942cb120904b20b"
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"
@@ -693,6 +697,13 @@ wrap-ansi@^2.0.0:
   dependencies:
     string-width "^1.0.1"
     strip-ansi "^3.0.1"
+
+ws@^2.0.0:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-2.3.1.tgz#6b94b3e447cb6a363f785eaf94af6359e8e81c80"
+  dependencies:
+    safe-buffer "~5.0.1"
+    ultron "~1.1.0"
 
 x-xss-protection@1.0.0:
   version "1.0.0"
