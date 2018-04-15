@@ -21,12 +21,12 @@
     "node": ">=6.9.1"
   },
   "dependencies": {
-    "portscanner": "^2.1.1",
     "cors": "^2.8.4",
     "express": "^4.15.2",
     "express-ipfilter": "^0.3.1",
-    "express-uws": "^3.0.0",
+    "express-ws": "^3.0.0",
     "helmet": "^3.9.0",
+    "portscanner": "^2.1.1",
     "yargs": "^10.1.0"
   },
   "private": "true"
