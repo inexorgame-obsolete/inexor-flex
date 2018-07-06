@@ -2,12 +2,17 @@
 set -e # Exit with nonzero exit code if anything fails
 
 SOURCE_BRANCH="master"
-TARGET_BRANCH="master"
-TARGET_REPOSITORY="https://github.com/inexorgame-obsolete/documentation"
-TARGET="flex"
+TARGET_BRANCH="${DOCUMENTATION_REPOSITORY_BRANCH}"
+TARGET_REPOSITORY="${DOCUMENTATION_REPOSITORY}"
+
+if [[ "${TRAVIS_REPO_SLUG}" == "inexorgame/inexor-flex" ]]; then
+  TARGET="flex"
+else
+  TARGET="core"
+fi
 
 function doCompile {
-  yarn run docs
+  source ./documentation_create.sh
 }
 
 # Pull requests shouldn't try to deploy, just build to verify
