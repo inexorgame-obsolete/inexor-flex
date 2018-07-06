@@ -10,21 +10,27 @@ function doCompile {
   yarn run docs
 }
 
-# Pull requests and commits to other branches shouldn't try to deploy, just build to verify
-if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
+# Pull requests shouldn't try to deploy, just build to verify
+if [ "$TRAVIS_PULL_REQUEST" != "false"]; then
     echo "Skipping deploy; just doing a build."
     doCompile
     exit 0
+fi
+
+if [ -z "${TRAVIS_TAG}" ]; then
+    echo "Only deploy documentation on a tag; just doing a build"
+    doCompile
+    exit 0;
 fi
 
 export last_tag=`git describe --tags $(git rev-list --tags --max-count=1)`
 export INEXOR_MAJOR_VERSION=`echo -e "${last_tag}" | sed "s/^\(.*\)\\.[0-9]\+\.[0-9]\+.*$/\1/"`
 export INEXOR_MINOR_VERSION=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.\(.*\)\.[0-9]\+.*$/\1/"`
 export INEXOR_PATCH_VERSION=`echo -e "${last_tag}" | sed "s/^[0-9]\+\.[0-9]\+\.\(.[0-9]*\).*$/\1/"`
-export DOCUMENTATION_TAG_NAME=${TARGET}-${INEXOR_MAJOR_VERSION}.${INEXOR_MINOR_VERSION}.${INEXOR_MINOR_VERSION}
+export DOCUMENTATION_TAG_NAME=${TARGET}-${INEXOR_MAJOR_VERSION}.${INEXOR_MINOR_VERSION}.${INEXOR_PATCH_VERSION}
 export DOCUMENTATION_TARGET_VERSION="${INEXOR_MAJOR_VERSION}-${INEXOR_MINOR_VERSION}"
 export DOCUMENTATION_TARGET_DIRECTORY="${TARGET}/${DOCUMENTATION_TARGET_VERSION}/"
-export DOCUMENTATION_TARGET_DIRECTORY_LATEST="${TARGET}/master"
+export DOCUMENTATION_TARGET_DIRECTORY_LATEST="${TARGET}/master/"
 
 # Save some useful information
 # REPO=`git config remote.origin.url`
@@ -70,4 +76,4 @@ git add -A .
 git commit -m "Update ${TARGET} documentation ${DOCUMENTATION_TAG_NAME} : ${SHA}"
 
 # Now that we're all set up, we can push.
-git push $TOKEN_REPO --all
+git push $TOKEN_REPO --follow-tags
