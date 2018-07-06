@@ -11,7 +11,7 @@ function doCompile {
 }
 
 # Pull requests shouldn't try to deploy, just build to verify
-if [ "$TRAVIS_PULL_REQUEST" != "false"]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo "Skipping deploy; just doing a build."
     doCompile
     exit 0
@@ -47,13 +47,14 @@ mkdir -p ${DOCUMENTATION_TARGET_DIRECTORY_LATEST}
 cd ..
 
 # Clean out existing contents
-rm -rf out/${DOCUMENTATION_TARGET_VERSION}/**/* || exit 0
+rm -rf out/${DOCUMENTATION_TARGET_DIRECTORY}/**/* || exit 0
+rm -rf out/${DOCUMENTATION_TARGET_DIRECTORY_LATEST}/**/* || exit 0
 
 # Run our compile script; all files go to doc/; see .jsdoc.json
 doCompile
 
-cp -R  "doc/" "out/${DOCUMENTATION_TARGET_DIRECTORY}"
-cp -R  "doc/" "out/${DOCUMENTATION_TARGET_DIRECTORY_LATEST}"
+cp -R  "doc/." "out/${DOCUMENTATION_TARGET_DIRECTORY}"
+cp -R  "doc/." "out/${DOCUMENTATION_TARGET_DIRECTORY_LATEST}"
 
 # Now let's go have some fun with the cloned repo
 cd out
