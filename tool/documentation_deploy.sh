@@ -11,20 +11,16 @@ else
   TARGET="core"
 fi
 
-function doCompile {
-  source ./documentation_create.sh
-}
-
 # Pull requests shouldn't try to deploy, just build to verify
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo "Skipping deploy; just doing a build."
-    doCompile
+    bash ./tool/documentation_create.sh
     exit 0
 fi
 
 if [ -z "${TRAVIS_TAG}" ]; then
     echo "Only deploy documentation on a tag; just doing a build"
-    doCompile
+    bash ./tool/documentation_create.sh
     exit 0;
 fi
 
@@ -56,7 +52,7 @@ rm -rf out/${DOCUMENTATION_TARGET_DIRECTORY}/**/* || exit 0
 rm -rf out/${DOCUMENTATION_TARGET_DIRECTORY_LATEST}/**/* || exit 0
 
 # Run our compile script; all files go to doc/; see .jsdoc.json
-doCompile
+bash ./tool/documentation_create.sh
 
 cp -R  "doc/." "out/${DOCUMENTATION_TARGET_DIRECTORY}"
 cp -R  "doc/." "out/${DOCUMENTATION_TARGET_DIRECTORY_LATEST}"

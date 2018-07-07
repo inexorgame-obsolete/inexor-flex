@@ -20,7 +20,7 @@ jobs:
   include:
     - stage: docs
       node_js: "8"
-      script: chmod +x ./tool/deploy_documentation.sh && source ./tool/deploy_documentation.sh
+      script: chmod +x ./tool/documentation_create.sh && chmod +x ./tool/documentation_deploy.sh && source ./tool/documentation_deploy.sh
       skip_cleanup: true
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       on:
