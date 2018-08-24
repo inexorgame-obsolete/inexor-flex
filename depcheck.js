@@ -13,14 +13,14 @@ Object.entries(pjson.fileDependencies).forEach(([key, value]) => {
 ignoreModules += ` --ignore-module="shelljs" --ignore-module="jsdoc" --ignore-module="mocha" --ignore-module="chai" --ignore-module="chai-iterator" `
 
 shell.echo(`./package.json:`);
-shell.exec(`dependency-check ./package.json"`);
+shell.exec(`dependency-check ./package.json ${ignoreModules}"`);
 shell.exec(`dependency-check ./package.json --unused --no-dev ${ignoreModules}`);
 shell.echo(` `);
 shell.echo(` `);
 
 Object.entries(pjson.fileDependencies).forEach(([key, value]) => {
     shell.echo(`${value}package.json:`);
-    shell.exec(`dependency-check ${value}package.json --entry index.js`);
+    shell.exec(`dependency-check ${value}package.json --entry index.js ${ignoreModules}`);
     shell.exec(`dependency-check ${value}package.json --unused --entry index.js ${ignoreModules}`);
     shell.echo(` `);
     shell.echo(` `);
