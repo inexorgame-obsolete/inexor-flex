@@ -31,7 +31,7 @@
     "nodegit": "^0.21.0",
     "progress": "^2.0.0",
     "toml": "^2.3.2",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^1.0.0"
   },
   "private": "true"
 }
