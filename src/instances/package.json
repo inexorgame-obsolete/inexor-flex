@@ -15,7 +15,13 @@
   "dependencies": {
     "grpc": "^1.9.1",
     "toml": "^2.3.2",
-    "tomlify": "^0.2.0"
+    "tomlify": "^0.2.0",
+    "snyk": "^1.316.1"
   },
-  "private": "true"
+  "private": "true",
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
+  },
+  "snyk": true
 }
